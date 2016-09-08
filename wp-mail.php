@@ -7,8 +7,7 @@
  * @package WordPress
  */
 
-/** Make sure that the WordPress bootstrap has run before continuing. */
-require(dirname(__FILE__) . '/wp-load.php');
+require(__DIR__ . '/wp-load.php');
 
 /** This filter is documented in wp-admin/options.php */
 if ( ! apply_filters( 'enable_post_by_email_configuration', true ) )
@@ -21,17 +20,15 @@ if ( ! apply_filters( 'enable_post_by_email_configuration', true ) )
  */
 do_action( 'wp-mail.php' );
 
-/** Get the POP3 class with which to access the mailbox. */
 require_once( ABSPATH . WPINC . '/class-pop3.php' );
 
-/** Only check at this interval for new messages. */
 if ( !defined('WP_MAIL_INTERVAL') )
-	define('WP_MAIL_INTERVAL', 300); // 5 minutes
+	define('WP_MAIL_INTERVAL', 300);
 
 $last_checked = get_transient('mailserver_last_checked');
 
 if ( $last_checked )
-	wp_die(__('Slow down cowboy, no need to check for new mails so often!'));
+	wp_die('Slow down cowboy, no need to check for new mails so often!');
 
 set_transient('mailserver_last_checked', true, WP_MAIL_INTERVAL);
 
@@ -51,7 +48,7 @@ if( false === $count )
 
 if( 0 === $count ) {
 	$pop3->quit();
-	wp_die( __('There doesn&#8217;t seem to be any new mail.') );
+	wp_die( 'There doesn&#8217;t seem to be any new mail.' );
 }
 
 for ( $i = 1; $i <= $count; $i++ ) {

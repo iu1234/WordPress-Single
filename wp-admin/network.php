@@ -12,25 +12,13 @@
 
 define( 'WP_INSTALLING_NETWORK', true );
 
-/** WordPress Administration Bootstrap */
-require_once( dirname( __FILE__ ) . '/admin.php' );
+require_once( __DIR__ . '/admin.php' );
 
 if ( ! is_super_admin() ) {
-	wp_die( __( 'You do not have sufficient permissions to manage options for this site.' ) );
+	wp_die( 'You do not have sufficient permissions to manage options for this site.' );
 }
 
-if ( is_multisite() ) {
-	if ( ! is_network_admin() ) {
-		wp_redirect( network_admin_url( 'setup.php' ) );
-		exit;
-	}
-
-	if ( ! defined( 'MULTISITE' ) ) {
-		wp_die( __( 'The Network creation panel is not for WordPress MU networks.' ) );
-	}
-}
-
-require_once( dirname( __FILE__ ) . '/includes/network.php' );
+require_once( __DIR__ . '/includes/network.php' );
 
 // We need to create references to ms global tables to enable Network.
 foreach ( $wpdb->tables( 'ms_global' ) as $table => $prefixed_table ) {

@@ -194,8 +194,6 @@ function insert_with_markers( $filename, $marker, $insertion ) {
  * @global WP_Rewrite $wp_rewrite
  */
 function save_mod_rewrite_rules() {
-	if ( is_multisite() )
-		return;
 
 	global $wp_rewrite;
 

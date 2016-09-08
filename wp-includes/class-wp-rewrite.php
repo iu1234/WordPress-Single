@@ -23,127 +23,33 @@
  * @since 1.5.0
  */
 class WP_Rewrite {
-	/**
-	 * Permalink structure for posts.
-	 *
-	 * @since 1.5.0
-	 * @var string
-	 */
+
 	public $permalink_structure;
 
-	/**
-	 * Whether to add trailing slashes.
-	 *
-	 * @since 2.2.0
-	 * @var bool
-	 */
 	public $use_trailing_slashes;
 
-	/**
-	 * Base for the author permalink structure (example.com/$author_base/authorname).
-	 *
-	 * @since 1.5.0
-	 * @access private
-	 * @var string
-	 */
 	var $author_base = 'author';
 
-	/**
-	 * Permalink structure for author archives.
-	 *
-	 * @since 1.5.0
-	 * @access private
-	 * @var string
-	 */
 	var $author_structure;
 
-	/**
-	 * Permalink structure for date archives.
-	 *
-	 * @since 1.5.0
-	 * @access private
-	 * @var string
-	 */
 	var $date_structure;
 
-	/**
-	 * Permalink structure for pages.
-	 *
-	 * @since 1.5.0
-	 * @access private
-	 * @var string
-	 */
 	var $page_structure;
 
-	/**
-	 * Base of the search permalink structure (example.com/$search_base/query).
-	 *
-	 * @since 1.5.0
-	 * @access private
-	 * @var string
-	 */
 	var $search_base = 'search';
 
-	/**
-	 * Permalink structure for searches.
-	 *
-	 * @since 1.5.0
-	 * @access private
-	 * @var string
-	 */
 	var $search_structure;
 
-	/**
-	 * Comments permalink base.
-	 *
-	 * @since 1.5.0
-	 * @access private
-	 * @var string
-	 */
 	var $comments_base = 'comments';
 
-	/**
-	 * Pagination permalink base.
-	 *
-	 * @since 3.1.0
-	 * @var string
-	 */
 	public $pagination_base = 'page';
 
-	/**
-	 * Comments pagination permalink base.
-	 *
-	 * @since 4.2.0
-	 * @access private
-	 * @var string
-	 */
 	var $comments_pagination_base = 'comment-page';
 
-	/**
-	 * Feed permalink base.
-	 *
-	 * @since 1.5.0
-	 * @access private
-	 * @var string
-	 */
 	var $feed_base = 'feed';
 
-	/**
-	 * Comments feed permalink structure.
-	 *
-	 * @since 1.5.0
-	 * @access private
-	 * @var string
-	 */
 	var $comment_feed_structure;
 
-	/**
-	 * Feed request permalink structure.
-	 *
-	 * @since 1.5.0
-	 * @access private
-	 * @var string
-	 */
 	var $feed_structure;
 
 	/**
@@ -177,31 +83,10 @@ class WP_Rewrite {
 	 */
 	public $root = '';
 
-	/**
-	 * The name of the index file which is the entry point to all requests.
-	 *
-	 * @since 1.5.0
-	 * @access public
-	 * @var string
-	 */
 	public $index = 'index.php';
 
-	/**
-	 * Variable name to use for regex matches in the rewritten query.
-	 *
-	 * @since 1.5.0
-	 * @access private
-	 * @var string
-	 */
 	var $matches = '';
 
-	/**
-	 * Rewrite rules to match against the request to find the redirect or query.
-	 *
-	 * @since 1.5.0
-	 * @access private
-	 * @var array
-	 */
 	var $rules;
 
 	/**
@@ -1512,8 +1397,6 @@ class WP_Rewrite {
 		$rules = "<IfModule mod_rewrite.c>\n";
 		$rules .= "RewriteEngine On\n";
 		$rules .= "RewriteBase $home_root\n";
-
-		// Prevent -f checks on index.php.
 		$rules .= "RewriteRule ^index\.php$ - [L]\n";
 
 		// Add in the rules that don't redirect to WP's index.php (and thus shouldn't be handled by WP at all).

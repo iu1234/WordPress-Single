@@ -534,17 +534,10 @@ define('BLOG_ID_CURRENT_SITE', 1);
 
 	<?php else : // end iis7_supports_permalinks(). construct an htaccess file instead:
 
-		$ms_files_rewriting = '';
-		if ( is_multisite() && get_site_option( 'ms_files_rewriting' ) ) {
-			$ms_files_rewriting = "\n# uploaded files\nRewriteRule ^";
-			$ms_files_rewriting .= $subdir_match . "files/(.+) {$rewrite_base}" . WPINC . "/ms-files.php?file={$subdir_replacement_12} [L]" . "\n";
-		}
-
 		$htaccess_file = <<<EOF
 RewriteEngine On
 RewriteBase {$base}
 RewriteRule ^index\.php$ - [L]
-{$ms_files_rewriting}
 # add a trailing slash to /wp-admin
 RewriteRule ^{$subdir_match}wp-admin$ {$subdir_replacement_01}wp-admin/ [R=301,L]
 
@@ -566,16 +559,13 @@ EOF;
 		);
 		echo '</p>';
 		if ( ! $subdomain_install && WP_CONTENT_DIR != ABSPATH . 'wp-content' )
-			echo '<p><strong>' . __('Warning:') . ' ' . __( 'Subdirectory networks may not be fully compatible with custom wp-content directories.' ) . '</strong></p>';
+			echo '<p><strong>Warning: Subdirectory networks may not be fully compatible with custom wp-content directories.</strong></p>';
 		?>
 		<textarea class="code" readonly="readonly" cols="100" rows="<?php echo substr_count( $htaccess_file, "\n" ) + 1; ?>">
 <?php echo esc_textarea( $htaccess_file ); ?></textarea></li>
 		</ol>
 
-	<?php endif; // end IIS/Apache code branches.
-
-	if ( !is_multisite() ) { ?>
-		<p><?php _e( 'Once you complete these steps, your network is enabled and configured. You will have to log in again.' ); ?> <a href="<?php echo esc_url( wp_login_url() ); ?>"><?php _e( 'Log In' ); ?></a></p>
+	<?php endif; ?>
+		<p>Once you complete these steps, your network is enabled and configured. You will have to log in again. <a href="<?php echo esc_url( wp_login_url() ); ?>">Log In</a></p>
 <?php
-	}
 }
