@@ -6,14 +6,8 @@
  * @subpackage Administration
  */
 
-/** Load WordPress Administration Bootstrap */
-require_once( dirname( __FILE__ ) . '/admin.php' );
+require_once( __DIR__ . '/admin.php' );
 
-/**
- * @global string  $post_type
- * @global object  $post_type_object
- * @global WP_Post $post
- */
 global $post_type, $post_type_object, $post;
 
 if ( ! isset( $_GET['post_type'] ) ) {
@@ -21,7 +15,7 @@ if ( ! isset( $_GET['post_type'] ) ) {
 } elseif ( in_array( $_GET['post_type'], get_post_types( array('show_ui' => true ) ) ) ) {
 	$post_type = $_GET['post_type'];
 } else {
-	wp_die( __('Invalid post type') );
+	wp_die( 'Invalid post type' );
 }
 $post_type_object = get_post_type_object( $post_type );
 
@@ -56,30 +50,22 @@ $editing = true;
 
 if ( ! current_user_can( $post_type_object->cap->edit_posts ) || ! current_user_can( $post_type_object->cap->create_posts ) ) {
 	wp_die(
-		'<h1>' . __( 'Cheatin&#8217; uh?' ) . '</h1>' .
-		'<p>' . __( 'You are not allowed to create posts as this user.' ) . '</p>',
+		'<h1>Cheatin&#8217; uh?</h1>' .
+		'<p>You are not allowed to create posts as this user.</p>',
 		403
 	);
 }
 
-// Schedule auto-draft cleanup
 if ( ! wp_next_scheduled( 'wp_scheduled_auto_draft_delete' ) )
 	wp_schedule_event( time(), 'daily', 'wp_scheduled_auto_draft_delete' );
 
 wp_enqueue_script( 'autosave' );
 
-if ( is_multisite() ) {
+$check_users = get_users( array( 'fields' => 'ID', 'number' => 2 ) );
+if ( count( $check_users ) > 1 )
 	add_action( 'admin_footer', '_admin_notice_post_locked' );
-} else {
-	$check_users = get_users( array( 'fields' => 'ID', 'number' => 2 ) );
+unset( $check_users );
 
-	if ( count( $check_users ) > 1 )
-		add_action( 'admin_footer', '_admin_notice_post_locked' );
-
-	unset( $check_users );
-}
-
-// Show post form.
 $post = get_default_post_to_edit( $post_type, true );
 $post_ID = $post->ID;
 include( ABSPATH . 'wp-admin/edit-form-advanced.php' );

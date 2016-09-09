@@ -2704,25 +2704,10 @@ function noindex() {
 		wp_no_robots();
 }
 
-/**
- * Display a noindex meta tag.
- *
- * Outputs a noindex meta tag that tells web robots not to index the page content.
- * Typical usage is as a wp_head callback. add_action( 'wp_head', 'wp_no_robots' );
- *
- * @since 3.3.0
- */
 function wp_no_robots() {
 	echo "<meta name='robots' content='noindex,follow' />\n";
 }
 
-/**
- * Display site icon meta tags.
- *
- * @since 4.3.0
- *
- * @link http://www.whatwg.org/specs/web-apps/current-work/multipage/links.html#rel-icon HTML5 specification link icon.
- */
 function wp_site_icon() {
 	if ( ! has_site_icon() && ! is_customize_preview() ) {
 		return;
@@ -2735,13 +2720,6 @@ function wp_site_icon() {
 		sprintf( '<meta name="msapplication-TileImage" content="%s" />', esc_url( get_site_icon_url( 270 ) ) ),
 	);
 
-	/**
-	 * Filter the site icon meta tags, so Plugins can add their own.
-	 *
-	 * @since 4.3.0
-	 *
-	 * @param array $meta_tags Site Icon meta elements.
-	 */
 	$meta_tags = apply_filters( 'site_icon_meta_tags', $meta_tags );
 	$meta_tags = array_filter( $meta_tags );
 

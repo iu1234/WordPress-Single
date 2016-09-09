@@ -6,14 +6,13 @@
  * @subpackage Administration
  */
 
-/** WordPress Administration Bootstrap */
-require_once( dirname( __FILE__ ) . '/admin.php' );
+require_once( __DIR__ . '/admin.php' );
 
 if ( ! $typenow )
-	wp_die( __( 'Invalid post type' ) );
+	wp_die( 'Invalid post type' );
 
 if ( ! in_array( $typenow, get_post_types( array( 'show_ui' => true ) ) ) ) {
-	wp_die( __( 'You are not allowed to edit posts in this post type.' ) );
+	wp_die( 'You are not allowed to edit posts in this post type.' );
 }
 
 if ( 'attachment' === $typenow ) {
@@ -22,22 +21,18 @@ if ( 'attachment' === $typenow ) {
 	}
 }
 
-/**
- * @global string $post_type
- * @global object $post_type_object
- */
 global $post_type, $post_type_object;
 
 $post_type = $typenow;
 $post_type_object = get_post_type_object( $post_type );
 
 if ( ! $post_type_object )
-	wp_die( __( 'Invalid post type' ) );
+	wp_die( 'Invalid post type' );
 
 if ( ! current_user_can( $post_type_object->cap->edit_posts ) ) {
 	wp_die(
-		'<h1>' . __( 'Cheatin&#8217; uh?' ) . '</h1>' .
-		'<p>' . __( 'You are not allowed to edit posts in this post type.' ) . '</p>',
+		'<h1>Cheatin&#8217; uh?</h1>' .
+		'<p>You are not allowed to edit posts in this post type.</p>',
 		403
 	);
 }
@@ -183,25 +178,24 @@ $title = $post_type_object->labels->name;
 if ( 'post' == $post_type ) {
 	get_current_screen()->add_help_tab( array(
 	'id'		=> 'overview',
-	'title'		=> __('Overview'),
+	'title'		=> '概述',
 	'content'	=>
-		'<p>' . __('This screen provides access to all of your posts. You can customize the display of this screen to suit your workflow.') . '</p>'
+		'<p>本页面提供文章相关的所有功能。您可以自定义页面的样式来使工作更顺手。</p>'
 	) );
 	get_current_screen()->add_help_tab( array(
 	'id'		=> 'screen-content',
-	'title'		=> __('Screen Content'),
+	'title'		=> '页面内容',
 	'content'	=>
-		'<p>' . __('You can customize the display of this screen&#8217;s contents in a number of ways:') . '</p>' .
+		'<p>您可以通过以下方法来自定义本页面内容的显示方式：</p>' .
 		'<ul>' .
-			'<li>' . __('You can hide/display columns based on your needs and decide how many posts to list per screen using the Screen Options tab.') . '</li>' .
-			'<li>' . __('You can filter the list of posts by post status using the text links in the upper left to show All, Published, Draft, or Trashed posts. The default view is to show all posts.') . '</li>' .
-			'<li>' . __('You can view posts in a simple title list or with an excerpt using the Screen Options tab.') . '</li>' .
-			'<li>' . __('You can refine the list to show only posts in a specific category or from a specific month by using the dropdown menus above the posts list. Click the Filter button after making your selection. You also can refine the list by clicking on the post author, category or tag in the posts list.') . '</li>' .
+			'<li>您可在“显示选项”中依据您的需要隐藏或显示每页显示的文章数量。</li>' .
+			'<li>您可以通过点击列表左上方的文字链接来过滤列表显示的项目——全部、已发布、草稿、回收站。默认视图中，显示所有文章。</li>' .
+			'<li>您可以使用简单标题列表来查看文章，或是在显示选项面板种加入摘要。</li>' .			'<li>通过在文章列表上方的下拉菜单中选择，您可单独查看显示某一分类中的文章，或是某月发布的文章。点击列表中作者、分类，或标签也可令列表只显示那些内容。</li>' .
 		'</ul>'
 	) );
 	get_current_screen()->add_help_tab( array(
 	'id'		=> 'action-links',
-	'title'		=> __('Available Actions'),
+	'title'		=> '可进行的操作',
 	'content'	=>
 		'<p>' . __('Hovering over a row in the posts list will display action links that allow you to manage your post. You can perform the following actions:') . '</p>' .
 		'<ul>' .
@@ -213,38 +207,25 @@ if ( 'post' == $post_type ) {
 	) );
 	get_current_screen()->add_help_tab( array(
 	'id'		=> 'bulk-actions',
-	'title'		=> __('Bulk Actions'),
+	'title'		=> '批量操作',
 	'content'	=>
 		'<p>' . __('You can also edit or move multiple posts to the trash at once. Select the posts you want to act on using the checkboxes, then select the action you want to take from the Bulk Actions menu and click Apply.') . '</p>' .
 				'<p>' . __('When using Bulk Edit, you can change the metadata (categories, author, etc.) for all selected posts at once. To remove a post from the grouping, just click the x next to its name in the Bulk Edit area that appears.') . '</p>'
 	) );
-
-	get_current_screen()->set_help_sidebar(
-	'<p><strong>' . __('For more information:') . '</strong></p>' .
-	'<p>' . __('<a href="https://codex.wordpress.org/Posts_Screen" target="_blank">Documentation on Managing Posts</a>') . '</p>' .
-	'<p>' . __('<a href="https://wordpress.org/support/" target="_blank">Support Forums</a>') . '</p>'
-	);
-
 } elseif ( 'page' == $post_type ) {
 	get_current_screen()->add_help_tab( array(
 	'id'		=> 'overview',
-	'title'		=> __('Overview'),
+	'title'		=> '概述',
 	'content'	=>
 		'<p>' . __('Pages are similar to posts in that they have a title, body text, and associated metadata, but they are different in that they are not part of the chronological blog stream, kind of like permanent posts. Pages are not categorized or tagged, but can have a hierarchy. You can nest pages under other pages by making one the &#8220;Parent&#8221; of the other, creating a group of pages.') . '</p>'
 	) );
 	get_current_screen()->add_help_tab( array(
 	'id'		=> 'managing-pages',
-	'title'		=> __('Managing Pages'),
+	'title'		=> '页面的管理',
 	'content'	=>
-		'<p>' . __('Managing pages is very similar to managing posts, and the screens can be customized in the same way.') . '</p>' .
-		'<p>' . __('You can also perform the same types of actions, including narrowing the list by using the filters, acting on a page using the action links that appear when you hover over a row, or using the Bulk Actions menu to edit the metadata for multiple pages at once.') . '</p>'
+		'<p>管理页面的方法和管理文章的方法类似，本页面也可以用相同的方式自定义。</p>' .
+		'<p>您可以进行同样的操作，比如使用过滤器筛选列表项、使用鼠标悬停的方式进行管理，或使用“批量操作”功能来同时编辑多个文章的属性。</p>'
 	) );
-
-	get_current_screen()->set_help_sidebar(
-	'<p><strong>' . __('For more information:') . '</strong></p>' .
-	'<p>' . __('<a href="https://codex.wordpress.org/Pages_Screen" target="_blank">Documentation on Managing Pages</a>') . '</p>' .
-	'<p>' . __('<a href="https://wordpress.org/support/" target="_blank">Support Forums</a>') . '</p>'
-	);
 
 }
 
@@ -305,7 +286,6 @@ if ( current_user_can( $post_type_object->cap->create_posts ) )
 	echo ' <a href="' . esc_url( admin_url( $post_new_file ) ) . '" class="page-title-action">' . esc_html( $post_type_object->labels->add_new ) . '</a>';
 
 if ( isset( $_REQUEST['s'] ) && strlen( $_REQUEST['s'] ) ) {
-	/* translators: %s: search keywords */
 	printf( ' <span class="subtitle">' . __( 'Search results for &#8220;%s&#8221;' ) . '</span>', get_search_query() );
 }
 ?></h1>

@@ -6,11 +6,10 @@
  * @subpackage Administration
  */
 
-/** WordPress Administration Bootstrap */
-require_once( dirname( __FILE__ ) . '/admin.php' );
+require_once( __DIR__ . '/admin.php' );
 
 if ( ! current_user_can('activate_plugins') )
-	wp_die( __( 'You do not have sufficient permissions to manage plugins for this site.' ) );
+	wp_die( 'You do not have sufficient permissions to manage plugins for this site.' );
 
 $wp_list_table = _get_list_table('WP_Plugins_List_Table');
 $pagenum = $wp_list_table->get_pagenum();
@@ -69,7 +68,7 @@ if ( $action ) {
 
 		case 'activate-selected':
 			if ( ! current_user_can('activate_plugins') )
-				wp_die(__('You do not have sufficient permissions to activate plugins for this site.'));
+				wp_die( 'You do not have sufficient permissions to activate plugins for this site.' );
 
 			check_admin_referer('bulk-plugins');
 
@@ -510,7 +509,7 @@ do_action( 'pre_current_active_plugins', $plugins['all'] );
 <?php $wp_list_table->views(); ?>
 
 <form method="get">
-<?php $wp_list_table->search_box( __( 'Search Installed Plugins' ), 'plugin' ); ?>
+<?php $wp_list_table->search_box( 'Search Installed Plugins', 'plugin' ); ?>
 </form>
 
 <form method="post" id="bulk-action-form">
