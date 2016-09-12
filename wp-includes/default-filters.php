@@ -12,7 +12,6 @@
  * @package WordPress
  */
 
-// Strip, trim, kses, special chars for string saves
 foreach ( array( 'pre_term_name', 'pre_comment_author_name', 'pre_link_name', 'pre_link_target', 'pre_link_rel', 'pre_user_display_name', 'pre_user_first_name', 'pre_user_last_name', 'pre_user_nickname' ) as $filter ) {
 	add_filter( $filter, 'sanitize_text_field'  );
 	add_filter( $filter, 'wp_filter_kses'       );
@@ -219,7 +218,6 @@ add_action( 'auth_cookie_bad_hash',       'rest_cookie_collect_status' );
 add_action( 'auth_cookie_valid',          'rest_cookie_collect_status' );
 add_filter( 'rest_authentication_errors', 'rest_cookie_check_errors', 100 );
 
-// Actions
 add_action( 'wp_head',             '_wp_render_title_tag',            1     );
 add_action( 'wp_head',             'wp_enqueue_scripts',              1     );
 add_action( 'wp_head',             'adjacent_posts_rel_link_wp_head', 10, 0 );
@@ -240,7 +238,6 @@ add_action( 'after_switch_theme',  '_wp_sidebars_changed'                   );
 if ( isset( $_GET['replytocom'] ) )
     add_action( 'wp_head', 'wp_no_robots' );
 
-// Login actions
 add_action( 'login_head',          'wp_print_head_scripts',         9     );
 add_action( 'login_head',          'print_admin_styles',            9     );
 add_action( 'login_head',          'wp_site_icon',                  99    );
@@ -252,20 +249,13 @@ foreach ( array( 'rss2_head', 'commentsrss2_head', 'rss_head', 'rdf_header', 'at
 	add_action( $action, 'the_generator' );
 }
 
-// Feed Site Icon
 add_action( 'atom_head', 'atom_site_icon' );
 add_action( 'rss2_head', 'rss2_site_icon' );
 
 
-// WP Cron
 if ( !defined( 'DOING_CRON' ) )
 	add_action( 'init', 'wp_cron' );
 
-// 2 Actions 2 Furious
-add_action( 'do_feed_rdf',                'do_feed_rdf',                             10, 1 );
-add_action( 'do_feed_rss',                'do_feed_rss',                             10, 1 );
-add_action( 'do_feed_rss2',               'do_feed_rss2',                            10, 1 );
-add_action( 'do_feed_atom',               'do_feed_atom',                            10, 1 );
 add_action( 'do_pings',                   'do_all_pings',                            10, 1 );
 add_action( 'do_robots',                  'do_robots'                                      );
 add_action( 'set_comment_cookies',        'wp_set_comment_cookies',                  10, 2 );
@@ -279,7 +269,7 @@ add_action( 'init',                       'smilies_init',                       
 add_action( 'plugins_loaded',             'wp_maybe_load_widgets',                    0    );
 add_action( 'plugins_loaded',             'wp_maybe_load_embeds',                     0    );
 add_action( 'shutdown',                   'wp_ob_end_flush_all',                      1    );
-// Create a revision whenever a post is updated.
+
 add_action( 'post_updated',               'wp_save_post_revision',                   10, 1 );
 add_action( 'publish_post',               '_publish_post_hook',                       5, 1 );
 add_action( 'transition_post_status',     '_transition_post_status',                  5, 3 );
@@ -291,7 +281,6 @@ add_action( 'admin_init',                 'send_frame_options_header',          
 add_action( 'importer_scheduled_cleanup', 'wp_delete_attachment'                           );
 add_action( 'upgrader_scheduled_cleanup', 'wp_delete_attachment'                           );
 
-// Navigation menu actions
 add_action( 'delete_post',                '_wp_delete_post_menu_item'         );
 add_action( 'delete_term',                '_wp_delete_tax_menu_item',   10, 3 );
 add_action( 'transition_post_status',     '_wp_auto_add_pages_to_menu', 10, 3 );
@@ -353,48 +342,37 @@ add_action( 'after_password_reset', 'wp_password_change_notification' );
 add_action( 'register_new_user',      'wp_send_new_user_notifications' );
 add_action( 'edit_user_created_user', 'wp_send_new_user_notifications', 10, 2 );
 
-// REST API actions.
 add_action( 'init',          'rest_api_init' );
 add_action( 'rest_api_init', 'rest_api_default_filters', 10, 1 );
 add_action( 'parse_request', 'rest_api_loaded' );
 
-/**
- * Filters formerly mixed into wp-includes
- */
-// Theme
 add_action( 'wp_loaded', '_custom_header_background_just_in_time' );
 add_action( 'wp_head', '_custom_logo_header_styles' );
 add_action( 'plugins_loaded', '_wp_customize_include' );
 add_action( 'admin_enqueue_scripts', '_wp_customize_loader_settings' );
 add_action( 'delete_attachment', '_delete_attachment_theme_mod' );
 
-// Calendar widget cache
 add_action( 'save_post', 'delete_get_calendar_cache' );
 add_action( 'delete_post', 'delete_get_calendar_cache' );
 add_action( 'update_option_start_of_week', 'delete_get_calendar_cache' );
 add_action( 'update_option_gmt_offset', 'delete_get_calendar_cache' );
 
-// Author
 add_action( 'transition_post_status', '__clear_multi_author_cache' );
 
-// Post
-add_action( 'init', 'create_initial_post_types', 0 ); // highest priority
+add_action( 'init', 'create_initial_post_types', 0 );
 add_action( 'admin_menu', '_add_post_type_submenus' );
 add_action( 'before_delete_post', '_reset_front_page_settings_for_post' );
 add_action( 'wp_trash_post',      '_reset_front_page_settings_for_post' );
 
-// Post Formats
 add_filter( 'request', '_post_format_request' );
 add_filter( 'term_link', '_post_format_link', 10, 3 );
 add_filter( 'get_post_format', '_post_format_get_term' );
 add_filter( 'get_terms', '_post_format_get_terms', 10, 3 );
 add_filter( 'wp_get_object_terms', '_post_format_wp_get_object_terms' );
 
-// KSES
 add_action( 'init', 'kses_init' );
 add_action( 'set_current_user', 'kses_init' );
 
-// Script Loader
 add_action( 'wp_default_scripts', 'wp_default_scripts' );
 add_filter( 'wp_print_scripts', 'wp_just_in_time_script_localization' );
 add_filter( 'print_scripts_array', 'wp_prototype_before_jquery' );
@@ -402,28 +380,20 @@ add_filter( 'print_scripts_array', 'wp_prototype_before_jquery' );
 add_action( 'wp_default_styles', 'wp_default_styles' );
 add_filter( 'style_loader_src', 'wp_style_loader_src', 10, 2 );
 
-// Taxonomy
-add_action( 'init', 'create_initial_taxonomies', 0 ); // highest priority
+add_action( 'init', 'create_initial_taxonomies', 0 );
 
-// Canonical
 add_action( 'template_redirect', 'redirect_canonical' );
 add_action( 'template_redirect', 'wp_redirect_admin_locations', 1000 );
 
-// Shortcodes
-add_filter( 'the_content', 'do_shortcode', 11 ); // AFTER wpautop()
+add_filter( 'the_content', 'do_shortcode', 11 );
 
-// Media
 add_action( 'wp_playlist_scripts', 'wp_playlist_scripts' );
 add_action( 'customize_controls_enqueue_scripts', 'wp_plupload_default_settings' );
 
-// Nav menu
 add_filter( 'nav_menu_item_id', '_nav_menu_item_id_use_once', 10, 2 );
 
-// Widgets
 add_action( 'init', 'wp_widgets_init', 1 );
 
-// Admin Bar
-// Don't remove. Wrong way to disable.
 add_action( 'template_redirect', '_wp_admin_bar_init', 0 );
 add_action( 'admin_init', '_wp_admin_bar_init' );
 add_action( 'before_signup_header', '_wp_admin_bar_init' );
@@ -431,12 +401,10 @@ add_action( 'activate_header', '_wp_admin_bar_init' );
 add_action( 'wp_footer', 'wp_admin_bar_render', 1000 );
 add_action( 'in_admin_header', 'wp_admin_bar_render', 0 );
 
-// Former admin filters that can also be hooked on the front end
 add_action( 'media_buttons', 'media_buttons' );
 add_filter( 'image_send_to_editor', 'image_add_caption', 20, 8 );
 add_filter( 'media_send_to_editor', 'image_media_send_to_editor', 10, 3 );
 
-// Embeds
 add_action( 'rest_api_init',          'wp_oembed_register_route'              );
 add_filter( 'rest_pre_serve_request', '_oembed_rest_pre_serve_request', 10, 4 );
 

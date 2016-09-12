@@ -367,13 +367,6 @@ final class WP_Customize_Manager {
 		return '_default_wp_die_handler';
 	}
 
-	/**
-	 * Start preview and customize theme.
-	 *
-	 * Check if customize query variable exist. Init filters to filter the current theme.
-	 *
-	 * @since 3.4.0
-	 */
 	public function setup_theme() {
 		send_origin_headers();
 
@@ -387,7 +380,7 @@ final class WP_Customize_Manager {
 		show_admin_bar( false );
 
 		if ( ! current_user_can( 'customize' ) ) {
-			$this->wp_die( -1, __( 'You are not allowed to customize the appearance of this site.' ) );
+			$this->wp_die( -1, 'You are not allowed to customize the appearance of this site.' );
 		}
 
 		$this->original_stylesheet = get_stylesheet();
@@ -401,7 +394,7 @@ final class WP_Customize_Manager {
 			// If the requested theme is not the active theme and the user doesn't have the
 			// switch_themes cap, bail.
 			if ( ! current_user_can( 'switch_themes' ) ) {
-				$this->wp_die( -1, __( 'You are not allowed to edit theme options on this site.' ) );
+				$this->wp_die( -1, 'You are not allowed to edit theme options on this site.' );
 			}
 
 			// If the theme has errors while loading, bail.
@@ -411,18 +404,13 @@ final class WP_Customize_Manager {
 
 			// If the theme isn't allowed per multisite settings, bail.
 			if ( ! $this->theme()->is_allowed() ) {
-				$this->wp_die( -1, __( 'The requested theme does not exist.' ) );
+				$this->wp_die( -1, 'The requested theme does not exist.' );
 			}
 		}
 
 		$this->start_previewing_theme();
 	}
 
-	/**
-	 * Callback to validate a theme once it is loaded
-	 *
-	 * @since 3.4.0
-	 */
 	public function after_setup_theme() {
 		$doing_ajax_or_is_customized = ( $this->doing_ajax() || isset( $_SERVER['customized'] ) );
 		if ( ! $doing_ajax_or_is_customized && ! validate_current_theme() ) {
@@ -431,12 +419,6 @@ final class WP_Customize_Manager {
 		}
 	}
 
-	/**
-	 * If the theme to be previewed isn't the active theme, add filter callbacks
-	 * to swap it out at runtime.
-	 *
-	 * @since 3.4.0
-	 */
 	public function start_previewing_theme() {
 		// Bail if we're already previewing.
 		if ( $this->is_preview() ) {
@@ -450,22 +432,13 @@ final class WP_Customize_Manager {
 			add_filter( 'stylesheet', array( $this, 'get_stylesheet' ) );
 			add_filter( 'pre_option_current_theme', array( $this, 'current_theme' ) );
 
-			// @link: https://core.trac.wordpress.org/ticket/20027
 			add_filter( 'pre_option_stylesheet', array( $this, 'get_stylesheet' ) );
 			add_filter( 'pre_option_template', array( $this, 'get_template' ) );
 
-			// Handle custom theme roots.
 			add_filter( 'pre_option_stylesheet_root', array( $this, 'get_stylesheet_root' ) );
 			add_filter( 'pre_option_template_root', array( $this, 'get_template_root' ) );
 		}
 
-		/**
-		 * Fires once the Customizer theme preview has started.
-		 *
-		 * @since 3.4.0
-		 *
-		 * @param WP_Customize_Manager $this WP_Customize_Manager instance.
-		 */
 		do_action( 'start_previewing_theme', $this );
 	}
 
@@ -488,32 +461,16 @@ final class WP_Customize_Manager {
 			remove_filter( 'stylesheet', array( $this, 'get_stylesheet' ) );
 			remove_filter( 'pre_option_current_theme', array( $this, 'current_theme' ) );
 
-			// @link: https://core.trac.wordpress.org/ticket/20027
 			remove_filter( 'pre_option_stylesheet', array( $this, 'get_stylesheet' ) );
 			remove_filter( 'pre_option_template', array( $this, 'get_template' ) );
 
-			// Handle custom theme roots.
 			remove_filter( 'pre_option_stylesheet_root', array( $this, 'get_stylesheet_root' ) );
 			remove_filter( 'pre_option_template_root', array( $this, 'get_template_root' ) );
 		}
 
-		/**
-		 * Fires once the Customizer theme preview has stopped.
-		 *
-		 * @since 3.4.0
-		 *
-		 * @param WP_Customize_Manager $this WP_Customize_Manager instance.
-		 */
 		do_action( 'stop_previewing_theme', $this );
 	}
 
-	/**
-	 * Get the theme being customized.
-	 *
-	 * @since 3.4.0
-	 *
-	 * @return WP_Theme
-	 */
 	public function theme() {
 		if ( ! $this->theme ) {
 			$this->theme = wp_get_theme();
@@ -521,78 +478,30 @@ final class WP_Customize_Manager {
 		return $this->theme;
 	}
 
-	/**
-	 * Get the registered settings.
-	 *
-	 * @since 3.4.0
-	 *
-	 * @return array
-	 */
 	public function settings() {
 		return $this->settings;
 	}
 
-	/**
-	 * Get the registered controls.
-	 *
-	 * @since 3.4.0
-	 *
-	 * @return array
-	 */
 	public function controls() {
 		return $this->controls;
 	}
 
-	/**
-	 * Get the registered containers.
-	 *
-	 * @since 4.0.0
-	 *
-	 * @return array
-	 */
 	public function containers() {
 		return $this->containers;
 	}
 
-	/**
-	 * Get the registered sections.
-	 *
-	 * @since 3.4.0
-	 *
-	 * @return array
-	 */
 	public function sections() {
 		return $this->sections;
 	}
 
-	/**
-	 * Get the registered panels.
-	 *
-	 * @since 4.0.0
-	 * @access public
-	 *
-	 * @return array Panels.
-	 */
 	public function panels() {
 		return $this->panels;
 	}
 
-	/**
-	 * Checks if the current theme is active.
-	 *
-	 * @since 3.4.0
-	 *
-	 * @return bool
-	 */
 	public function is_theme_active() {
 		return $this->get_stylesheet() == $this->original_stylesheet;
 	}
 
-	/**
-	 * Register styles/scripts and initialize the preview of each setting
-	 *
-	 * @since 3.4.0
-	 */
 	public function wp_loaded() {
 
 		/**
@@ -608,17 +517,6 @@ final class WP_Customize_Manager {
 			$this->customize_preview_init();
 	}
 
-	/**
-	 * Prevents AJAX requests from following redirects when previewing a theme
-	 * by issuing a 200 response instead of a 30x.
-	 *
-	 * Instead, the JS will sniff out the location header.
-	 *
-	 * @since 3.4.0
-	 *
-	 * @param $status
-	 * @return int
-	 */
 	public function wp_redirect_status( $status ) {
 		if ( $this->is_preview() && ! is_admin() )
 			return 200;
@@ -626,14 +524,6 @@ final class WP_Customize_Manager {
 		return $status;
 	}
 
-	/**
-	 * Parse the incoming $_POST['customized'] JSON data and store the unsanitized
-	 * settings for subsequent post_value() lookups.
-	 *
-	 * @since 4.1.1
-	 *
-	 * @return array
-	 */
 	public function unsanitized_post_values() {
 		if ( ! isset( $this->_post_values ) ) {
 			if ( isset( $_POST['customized'] ) ) {
@@ -650,16 +540,6 @@ final class WP_Customize_Manager {
 		}
 	}
 
-	/**
-	 * Return the sanitized value for a given setting from the request's POST data.
-	 *
-	 * @since 3.4.0
-	 * @since 4.1.1 Introduced 'default' parameter.
-	 *
-	 * @param WP_Customize_Setting $setting A WP_Customize_Setting derived object
-	 * @param mixed $default value returned $setting has no post value (added in 4.2.0).
-	 * @return string|mixed $post_value Sanitized value or the $default provided
-	 */
 	public function post_value( $setting, $default = null ) {
 		$post_values = $this->unsanitized_post_values();
 		if ( array_key_exists( $setting->id, $post_values ) ) {

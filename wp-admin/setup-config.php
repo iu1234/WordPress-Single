@@ -11,9 +11,6 @@
  * @subpackage Administration
  */
 
-/**
- * We are installing.
- */
 define('WP_INSTALLING', true);
 
 /**
@@ -28,19 +25,12 @@ define('WP_SETUP_CONFIG', true);
  */
 error_reporting(0);
 
-define( 'ABSPATH', dirname( dirname( __FILE__ ) ) . '/' );
+define( 'ABSPATH', dirname( __DIR__ ) . '/' );
 
 require( ABSPATH . 'wp-settings.php' );
 
-/** Load WordPress Administration Upgrade API */
-require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-
-/** Load WordPress Translation Install API */
-require_once( ABSPATH . 'wp-admin/includes/translation-install.php' );
-
 nocache_headers();
 
-// Support wp-config-sample.php one level up, for the develop repo.
 if ( file_exists( ABSPATH . 'wp-config-sample.php' ) )
 	$config_file = file( ABSPATH . 'wp-config-sample.php' );
 elseif ( file_exists( dirname( ABSPATH ) . '/wp-config-sample.php' ) )
@@ -124,14 +114,6 @@ switch($step) {
 		// Deliberately fall through if we can't reach the translations API.
 
 	case 0:
-		if ( ! empty( $language ) ) {
-			$loaded_language = wp_download_language_pack( $language );
-			if ( $loaded_language ) {
-				load_default_textdomain( $loaded_language );
-				$GLOBALS['wp_locale'] = new WP_Locale();
-			}
-		}
-
 		setup_config_display_header();
 		$step_1 = 'setup-config.php?step=1';
 		if ( isset( $_REQUEST['noapi'] ) ) {
@@ -176,9 +158,6 @@ switch($step) {
 	break;
 
 	case 1:
-		load_default_textdomain( $language );
-		$GLOBALS['wp_locale'] = new WP_Locale();
-
 		setup_config_display_header();
 	?>
 <h1 class="screen-reader-text"><?php _e( 'Set up your database connection' ) ?></h1>
@@ -205,13 +184,13 @@ switch($step) {
 			<td><input name="dbhost" id="dbhost" type="text" size="25" value="localhost" /></td>
 			<td><?php
 				/* translators: %s: localhost */
-				printf( __( 'You should be able to get this info from your web host, if %s doesn&#8217;t work.' ),'<code>localhost</code>' );
+				printf( 'You should be able to get this info from your web host, if %s doesn&#8217;t work.','<code>localhost</code>' );
 			?></td>
 		</tr>
 		<tr>
-			<th scope="row"><label for="prefix"><?php _e( 'Table Prefix' ); ?></label></th>
+			<th scope="row"><label for="prefix">Table Prefix</label></th>
 			<td><input name="prefix" id="prefix" type="text" value="wp_" size="25" /></td>
-			<td><?php _e( 'If you want to run multiple WordPress installations in a single database, change this.' ); ?></td>
+			<td>If you want to run multiple WordPress installations in a single database, change this.</td>
 		</tr>
 	</table>
 	<?php if ( isset( $_GET['noapi'] ) ) { ?><input name="noapi" type="hidden" value="1" /><?php } ?>
@@ -222,8 +201,6 @@ switch($step) {
 	break;
 
 	case 2:
-	load_default_textdomain( $language );
-	$GLOBALS['wp_locale'] = new WP_Locale();
 
 	$dbname = trim( wp_unslash( $_POST[ 'dbname' ] ) );
 	$uname = trim( wp_unslash( $_POST[ 'uname' ] ) );
@@ -253,10 +230,7 @@ switch($step) {
 	if ( preg_match( '|[^a-z0-9_]|i', $prefix ) )
 		wp_die( __( '<strong>ERROR</strong>: "Table Prefix" can only contain numbers, letters, and underscores.' . $tryagain_link ) );
 
-	// Test the db connection.
-	/**#@+
-	 * @ignore
-	 */
+
 	define('DB_NAME', $dbname);
 	define('DB_USER', $uname);
 	define('DB_PASSWORD', $pwd);
@@ -376,10 +350,7 @@ if ( ! /iPad|iPod|iPhone/.test( navigator.userAgent ) ) {
 </script>
 <?php
 	else :
-		/*
-		 * If this file doesn't exist, then we are using the wp-config-sample.php
-		 * file one level up, which is for the develop repo.
-		 */
+
 		if ( file_exists( ABSPATH . 'wp-config-sample.php' ) )
 			$path_to_wp_config = ABSPATH . 'wp-config.php';
 		else
@@ -393,10 +364,10 @@ if ( ! /iPad|iPod|iPhone/.test( navigator.userAgent ) ) {
 		chmod( $path_to_wp_config, 0666 );
 		setup_config_display_header();
 ?>
-<h1 class="screen-reader-text"><?php _e( 'Successful database connection' ) ?></h1>
-<p><?php _e( 'All right, sparky! You&#8217;ve made it through this part of the installation. WordPress can now communicate with your database. If you are ready, time now to&hellip;' ); ?></p>
+<h1 class="screen-reader-text">Successful database connection</h1>
+<p>All right, sparky! You&#8217;ve made it through this part of the installation. WordPress can now communicate with your database. If you are ready, time now to&hellip;</p>
 
-<p class="step"><a href="<?php echo $install; ?>" class="button button-large"><?php _e( 'Run the install' ); ?></a></p>
+<p class="step"><a href="<?php echo $install; ?>" class="button button-large">Run the install</a></p>
 <?php
 	endif;
 	break;

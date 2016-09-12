@@ -7,14 +7,6 @@
  * @since 2.7.0
  */
 
-/**
- * Stores files to be deleted.
- *
- * @since 2.7.0
- * @global array $_old_files
- * @var array
- * @name $_old_files
- */
 global $_old_files;
 
 $_old_files = array(
@@ -1186,19 +1178,6 @@ function _copy_dir($from, $to, $skip_list = array() ) {
 	return true;
 }
 
-/**
- * Redirect to the About WordPress page after a successful upgrade.
- *
- * This function is only needed when the existing install is older than 3.4.0.
- *
- * @since 3.3.0
- *
- * @global string $wp_version
- * @global string $pagenow
- * @global string $action
- *
- * @param string $new_version
- */
 function _redirect_to_about_wordpress( $new_version ) {
 	global $wp_version, $pagenow, $action;
 
@@ -1212,11 +1191,7 @@ function _redirect_to_about_wordpress( $new_version ) {
  	if ( 'do-core-upgrade' != $action && 'do-core-reinstall' != $action )
  		return;
 
-	// Load the updated default text localization domain for new strings.
-	load_default_textdomain();
-
-	// See do_core_upgrade()
-	show_message( __('WordPress updated successfully') );
+	show_message( 'WordPress updated successfully' );
 
 	// self_admin_url() won't exist when upgrading from <= 3.0, so relative URLs are intentional.
 	show_message( '<span class="hide-if-no-js">' . sprintf( __( 'Welcome to WordPress %1$s. You will be redirected to the About WordPress screen. If not, click <a href="%2$s">here</a>.' ), $new_version, 'about.php?updated' ) . '</span>' );
@@ -1233,14 +1208,6 @@ window.location = 'about.php?updated';
 	exit();
 }
 
-/**
- * Cleans up Genericons example files.
- *
- * @since 4.2.2
- *
- * @global array              $wp_theme_directories
- * @global WP_Filesystem_Base $wp_filesystem
- */
 function _upgrade_422_remove_genericons() {
 	global $wp_theme_directories, $wp_filesystem;
 
@@ -1276,15 +1243,6 @@ function _upgrade_422_remove_genericons() {
 	}
 }
 
-/**
- * Recursively find Genericons example files in a given folder.
- *
- * @ignore
- * @since 4.2.2
- *
- * @param string $directory Directory path. Expects trailingslashed.
- * @return array
- */
 function _upgrade_422_find_genericons_files_in_folder( $directory ) {
 	$directory = trailingslashit( $directory );
 	$files     = array();
@@ -1303,10 +1261,6 @@ function _upgrade_422_find_genericons_files_in_folder( $directory ) {
 	return $files;
 }
 
-/**
- * @ignore
- * @since 4.4.0
- */
 function _upgrade_440_force_deactivate_incompatible_plugins() {
 	if ( defined( 'REST_API_VERSION' ) && version_compare( REST_API_VERSION, '2.0-beta4', '<=' ) ) {
 		deactivate_plugins( array( 'rest-api/plugin.php' ), true );

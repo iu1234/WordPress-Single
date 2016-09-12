@@ -31,8 +31,6 @@ define('SECURE_AUTH_SALT', 'put your unique phrase here');
 define('LOGGED_IN_SALT',   'put your unique phrase here');
 define('NONCE_SALT',       'put your unique phrase here');
 
-define('WP_ZH_CN_ICP_NUM', true);
-
 require( ABSPATH . 'wp-includes/load.php' );
 require( ABSPATH . 'wp-includes/default-constants.php' );
 
@@ -268,13 +266,6 @@ switch($step) {
 			break;
 		}
 	case 1:
-		if ( ! empty( $language ) ) {
-			$loaded_language = wp_download_language_pack( $language );
-			if ( $loaded_language ) {
-				load_default_textdomain( $loaded_language );
-				$GLOBALS['wp_locale'] = new WP_Locale();
-			}
-		}
 
 		$scripts_to_print[] = 'user-profile';
 
@@ -287,13 +278,6 @@ switch($step) {
 		display_setup_form();
 		break;
 	case 2:
-		if ( ! empty( $language ) && load_default_textdomain( $language ) ) {
-			$loaded_language = $language;
-			$GLOBALS['wp_locale'] = new WP_Locale();
-		} else {
-			$loaded_language = 'en_US';
-		}
-
 		if ( ! empty( $wpdb->error ) )
 			wp_die( $wpdb->error->get_error_message() );
 

@@ -309,11 +309,6 @@ final class WP_Customize_Selective_Refresh {
 
 		$this->manager->remove_preview_signature();
 
-		/*
-		 * Note that is_customize_preview() returning true will entail that the
-		 * user passed the 'customize' capability check and the nonce check, since
-		 * WP_Customize_Manager::setup_theme() is where the previewing flag is set.
-		 */
 		if ( ! is_customize_preview() ) {
 			status_header( 403 );
 			wp_send_json_error( 'expected_customize_preview' );

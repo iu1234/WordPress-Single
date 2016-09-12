@@ -1508,20 +1508,6 @@ function get_editor_stylesheets() {
 	return apply_filters( 'editor_stylesheets', $stylesheets );
 }
 
-/**
- * Allows a theme to register its support of a certain feature
- *
- * Must be called in the theme's functions.php file to work.
- * If attached to a hook, it must be after_setup_theme.
- * The init hook may be too late for some features.
- *
- * @since 2.9.0
- *
- * @global array $_wp_theme_features
- *
- * @param string $feature The feature being added.
- * @return void|bool False on failure, void otherwise.
- */
 function add_theme_support( $feature ) {
 	global $_wp_theme_features;
 

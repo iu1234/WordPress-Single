@@ -15,10 +15,9 @@
  * @subpackage Administration
  */
 
-/** WordPress Administration Bootstrap */
-require_once( dirname( __FILE__ ) . '/admin.php' );
+require_once( __DIR__ . '/admin.php' );
 
-$title = __('Settings');
+$title = 'Settings';
 $this_file = 'options.php';
 $parent_file = 'options-general.php';
 
@@ -100,38 +99,23 @@ if ( get_site_option( 'initial_db_version' ) < 32453 ) {
 	$whitelist_options['writing'][] = 'use_balanceTags';
 }
 
-if ( !is_multisite() ) {
-	if ( !defined( 'WP_SITEURL' ) )
-		$whitelist_options['general'][] = 'siteurl';
-	if ( !defined( 'WP_HOME' ) )
-		$whitelist_options['general'][] = 'home';
+if ( !defined( 'WP_SITEURL' ) )
+	$whitelist_options['general'][] = 'siteurl';
+if ( !defined( 'WP_HOME' ) )
+	$whitelist_options['general'][] = 'home';
 
-	$whitelist_options['general'][] = 'admin_email';
-	$whitelist_options['general'][] = 'users_can_register';
-	$whitelist_options['general'][] = 'default_role';
+$whitelist_options['general'][] = 'admin_email';
+$whitelist_options['general'][] = 'users_can_register';
+$whitelist_options['general'][] = 'default_role';
 
-	$whitelist_options['writing'] = array_merge($whitelist_options['writing'], $mail_options);
-	$whitelist_options['writing'][] = 'ping_sites';
+$whitelist_options['writing'] = array_merge($whitelist_options['writing'], $mail_options);
+$whitelist_options['writing'][] = 'ping_sites';
 
-	$whitelist_options['media'][] = 'uploads_use_yearmonth_folders';
+$whitelist_options['media'][] = 'uploads_use_yearmonth_folders';
 
-	// If upload_url_path and upload_path are both default values, they're locked.
-	if ( get_option( 'upload_url_path' ) || ( get_option('upload_path') != 'wp-content/uploads' && get_option('upload_path') ) ) {
-		$whitelist_options['media'][] = 'upload_path';
-		$whitelist_options['media'][] = 'upload_url_path';
-	}
-} else {
-	$whitelist_options['general'][] = 'new_admin_email';
-
-	/**
-	 * Filter whether the post-by-email functionality is enabled.
-	 *
-	 * @since 3.0.0
-	 *
-	 * @param bool $enabled Whether post-by-email configuration is enabled. Default true.
-	 */
-	if ( apply_filters( 'enable_post_by_email_configuration', true ) )
-		$whitelist_options['writing'] = array_merge($whitelist_options['writing'], $mail_options);
+if ( get_option( 'upload_url_path' ) || ( get_option('upload_path') != 'wp-content/uploads' && get_option('upload_path') ) ) {
+	$whitelist_options['media'][] = 'upload_path';
+	$whitelist_options['media'][] = 'upload_url_path';
 }
 
 /**
@@ -215,26 +199,12 @@ if ( 'update' == $action ) {
 			update_option( $option, $value );
 		}
 
-		// Switch translation in case WPLANG was changed.
-		$language = get_option( 'WPLANG' );
-		if ( $language ) {
-			load_default_textdomain( $language );
-		} else {
-			unload_textdomain( 'default' );
-		}
 	}
 
-	/**
-	 * Handle settings errors and return to options page
-	 */
-	// If no settings errors were registered add a general 'updated' message.
 	if ( !count( get_settings_errors() ) )
 		add_settings_error('general', 'settings_updated', __('Settings saved.'), 'updated');
 	set_transient('settings_errors', get_settings_errors(), 30);
 
-	/**
-	 * Redirect back to the settings page that was submitted
-	 */
 	$goback = add_query_arg( 'settings-updated', 'true',  wp_get_referer() );
 	wp_redirect( $goback );
 	exit;
@@ -243,7 +213,7 @@ if ( 'update' == $action ) {
 include( ABSPATH . 'wp-admin/admin-header.php' ); ?>
 
 <div class="wrap">
-  <h1><?php esc_html_e( 'All Settings' ); ?></h1>
+  <h1>All Settings</h1>
   <form name="form" action="options.php" method="post" id="all-options">
   <?php wp_nonce_field('options-options') ?>
   <input type="hidden" name="action" value="update" />
@@ -290,7 +260,7 @@ foreach ( (array) $options as $option ) :
 
 <input type="hidden" name="page_options" value="<?php echo esc_attr( implode( ',', $options_to_update ) ); ?>" />
 
-<?php submit_button( __( 'Save Changes' ), 'primary', 'Update' ); ?>
+<?php submit_button( 'Save Changes', 'primary', 'Update' ); ?>
 
   </form>
 </div>

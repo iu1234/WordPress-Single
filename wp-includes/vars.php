@@ -17,11 +17,9 @@
 
 global $pagenow,
 	$is_lynx, $is_gecko, $is_winIE, $is_macIE, $is_opera, $is_NS4, $is_safari, $is_chrome, $is_iphone, $is_IE, $is_edge,
-	$is_apache, $is_IIS, $is_iis7, $is_nginx;
+	$is_apache, $is_nginx;
 
-// On which page are we ?
 if ( is_admin() ) {
-	// wp-admin pages are checked more carefully
 	if ( is_network_admin() )
 		preg_match('#/wp-admin/network/?(.*?)$#i', $_SERVER['PHP_SELF'], $self_matches);
 	elseif ( is_user_admin() )
@@ -58,13 +56,7 @@ if ( isset($_SERVER['HTTP_USER_AGENT']) ) {
 	} elseif ( stripos($_SERVER['HTTP_USER_AGENT'], 'chrome') !== false ) {
 		if ( stripos( $_SERVER['HTTP_USER_AGENT'], 'chromeframe' ) !== false ) {
 			$is_admin = is_admin();
-			/**
-			 * Filter whether Google Chrome Frame should be used, if available.
-			 *
-			 * @since 3.2.0
-			 *
-			 * @param bool $is_admin Whether to use the Google Chrome Frame. Default is the value of is_admin().
-			 */
+
 			if ( $is_chrome = apply_filters( 'use_google_chrome_frame', $is_admin ) )
 				header( 'X-UA-Compatible: chrome=1' );
 			$is_winIE = ! $is_chrome;
@@ -91,15 +83,9 @@ if ( $is_safari && stripos($_SERVER['HTTP_USER_AGENT'], 'mobile') !== false )
 
 $is_IE = ( $is_macIE || $is_winIE );
 
-// Server detection
-
 $is_apache = (strpos($_SERVER['SERVER_SOFTWARE'], 'Apache') !== false || strpos($_SERVER['SERVER_SOFTWARE'], 'LiteSpeed') !== false);
 
 $is_nginx = (strpos($_SERVER['SERVER_SOFTWARE'], 'nginx') !== false);
-
-$is_IIS = !$is_apache && (strpos($_SERVER['SERVER_SOFTWARE'], 'Microsoft-IIS') !== false || strpos($_SERVER['SERVER_SOFTWARE'], 'ExpressionDevServer') !== false);
-
-$is_iis7 = $is_IIS && intval( substr( $_SERVER['SERVER_SOFTWARE'], strpos( $_SERVER['SERVER_SOFTWARE'], 'Microsoft-IIS/' ) + 14 ) ) >= 7;
 
 function wp_is_mobile() {
 	if ( empty($_SERVER['HTTP_USER_AGENT']) ) {

@@ -98,9 +98,7 @@ function wp_plugin_directory_constants() {
 }
 
 function wp_cookie_constants() {
-	/**
-	 * Used to guarantee unique hash cookies
-	 */
+
 	if ( !defined( 'COOKIEHASH' ) ) {
 		$siteurl = get_site_option( 'siteurl' );
 		if ( $siteurl )
