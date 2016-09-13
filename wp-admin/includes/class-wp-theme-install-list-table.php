@@ -19,22 +19,10 @@ class WP_Theme_Install_List_Table extends WP_Themes_List_Table {
 
 	public $features = array();
 
-	/**
-	 *
-	 * @return bool
-	 */
 	public function ajax_user_can() {
 		return current_user_can( 'install_themes' );
 	}
 
-	/**
-	 *
-	 * @global array  $tabs
-	 * @global string $tab
-	 * @global int    $paged
-	 * @global string $type
-	 * @global array  $theme_field_defaults
-	 */
 	public function prepare_items() {
 		include( ABSPATH . 'wp-admin/includes/theme-install.php' );
 
@@ -417,7 +405,7 @@ class WP_Theme_Install_List_Table extends WP_Themes_List_Table {
 			<div class="theme-details">
 				<?php wp_star_rating( array( 'rating' => $theme->rating, 'type' => 'percent', 'number' => $theme->num_ratings ) ); ?>
 				<div class="theme-version">
-					<strong><?php _e('Version:') ?> </strong>
+					<strong>Version: </strong>
 					<?php echo wp_kses( $theme->version, $themes_allowedtags ); ?>
 				</div>
 				<div class="theme-description">

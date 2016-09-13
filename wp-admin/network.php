@@ -28,7 +28,7 @@ foreach ( $wpdb->tables( 'ms_global' ) as $table => $prefixed_table ) {
 if ( ! network_domain_check() && ( ! defined( 'WP_ALLOW_MULTISITE' ) || ! WP_ALLOW_MULTISITE ) ) {
 	wp_die(
 		printf(
-			__( 'You must define the %1$s constant as true in your %2$s file to allow creation of a Network.' ),
+			'You must define the %1$s constant as true in your %2$s file to allow creation of a Network.',
 			'<code>WP_ALLOW_MULTISITE</code>',
 			'<code>wp-load.php</code>'
 		)

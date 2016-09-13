@@ -699,30 +699,18 @@ function bool_from_yn( $yn ) {
 
 function do_robots() {
 	header( 'Content-Type: text/plain; charset=utf-8' );
-
 	do_action( 'do_robotstxt' );
-
 	$output = "User-agent: *\n";
-	$public = get_option( 'blog_public' );
-	if ( '0' == $public ) {
-		$output .= "Disallow: /\n";
-	} else {
-		$site_url = parse_url( site_url() );
-		$path = ( !empty( $site_url['path'] ) ) ? $site_url['path'] : '';
-		$output .= "Disallow: $path/wp-admin/\n";
-		$output .= "Allow: $path/wp-admin/admin-ajax.php\n";
-	}
-
+	$site_url = parse_url( site_url() );
+	$path = ( !empty( $site_url['path'] ) ) ? $site_url['path'] : '';
+	$output .= "Disallow: $path/wp-admin/\n";
+	$output .= "Allow: $path/wp-admin/admin-ajax.php\n";
 	echo apply_filters( 'robots_txt', $output, $public );
 }
 
 function is_blog_installed() {
 	global $wpdb;
 
-	/*
-	 * Check cache first. If options table goes away and we have true
-	 * cached, oh well.
-	 */
 	if ( wp_cache_get( 'is_blog_installed' ) )
 		return true;
 
@@ -749,11 +737,6 @@ function is_blog_installed() {
 
 	$suppress = $wpdb->suppress_errors();
 
-	/*
-	 * Loop over the WP tables. If none exist, then scratch install is allowed.
-	 * If one or more exist, suggest table repair since we got here because the
-	 * options table could not be accessed.
-	 */
 	$wp_tables = $wpdb->tables();
 	foreach ( $wp_tables as $table ) {
 		// The existence of custom user tables shouldn't suggest an insane state or prevent a clean install.
@@ -902,17 +885,13 @@ function wp_mkdir_p( $target ) {
 }
 
 function path_is_absolute( $path ) {
-	/*
-	 * This is definitive if true but fails if $path does not exist or contains
-	 * a symbolic link.
-	 */
+
 	if ( realpath($path) == $path )
 		return true;
 
 	if ( strlen($path) == 0 || $path[0] == '.' )
 		return false;
 
-	// Windows allows absolute paths like this.
 	if ( preg_match('#^[a-zA-Z]:\\\\#', $path) )
 		return true;
 
@@ -1053,50 +1032,6 @@ function _wp_upload_dir( $time = null ) {
 		$url = trailingslashit( $siteurl ) . UPLOADS;
 	}
 
-	// If multisite (and if not the main site in a post-MU network)
-	if ( is_multisite() && ! ( is_main_network() && is_main_site() && defined( 'MULTISITE' ) ) ) {
-
-		if ( ! get_site_option( 'ms_files_rewriting' ) ) {
-			/*
-			 * If ms-files rewriting is disabled (networks created post-3.5), it is fairly
-			 * straightforward: Append sites/%d if we're not on the main site (for post-MU
-			 * networks). (The extra directory prevents a four-digit ID from conflicting with
-			 * a year-based directory for the main site. But if a MU-era network has disabled
-			 * ms-files rewriting manually, they don't need the extra directory, as they never
-			 * had wp-content/uploads for the main site.)
-			 */
-
-			if ( defined( 'MULTISITE' ) )
-				$ms_dir = '/sites/' . get_current_blog_id();
-			else
-				$ms_dir = '/' . get_current_blog_id();
-
-			$dir .= $ms_dir;
-			$url .= $ms_dir;
-
-		} elseif ( defined( 'UPLOADS' ) && ! ms_is_switched() ) {
-			/*
-			 * Handle the old-form rewriting if the network still has that enabled.
-			 * When ms-files rewriting is enabled, then we only listen to UPLOADS when:
-			 * 1) We are not on the main site in a post-MU network, as wp-content/uploads is used
-			 *    there, and
-			 * 2) We are not switched, as ms_upload_constants() hardcodes these constants to reflect
-			 *    the original blog ID.
-			 *
-			 * Rather than UPLOADS, we actually use BLOGUPLOADDIR if it is set, as it is absolute.
-			 * (And it will be set, see ms_upload_constants().) Otherwise, UPLOADS can be used, as
-			 * as it is relative to ABSPATH. For the final piece: when UPLOADS is used with ms-files
-			 * rewriting in multisite, the resulting URL is /files. (#WP22702 for background.)
-			 */
-
-			if ( defined( 'BLOGUPLOADDIR' ) )
-				$dir = untrailingslashit( BLOGUPLOADDIR );
-			else
-				$dir = ABSPATH . UPLOADS;
-			$url = trailingslashit( $siteurl ) . 'files';
-		}
-	}
-
 	$basedir = $dir;
 	$baseurl = $url;
 
@@ -1200,16 +1135,6 @@ function wp_upload_bits( $name, $deprecated, $bits, $time = null ) {
 	if ( $upload['error'] !== false )
 		return $upload;
 
-	/**
-	 * Filter whether to treat the upload bits as an error.
-	 *
-	 * Passing a non-array to the filter will effectively short-circuit preparing
-	 * the upload bits, returning that value instead.
-	 *
-	 * @since 3.0.0
-	 *
-	 * @param mixed $upload_bits_error An array of upload bits data, or a non-array error to return.
-	 */
 	$upload_bits_error = apply_filters( 'wp_upload_bits', array( 'name' => $name, 'bits' => $bits, 'time' => $time ) );
 	if ( !is_array( $upload_bits_error ) ) {
 		$upload[ 'error' ] = $upload_bits_error;
@@ -1391,50 +1316,17 @@ function wp_check_filetype_and_ext( $file, $filename, $mimes = null ) {
 		}
 	}
 
-	/**
-	 * Filter the "real" file type of the given file.
-	 *
-	 * @since 3.0.0
-	 *
-	 * @param array  $wp_check_filetype_and_ext File data array containing 'ext', 'type', and
-	 *                                          'proper_filename' keys.
-	 * @param string $file                      Full path to the file.
-	 * @param string $filename                  The name of the file (may differ from $file due to
-	 *                                          $file being in a tmp directory).
-	 * @param array  $mimes                     Key is the file extension with value as the mime type.
-	 */
 	return apply_filters( 'wp_check_filetype_and_ext', compact( 'ext', 'type', 'proper_filename' ), $file, $filename, $mimes );
 }
 
-/**
- * Retrieve list of mime types and file extensions.
- *
- * @since 3.5.0
- * @since 4.2.0 Support was added for GIMP (xcf) files.
- *
- * @return array Array of mime types keyed by the file extension regex corresponding to those types.
- */
 function wp_get_mime_types() {
-	/**
-	 * Filter the list of mime types and file extensions.
-	 *
-	 * This filter should be used to add, not remove, mime types. To remove
-	 * mime types, use the 'upload_mimes' filter.
-	 *
-	 * @since 3.5.0
-	 *
-	 * @param array $wp_get_mime_types Mime types keyed by the file extension regex
-	 *                                 corresponding to those types.
-	 */
 	return apply_filters( 'mime_types', array(
-	// Image formats.
 	'jpg|jpeg|jpe' => 'image/jpeg',
 	'gif' => 'image/gif',
 	'png' => 'image/png',
 	'bmp' => 'image/bmp',
 	'tiff|tif' => 'image/tiff',
 	'ico' => 'image/x-icon',
-	// Video formats.
 	'asf|asx' => 'video/x-ms-asf',
 	'wmv' => 'video/x-ms-wmv',
 	'wmx' => 'video/x-ms-wmx',
@@ -1448,9 +1340,8 @@ function wp_get_mime_types() {
 	'ogv' => 'video/ogg',
 	'webm' => 'video/webm',
 	'mkv' => 'video/x-matroska',
-	'3gp|3gpp' => 'video/3gpp', // Can also be audio
-	'3g2|3gp2' => 'video/3gpp2', // Can also be audio
-	// Text formats.
+	'3gp|3gpp' => 'video/3gpp',
+	'3g2|3gp2' => 'video/3gpp2',
 	'txt|asc|c|cc|h|srt' => 'text/plain',
 	'csv' => 'text/csv',
 	'tsv' => 'text/tab-separated-values',
@@ -1460,7 +1351,6 @@ function wp_get_mime_types() {
 	'htm|html' => 'text/html',
 	'vtt' => 'text/vtt',
 	'dfxp' => 'application/ttaf+xml',
-	// Audio formats.
 	'mp3|m4a|m4b' => 'audio/mpeg',
 	'ra|ram' => 'audio/x-realaudio',
 	'wav' => 'audio/wav',
@@ -1469,7 +1359,6 @@ function wp_get_mime_types() {
 	'wma' => 'audio/x-ms-wma',
 	'wax' => 'audio/x-ms-wax',
 	'mka' => 'audio/x-matroska',
-	// Misc application formats.
 	'rtf' => 'application/rtf',
 	'js' => 'application/javascript',
 	'pdf' => 'application/pdf',
@@ -1483,7 +1372,6 @@ function wp_get_mime_types() {
 	'exe' => 'application/x-msdownload',
 	'psd' => 'application/octet-stream',
 	'xcf' => 'application/octet-stream',
-	// MS Office formats.
 	'doc' => 'application/msword',
 	'pot|pps|ppt' => 'application/vnd.ms-powerpoint',
 	'wri' => 'application/vnd.ms-write',
@@ -1512,7 +1400,6 @@ function wp_get_mime_types() {
 	'onetoc|onetoc2|onetmp|onepkg' => 'application/onenote',
 	'oxps' => 'application/oxps',
 	'xps' => 'application/vnd.ms-xpsdocument',
-	// OpenOffice formats.
 	'odt' => 'application/vnd.oasis.opendocument.text',
 	'odp' => 'application/vnd.oasis.opendocument.presentation',
 	'ods' => 'application/vnd.oasis.opendocument.spreadsheet',
@@ -1520,9 +1407,7 @@ function wp_get_mime_types() {
 	'odc' => 'application/vnd.oasis.opendocument.chart',
 	'odb' => 'application/vnd.oasis.opendocument.database',
 	'odf' => 'application/vnd.oasis.opendocument.formula',
-	// WordPerfect formats.
 	'wp|wpd' => 'application/wordperfect',
-	// iWork formats.
 	'key' => 'application/vnd.apple.keynote',
 	'numbers' => 'application/vnd.apple.numbers',
 	'pages' => 'application/vnd.apple.pages',
@@ -1759,20 +1644,6 @@ function _default_wp_die_handler( $message, $title = '', $args = array() ) {
 	die();
 }
 
-/**
- * Kill WordPress execution and display XML message with error message.
- *
- * This is the handler for wp_die when processing XMLRPC requests.
- *
- * @since 3.2.0
- * @access private
- *
- * @global wp_xmlrpc_server $wp_xmlrpc_server
- *
- * @param string       $message Error message.
- * @param string       $title   Optional. Error title. Default empty.
- * @param string|array $args    Optional. Arguments to control behavior. Default empty array.
- */
 function _xmlrpc_wp_die_handler( $message, $title = '', $args = array() ) {
 	global $wp_xmlrpc_server;
 	$defaults = array( 'response' => 500 );
@@ -1786,55 +1657,20 @@ function _xmlrpc_wp_die_handler( $message, $title = '', $args = array() ) {
 	die();
 }
 
-/**
- * Kill WordPress ajax execution.
- *
- * This is the handler for wp_die when processing Ajax requests.
- *
- * @since 3.4.0
- * @access private
- *
- * @param string $message Optional. Response to print. Default empty.
- */
 function _ajax_wp_die_handler( $message = '' ) {
 	if ( is_scalar( $message ) )
 		die( (string) $message );
 	die( '0' );
 }
 
-/**
- * Kill WordPress execution.
- *
- * This is the handler for wp_die when processing APP requests.
- *
- * @since 3.4.0
- * @access private
- *
- * @param string $message Optional. Response to print. Default empty.
- */
 function _scalar_wp_die_handler( $message = '' ) {
 	if ( is_scalar( $message ) )
 		die( (string) $message );
 	die();
 }
 
-/**
- * Encode a variable into JSON, with some sanity checks.
- *
- * @since 4.1.0
- *
- * @param mixed $data    Variable (usually an array or object) to encode as JSON.
- * @param int   $options Optional. Options to be passed to json_encode(). Default 0.
- * @param int   $depth   Optional. Maximum depth to walk through $data. Must be
- *                       greater than 0. Default 512.
- * @return string|false The JSON encoded string, or false if it cannot be encoded.
- */
 function wp_json_encode( $data, $options = 0, $depth = 512 ) {
-	/*
-	 * json_encode() has had extra params added over the years.
-	 * $options was added in 5.3, and $depth in 5.5.
-	 * We need to make sure we call it with the correct arguments.
-	 */
+
 	if ( version_compare( PHP_VERSION, '5.5', '>=' ) ) {
 		$args = array( $data, $options, $depth );
 	} elseif ( version_compare( PHP_VERSION, '5.3', '>=' ) ) {

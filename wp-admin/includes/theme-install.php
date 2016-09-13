@@ -85,7 +85,7 @@ function install_theme_search_form( $type_selector = true ) {
 	<label class="screen-reader-text" for="s"><?php _e('Search by keyword'); ?></label>
 	<?php endif; ?>
 	<input type="search" name="s" id="s" size="30" value="<?php echo esc_attr($term) ?>" autofocus="autofocus" />
-	<?php submit_button( __( 'Search' ), 'button', 'search', false ); ?>
+	<?php submit_button( 'Search', 'button', 'search', false ); ?>
 </form>
 <?php
 }

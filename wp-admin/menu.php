@@ -172,12 +172,7 @@ $menu[60] = array( 'Appearance', $appearance_cap, 'themes.php', '', 'menu-top me
 unset( $appearance_cap );
 
 	add_action('admin_menu', '_add_themes_utility_last', 101);
-/**
- * Adds the (theme) 'Editor' link to the bottom of the Appearance menu.
- *
- * @access private
- * @since 3.0.0
- */
+
 function _add_themes_utility_last() {
 	// Must use API on the admin_menu hook, direct modification is only possible on/before the _admin_menu hook
 	add_submenu_page('themes.php', _x('Editor', 'theme editor'), _x('Editor', 'theme editor'), 'edit_themes', 'theme-editor.php');
@@ -190,7 +185,7 @@ if ( ! is_multisite() && current_user_can( 'update_plugins' ) ) {
 	$count = "<span class='update-plugins count-{$update_data['counts']['plugins']}'><span class='plugin-count'>" . number_format_i18n($update_data['counts']['plugins']) . "</span></span>";
 }
 
-$menu[65] = array( sprintf( __('Plugins %s'), $count ), 'activate_plugins', 'plugins.php', '', 'menu-top menu-icon-plugins', 'menu-plugins', 'dashicons-admin-plugins' );
+$menu[65] = array( sprintf( 'Plugins %s', $count ), 'activate_plugins', 'plugins.php', '', 'menu-top menu-icon-plugins', 'menu-plugins', 'dashicons-admin-plugins' );
 
 $submenu['plugins.php'][5]  = array( '已安装的插件', 'activate_plugins', 'plugins.php' );
 
@@ -210,9 +205,9 @@ if ( current_user_can('list_users') ) {
 	$submenu['users.php'][15] = array('Your Profile', 'read', 'profile.php');
 } else {
 	$_wp_real_parent_file['users.php'] = 'profile.php';
-	$submenu['profile.php'][5] = array(__('Your Profile'), 'read', 'profile.php');
+	$submenu['profile.php'][5] = array('Your Profile', 'read', 'profile.php');
 	if ( current_user_can( 'create_users' ) ) {
-		$submenu['profile.php'][10] = array(__('Add New User'), 'create_users', 'user-new.php');
+		$submenu['profile.php'][10] = array('Add New User', 'create_users', 'user-new.php');
 	}
 }
 
@@ -243,7 +238,6 @@ $_wp_real_parent_file['page-new.php'] = 'edit.php?post_type=page';
 $_wp_real_parent_file['wpmu-admin.php'] = 'tools.php';
 $_wp_real_parent_file['ms-admin.php'] = 'tools.php';
 
-// ensure we're backwards compatible
 $compat = array(
 	'index' => 'dashboard',
 	'edit' => 'posts',

@@ -17,8 +17,8 @@ endif;
 if ( defined('WP_USE_THEMES') && WP_USE_THEMES ) :
 	$template = false;
 	if     ( is_embed()          && $template = get_embed_template()          ) :
-	elseif ( is_404()            && $template = get_404_template()            ) :
-	elseif ( is_search()         && $template = get_search_template()         ) :
+	elseif ( is_404()            && $template = get_query_template('404')     ) :
+	elseif ( is_search()         && $template = get_query_template('search')  ) :
 	elseif ( is_front_page()     && $template = get_front_page_template()     ) :
 	elseif ( is_home()           && $template = get_home_template()           ) :
 	elseif ( is_post_type_archive() && $template = get_post_type_archive_template() ) :
@@ -31,11 +31,11 @@ if ( defined('WP_USE_THEMES') && WP_USE_THEMES ) :
 	elseif ( is_category()       && $template = get_category_template()       ) :
 	elseif ( is_tag()            && $template = get_tag_template()            ) :
 	elseif ( is_author()         && $template = get_author_template()         ) :
-	elseif ( is_date()           && $template = get_date_template()           ) :
+	elseif ( is_date()           && $template = get_query_template('date')    ) :
 	elseif ( is_archive()        && $template = get_archive_template()        ) :
-	elseif ( is_paged()          && $template = get_paged_template()          ) :
+	elseif ( is_paged()          && $template = get_query_template('paged')   ) :
 	else :
-		$template = get_index_template();
+		$template = get_query_template('index');
 	endif;
 
 	if ( $template = apply_filters( 'template_include', $template ) ) {

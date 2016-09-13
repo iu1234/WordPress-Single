@@ -40,7 +40,7 @@ $parent_file = 'themes.php';
 
 get_current_screen()->add_help_tab( array(
 'id'		=> 'overview',
-'title'		=> __('Overview'),
+'title'		=> 'Overview',
 'content'	=>
 	'<p>' . __('Widgets are independent sections of content that can be placed into any widgetized area provided by your theme (commonly called sidebars). To populate your sidebars/widget areas with individual widgets, drag and drop the title bars into the desired area. By default, only the first widget area is expanded. To populate additional widget areas, click on their title bars to expand them.') . '</p>
 	<p>' . __('The Available Widgets section contains all the widgets you can choose from. Once you drag a widget into a sidebar, it will open to allow you to configure its settings. When you are happy with the widget settings, click the Save button and the widget will go live on your site. If you click Delete, it will remove the widget.') . '</p>'
@@ -261,9 +261,9 @@ if ( isset($_GET['editwidget']) && $_GET['editwidget'] ) {
 		echo "<p>There are no options for this widget.</p>\n"; ?>
 	</div>
 
-	<p class="describe"><?php _e('Select both the sidebar for this widget and the position of the widget in that sidebar.'); ?></p>
+	<p class="describe">Select both the sidebar for this widget and the position of the widget in that sidebar.</p>
 	<div class="widget-position">
-	<table class="widefat"><thead><tr><th><?php _e('Sidebar'); ?></th><th><?php _e('Position'); ?></th></tr></thead><tbody>
+	<table class="widefat"><thead><tr><th>Sidebar</th><th>Position</th></tr></thead><tbody>
 <?php
 	foreach ( $wp_registered_sidebars as $sbname => $sbvalue ) {
 		echo "\t\t<tr><td><label><input type='radio' name='sidebar' value='" . esc_attr($sbname) . "'" . checked( $sbname, $sidebar, false ) . " /> $sbvalue[name]</label></td><td>";
@@ -280,7 +280,7 @@ if ( isset($_GET['editwidget']) && $_GET['editwidget'] ) {
 			}
 			$selected = '';
 			echo "\t\t<select name='{$sbname}_position'>\n";
-			echo "\t\t<option value=''>" . __('&mdash; Select &mdash;') . "</option>\n";
+			echo "\t\t<option value=''>&mdash; Select &mdash;</option>\n";
 			for ( $i = 1; $i <= $j; $i++ ) {
 				if ( in_array($widget_id, $sidebars_widgets[$sbname], true) )
 					$selected = selected( $i, $key + 1, false );
@@ -407,7 +407,7 @@ foreach ( $wp_registered_sidebars as $sidebar => $registered_sidebar ) {
 								$attributes['disabled'] = '';
 							}
 
-							submit_button( __( 'Clear Inactive Widgets' ), 'delete', 'removeinactivewidgets', false, $attributes );
+							submit_button( 'Clear Inactive Widgets', 'delete', 'removeinactivewidgets', false, $attributes );
 							?>
 							<span class="spinner"></span>
 						</p>

@@ -169,7 +169,7 @@ if ( isset($_GET['action']) ) {
 	} elseif ( 'upgrade-theme' == $action ) {
 
 		if ( ! current_user_can('update_themes') )
-			wp_die(__('You do not have sufficient permissions to update themes for this site.'));
+			wp_die('You do not have sufficient permissions to update themes for this site.');
 
 		check_admin_referer('upgrade-theme_' . $theme);
 
@@ -190,7 +190,7 @@ if ( isset($_GET['action']) ) {
 		include(ABSPATH . 'wp-admin/admin-footer.php');
 	} elseif ( 'update-selected-themes' == $action ) {
 		if ( ! current_user_can( 'update_themes' ) )
-			wp_die( __( 'You do not have sufficient permissions to update themes for this site.' ) );
+			wp_die( 'You do not have sufficient permissions to update themes for this site.' );
 
 		check_admin_referer( 'bulk-update-themes' );
 
@@ -216,9 +216,9 @@ if ( isset($_GET['action']) ) {
 	} elseif ( 'install-theme' == $action ) {
 
 		if ( ! current_user_can('install_themes') )
-			wp_die( __( 'You do not have sufficient permissions to install themes on this site.' ) );
+			wp_die( 'You do not have sufficient permissions to install themes on this site.' );
 
-		include_once( ABSPATH . 'wp-admin/includes/class-wp-upgrader.php' ); //for themes_api..
+		include_once( ABSPATH . 'wp-admin/includes/class-wp-upgrader.php' );
 
 		check_admin_referer( 'install-theme_' . $theme );
 		$api = themes_api('theme_information', array('slug' => $theme, 'fields' => array('sections' => false, 'tags' => false) ) ); //Save on a bit of bandwidth.
@@ -228,12 +228,12 @@ if ( isset($_GET['action']) ) {
 
 		wp_enqueue_script( 'customize-loader' );
 
-		$title = __('Install Themes');
+		$title = 'Install Themes';
 		$parent_file = 'themes.php';
 		$submenu_file = 'themes.php';
 		require_once(ABSPATH . 'wp-admin/admin-header.php');
 
-		$title = sprintf( __('Installing Theme: %s'), $api->name . ' ' . $api->version );
+		$title = sprintf( 'Installing Theme: %s', $api->name . ' ' . $api->version );
 		$nonce = 'install-theme_' . $theme;
 		$url = 'update.php?action=install-theme&theme=' . urlencode( $theme );
 		$type = 'web'; //Install theme type, From Web or an Upload.
@@ -246,7 +246,7 @@ if ( isset($_GET['action']) ) {
 	} elseif ( 'upload-theme' == $action ) {
 
 		if ( ! current_user_can( 'upload_themes' ) ) {
-			wp_die( __( 'You do not have sufficient permissions to install themes on this site.' ) );
+			wp_die( 'You do not have sufficient permissions to install themes on this site.' );
 		}
 
 		check_admin_referer('theme-upload');
@@ -255,7 +255,7 @@ if ( isset($_GET['action']) ) {
 
 		wp_enqueue_script( 'customize-loader' );
 
-		$title = __('Upload Theme');
+		$title = 'Upload Theme';
 		$parent_file = 'themes.php';
 		$submenu_file = 'theme-install.php';
 
@@ -275,15 +275,6 @@ if ( isset($_GET['action']) ) {
 		include(ABSPATH . 'wp-admin/admin-footer.php');
 
 	} else {
-		/**
-		 * Fires when a custom plugin or theme update request is received.
-		 *
-		 * The dynamic portion of the hook name, `$action`, refers to the action
-		 * provided in the request for wp-admin/update.php. Can be used to
-		 * provide custom update functionality for themes and plugins.
-		 *
-		 * @since 2.8.0
-		 */
 		do_action( "update-custom_{$action}" );
 	}
 }

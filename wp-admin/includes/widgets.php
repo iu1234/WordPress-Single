@@ -6,14 +6,6 @@
  * @subpackage Administration
  */
 
-/**
- * Display list of the available widgets.
- *
- * @since 2.5.0
- *
- * @global array $wp_registered_widgets
- * @global array $wp_registered_widget_controls
- */
 function wp_list_widgets() {
 	global $wp_registered_widgets, $wp_registered_widget_controls;
 
@@ -49,27 +41,10 @@ function wp_list_widgets() {
 	}
 }
 
-/**
- * Callback to sort array by a 'name' key.
- *
- * @since 3.1.0
- * @access private
- *
- * @return int
- */
 function _sort_name_callback( $a, $b ) {
 	return strnatcasecmp( $a['name'], $b['name'] );
 }
 
-/**
- * Show the widgets and their settings for a sidebar.
- * Used in the admin widget config screen.
- *
- * @since 2.5.0
- *
- * @param string $sidebar      Sidebar ID.
- * @param string $sidebar_name Optional. Sidebar name. Default empty.
- */
 function wp_list_widget_controls( $sidebar, $sidebar_name = '' ) {
 	add_filter( 'dynamic_sidebar_params', 'wp_list_widget_controls_dynamic_sidebar' );
 
@@ -99,18 +74,6 @@ function wp_list_widget_controls( $sidebar, $sidebar_name = '' ) {
 	echo '</div>';
 }
 
-/**
- * Retrieves the widget control arguments.
- *
- * @since 2.5.0
- *
- * @global array $wp_registered_widgets
- *
- * @staticvar int $i
- *
- * @param array $params
- * @return array
- */
 function wp_list_widget_controls_dynamic_sidebar( $params ) {
 	global $wp_registered_widgets;
 	static $i = 0;
@@ -122,8 +85,8 @@ function wp_list_widget_controls_dynamic_sidebar( $params ) {
 
 	$params[0]['before_widget'] = "<div id='widget-{$i}_{$id}' class='widget'$hidden>";
 	$params[0]['after_widget'] = "</div>";
-	$params[0]['before_title'] = "%BEG_OF_TITLE%"; // deprecated
-	$params[0]['after_title'] = "%END_OF_TITLE%"; // deprecated
+	$params[0]['before_title'] = "%BEG_OF_TITLE%";
+	$params[0]['after_title'] = "%END_OF_TITLE%";
 	if ( is_callable( $wp_registered_widgets[$widget_id]['callback'] ) ) {
 		$wp_registered_widgets[$widget_id]['_callback'] = $wp_registered_widgets[$widget_id]['callback'];
 		$wp_registered_widgets[$widget_id]['callback'] = 'wp_widget_control';
@@ -132,13 +95,6 @@ function wp_list_widget_controls_dynamic_sidebar( $params ) {
 	return $params;
 }
 
-/**
- *
- * @global array $wp_registered_widgets
- *
- * @param string $id_base
- * @return int
- */
 function next_widget_id_number( $id_base ) {
 	global $wp_registered_widgets;
 	$number = 1;
@@ -152,20 +108,6 @@ function next_widget_id_number( $id_base ) {
 	return $number;
 }
 
-/**
- * Meta widget used to display the control form for a widget.
- *
- * Called from dynamic_sidebar().
- *
- * @since 2.5.0
- *
- * @global array $wp_registered_widgets
- * @global array $wp_registered_widget_controls
- * @global array $sidebars_widgets
- *
- * @param array $sidebar_args
- * @return array
- */
 function wp_widget_control( $sidebar_args ) {
 	global $wp_registered_widgets, $wp_registered_widget_controls, $sidebars_widgets;
 
@@ -221,8 +163,8 @@ function wp_widget_control( $sidebar_args ) {
 	<div class="widget-title-action">
 		<a class="widget-action hide-if-no-js" href="#available-widgets"></a>
 		<a class="widget-control-edit hide-if-js" href="<?php echo esc_url( add_query_arg( $query_arg ) ); ?>">
-			<span class="edit"><?php _ex( 'Edit', 'widget' ); ?></span>
-			<span class="add"><?php _ex( 'Add', 'widget' ); ?></span>
+			<span class="edit">Edit</span>
+			<span class="add">Add</span>
 			<span class="screen-reader-text"><?php echo $widget_title; ?></span>
 		</a>
 	</div>
@@ -236,7 +178,7 @@ function wp_widget_control( $sidebar_args ) {
 	if ( isset( $control['callback'] ) ) {
 		$has_form = call_user_func_array( $control['callback'], $control['params'] );
 	} else {
-		echo "\t\t<p>" . __('There are no options for this widget.') . "</p>\n";
+		echo "\t\t<p>There are no options for this widget.</p>\n";
 	}
 	?>
 	<?php echo $after_widget_content; ?>
@@ -250,11 +192,11 @@ function wp_widget_control( $sidebar_args ) {
 
 	<div class="widget-control-actions">
 		<div class="alignleft">
-		<a class="widget-control-remove" href="#remove"><?php _e('Delete'); ?></a> |
-		<a class="widget-control-close" href="#close"><?php _e('Close'); ?></a>
+		<a class="widget-control-remove" href="#remove">Delete</a> |
+		<a class="widget-control-close" href="#close">Close</a>
 		</div>
 		<div class="alignright<?php if ( 'noform' === $has_form ) echo ' widget-control-noform'; ?>">
-			<?php submit_button( __( 'Save' ), 'button-primary widget-control-save right', 'savewidget', false, array( 'id' => 'widget-' . esc_attr( $id_format ) . '-savewidget' ) ); ?>
+			<?php submit_button( 'Save', 'button-primary widget-control-save right', 'savewidget', false, array( 'id' => 'widget-' . esc_attr( $id_format ) . '-savewidget' ) ); ?>
 			<span class="spinner"></span>
 		</div>
 		<br class="clear" />
@@ -271,11 +213,6 @@ function wp_widget_control( $sidebar_args ) {
 	return $sidebar_args;
 }
 
-/**
- *
- * @param string $classes
- * @return string
- */
 function wp_widgets_access_body_class($classes) {
 	return "$classes widgets_access ";
 }
