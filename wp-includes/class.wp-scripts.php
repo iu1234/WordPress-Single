@@ -8,13 +8,6 @@
  * @subpackage Dependencies
  */
 
-/**
- * Core class used to register scripts.
- *
- * @package WordPress
- * @uses WP_Dependencies
- * @since 2.1.0
- */
 class WP_Scripts extends WP_Dependencies {
 	/**
 	 * Base URL for scripts.
