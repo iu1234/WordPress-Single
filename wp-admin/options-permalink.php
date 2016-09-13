@@ -17,31 +17,30 @@ $parent_file = 'options-general.php';
 get_current_screen()->add_help_tab( array(
 	'id'      => 'overview',
 	'title'   => 'Overview',
-	'content' => '<p>' . __('Permalinks are the permanent URLs to your individual pages and blog posts, as well as your category and tag archives. A permalink is the web address used to link to your content. The URL to each post should be permanent, and never change &#8212; hence the name permalink.') . '</p>' .
+	'content' => '<p>Permalinks are the permanent URLs to your individual pages and blog posts, as well as your category and tag archives. A permalink is the web address used to link to your content. The URL to each post should be permanent, and never change &#8212; hence the name permalink.</p>' .
 		'<p>This screen allows you to choose your permalink structure. You can choose from common settings or create custom URL structures.</p>' .
 		'<p>You must click the Save Changes button at the bottom of the screen for new settings to take effect.</p>',
 ) );
 
 get_current_screen()->add_help_tab( array(
 	'id'      => 'permalink-settings',
-	'title'   => __('Permalink Settings'),
-	'content' => '<p>' . __( 'Permalinks can contain useful information, such as the post date, title, or other elements. You can choose from any of the suggested permalink formats, or you can craft your own if you select Custom Structure.' ) . '</p>' .
-		'<p>' . __( 'If you pick an option other than Plain, your general URL path with structure tags (terms surrounded by <code>%</code>) will also appear in the custom structure field and your path can be further modified there.' ) . '</p>' .
-		'<p>' . __('When you assign multiple categories or tags to a post, only one can show up in the permalink: the lowest numbered category. This applies if your custom structure includes <code>%category%</code> or <code>%tag%</code>.') . '</p>' .
-		'<p>' . __('You must click the Save Changes button at the bottom of the screen for new settings to take effect.') . '</p>',
+	'title'   => 'Permalink Settings',
+	'content' => '<p>Permalinks can contain useful information, such as the post date, title, or other elements. You can choose from any of the suggested permalink formats, or you can craft your own if you select Custom Structure.</p>' .
+		'<p>If you pick an option other than Plain, your general URL path with structure tags (terms surrounded by <code>%</code>) will also appear in the custom structure field and your path can be further modified there.</p>' .
+		'<p>When you assign multiple categories or tags to a post, only one can show up in the permalink: the lowest numbered category. This applies if your custom structure includes <code>%category%</code> or <code>%tag%</code>.</p>' .
+		'<p>You must click the Save Changes button at the bottom of the screen for new settings to take effect.</p>',
 ) );
 
 get_current_screen()->add_help_tab( array(
 	'id'      => 'custom-structures',
-	'title'   => __('Custom Structures'),
-	'content' => '<p>' . __('The Optional fields let you customize the &#8220;category&#8221; and &#8220;tag&#8221; base names that will appear in archive URLs. For example, the page listing all posts in the &#8220;Uncategorized&#8221; category could be <code>/topics/uncategorized</code> instead of <code>/category/uncategorized</code>.') . '</p>' .
-		'<p>' . __('You must click the Save Changes button at the bottom of the screen for new settings to take effect.') . '</p>',
+	'title'   => 'Custom Structures',
+	'content' => '<p>The Optional fields let you customize the &#8220;category&#8221; and &#8220;tag&#8221; base names that will appear in archive URLs. For example, the page listing all posts in the &#8220;Uncategorized&#8221; category could be <code>/topics/uncategorized</code> instead of <code>/category/uncategorized</code>.</p>' .
+		'<p>You must click the Save Changes button at the bottom of the screen for new settings to take effect.</p>',
 ) );
 
 add_filter('admin_head', 'options_permalink_add_js');
 
 $home_path = get_home_path();
-$iis7_permalinks = iis7_supports_permalinks();
 $permalink_structure = get_option( 'permalink_structure' );
 
 $prefix = $blog_prefix = '';
@@ -90,12 +89,7 @@ $category_base       = get_option( 'category_base' );
 $tag_base            = get_option( 'tag_base' );
 $update_required     = false;
 
-if ( $iis7_permalinks ) {
-	if ( ( ! file_exists($home_path . 'web.config') && win_is_writable($home_path) ) || win_is_writable($home_path . 'web.config') )
-		$writable = true;
-	else
-		$writable = false;
-} elseif ( $is_nginx ) {
+if ( $is_nginx ) {
 	$writable = false;
 } else {
 	if ( ( ! file_exists( $home_path . '.htaccess' ) && is_writable( $home_path ) ) || is_writable( $home_path . '.htaccess' ) ) {
@@ -120,15 +114,7 @@ require( ABSPATH . 'wp-admin/admin-header.php' );
 if ( ! empty( $_GET['settings-updated'] ) ) : ?>
 <div id="message" class="updated notice is-dismissible"><p>
 <?php
-	if ( $iis7_permalinks ) {
-		if ( $permalink_structure && ! $usingpi && ! $writable ) {
-			echo 'You should update your web.config now.';
-		} elseif ( $permalink_structure && ! $usingpi && $writable ) {
-			echo 'Permalink structure updated. Remove write access on web.config file now!';
-		} else {
-			echo 'Permalink structure updated.';
-		}
-	} elseif ( $is_nginx ) {
+	if ( $is_nginx ) {
 		echo 'Permalink structure updated.';
 	} else {
 		if ( $permalink_structure && ! $usingpi && ! $writable && $update_required ) {
@@ -147,7 +133,7 @@ if ( ! empty( $_GET['settings-updated'] ) ) : ?>
 <form name="form" action="options-permalink.php" method="post">
 <?php wp_nonce_field('update-permalink') ?>
 
-  <p><?php _e( 'WordPress offers you the ability to create a custom URL structure for your permalinks and archives. Custom URL structures can improve the aesthetics, usability, and forward-compatibility of your links. A <a href="https://codex.wordpress.org/Using_Permalinks">number of tags are available</a>, and here are some examples to get you started.' ); ?></p>
+  <p>WordPress offers you the ability to create a custom URL structure for your permalinks and archives. Custom URL structures can improve the aesthetics, usability, and forward-compatibility of your links. A <a href="#">number of tags are available</a>, and here are some examples to get you started.</p>
 
 <?php
 if ( is_multisite() && ! is_subdomain_install() && is_main_site() && 0 === strpos( $permalink_structure, '/blog/' ) ) {
@@ -202,7 +188,7 @@ $structures = array(
 <h2 class="title">可选</h2>
 <p><?php
 /* translators: %s is a placeholder that must come at the start of the URL. */
-printf( __( 'If you like, you may enter custom structures for your category and tag URLs here. For example, using <code>topics</code> as your category base would make your category links like <code>%s/topics/uncategorized/</code>. If you leave these blank the defaults will be used.' ), get_option( 'home' ) . $blog_prefix . $prefix ); ?></p>
+printf( 'If you like, you may enter custom structures for your category and tag URLs here. For example, using <code>topics</code> as your category base would make your category links like <code>%s/topics/uncategorized/</code>. If you leave these blank the defaults will be used.', get_option( 'home' ) . $blog_prefix . $prefix ); ?></p>
 
 <table class="form-table">
 	<tr>
@@ -221,29 +207,11 @@ printf( __( 'If you like, you may enter custom structures for your category and 
 <?php submit_button(); ?>
   </form>
 
-<?php if ( $iis7_permalinks ) :
-	if ( isset($_POST['submit']) && $permalink_structure && ! $usingpi && ! $writable ) :
-		if ( file_exists($home_path . 'web.config') ) : ?>
-<p><?php _e('If your <code>web.config</code> file were <a href="https://codex.wordpress.org/Changing_File_Permissions">writable</a>, we could do this automatically, but it isn&#8217;t so this is the url rewrite rule you should have in your <code>web.config</code> file. Click in the field and press <kbd>CTRL + a</kbd> to select all. Then insert this rule inside of the <code>/&lt;configuration&gt;/&lt;system.webServer&gt;/&lt;rewrite&gt;/&lt;rules&gt;</code> element in <code>web.config</code> file.') ?></p>
-<form action="options-permalink.php" method="post">
-<?php wp_nonce_field('update-permalink') ?>
-	<p><textarea rows="9" class="large-text readonly" name="rules" id="rules" readonly="readonly"><?php echo esc_textarea( $wp_rewrite->iis7_url_rewrite_rules() ); ?></textarea></p>
-</form>
-<p><?php _e('If you temporarily make your <code>web.config</code> file writable for us to generate rewrite rules automatically, do not forget to revert the permissions after rule has been saved.') ?></p>
-		<?php else : ?>
-<p>If the root directory of your site were <a href="https://codex.wordpress.org/Changing_File_Permissions">writable</a>, we could do this automatically, but it isn&#8217;t so this is the url rewrite rule you should have in your <code>web.config</code> file. Create a new file, called <code>web.config</code> in the root directory of your site. Click in the field and press <kbd>CTRL + a</kbd> to select all. Then insert this code into the <code>web.config</code> file.</p>
-<form action="options-permalink.php" method="post">
-<?php wp_nonce_field('update-permalink') ?>
-	<p><textarea rows="18" class="large-text readonly" name="rules" id="rules" readonly="readonly"><?php echo esc_textarea( $wp_rewrite->iis7_url_rewrite_rules(true) ); ?></textarea></p>
-</form>
-<p>If you temporarily make your site&#8217;s root directory writable for us to generate the <code>web.config</code> file automatically, do not forget to revert the permissions after the file has been created.</p>
-		<?php endif; ?>
-	<?php endif; ?>
-<?php elseif ( $is_nginx ) : ?>
+<?php if ( $is_nginx ) : ?>
 	<p><a href="https://codex.wordpress.org/Nginx">Documentation on Nginx configuration</a>.</p>
 <?php else:
 	if ( $permalink_structure && ! $usingpi && ! $writable && $update_required ) : ?>
-<p><?php _e('If your <code>.htaccess</code> file were <a href="https://codex.wordpress.org/Changing_File_Permissions">writable</a>, we could do this automatically, but it isn&#8217;t so these are the mod_rewrite rules you should have in your <code>.htaccess</code> file. Click in the field and press <kbd>CTRL + a</kbd> to select all.') ?></p>
+<p>If your <code>.htaccess</code> file were <a href="https://codex.wordpress.org/Changing_File_Permissions">writable</a>, we could do this automatically, but it isn&#8217;t so these are the mod_rewrite rules you should have in your <code>.htaccess</code> file. Click in the field and press <kbd>CTRL + a</kbd> to select all.</p>
 <form action="options-permalink.php" method="post">
 <?php wp_nonce_field('update-permalink') ?>
 	<p><textarea rows="6" class="large-text readonly" name="rules" id="rules" readonly="readonly"><?php echo esc_textarea( $wp_rewrite->mod_rewrite_rules() ); ?></textarea></p>

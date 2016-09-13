@@ -39,11 +39,6 @@ function wp_set_current_user($id, $name = '') {
 
 	setup_userdata( $current_user->ID );
 
-	/**
-	 * Fires after the current user is set.
-	 *
-	 * @since 2.0.1
-	 */
 	do_action( 'set_current_user' );
 
 	return $current_user;
@@ -51,50 +46,18 @@ function wp_set_current_user($id, $name = '') {
 endif;
 
 if ( !function_exists('wp_get_current_user') ) :
-/**
- * Retrieve the current user object.
- *
- * Will set the current user, if the current user is not set. The current user
- * will be set to the logged-in person. If no user is logged-in, then it will
- * set the current user to 0, which is invalid and won't have any permissions.
- *
- * @since 2.0.3
- *
- * @see _wp_get_current_user()
- * @global WP_User $current_user Checks if the current user is set.
- *
- * @return WP_User Current WP_User instance.
- */
 function wp_get_current_user() {
 	return _wp_get_current_user();
 }
 endif;
 
 if ( !function_exists('get_userdata') ) :
-/**
- * Retrieve user info by user ID.
- *
- * @since 0.71
- *
- * @param int $user_id User ID
- * @return WP_User|false WP_User object on success, false on failure.
- */
 function get_userdata( $user_id ) {
 	return get_user_by( 'id', $user_id );
 }
 endif;
 
 if ( !function_exists('get_user_by') ) :
-/**
- * Retrieve user info by a given field
- *
- * @since 2.8.0
- * @since 4.4.0 Added 'ID' as an alias of 'id' for the `$field` parameter.
- *
- * @param string     $field The field to retrieve the user with. id | ID | slug | email | login.
- * @param int|string $value A value for $field. A user ID, slug, email address, or login name.
- * @return WP_User|false WP_User object on success, false on failure.
- */
 function get_user_by( $field, $value ) {
 	$userdata = WP_User::get_data_by( $field, $value );
 
@@ -109,15 +72,6 @@ function get_user_by( $field, $value ) {
 endif;
 
 if ( !function_exists('cache_users') ) :
-/**
- * Retrieve info for user lists to prevent multiple queries by get_userdata()
- *
- * @since 3.0.0
- *
- * @global wpdb $wpdb WordPress database abstraction object.
- *
- * @param array $user_ids User ID numbers list
- */
 function cache_users( $user_ids ) {
 	global $wpdb;
 
@@ -140,45 +94,7 @@ function cache_users( $user_ids ) {
 endif;
 
 if ( !function_exists( 'wp_mail' ) ) :
-/**
- * Send mail, similar to PHP's mail
- *
- * A true return value does not automatically mean that the user received the
- * email successfully. It just only means that the method used was able to
- * process the request without any errors.
- *
- * Using the two 'wp_mail_from' and 'wp_mail_from_name' hooks allow from
- * creating a from address like 'Name <email@address.com>' when both are set. If
- * just 'wp_mail_from' is set, then just the email address will be used with no
- * name.
- *
- * The default content type is 'text/plain' which does not allow using HTML.
- * However, you can set the content type of the email by using the
- * 'wp_mail_content_type' filter.
- *
- * The default charset is based on the charset used on the blog. The charset can
- * be set using the 'wp_mail_charset' filter.
- *
- * @since 1.2.1
- *
- * @global PHPMailer $phpmailer
- *
- * @param string|array $to          Array or comma-separated list of email addresses to send message.
- * @param string       $subject     Email subject
- * @param string       $message     Message contents
- * @param string|array $headers     Optional. Additional headers.
- * @param string|array $attachments Optional. Files to attach.
- * @return bool Whether the email contents were sent successfully.
- */
 function wp_mail( $to, $subject, $message, $headers = '', $attachments = array() ) {
-	// Compact the input, apply the filters, and extract them back out
-
-	/**
-	 * Filter the wp_mail() arguments.
-	 *
-	 * @param array $args A compacted array of wp_mail() arguments, including the "to" email,
-	 *                    subject, message, headers, and attachments values.
-	 */
 	$atts = apply_filters( 'wp_mail', compact( 'to', 'subject', 'message', 'headers', 'attachments' ) );
 
 	if ( isset( $atts['to'] ) ) {
@@ -321,22 +237,8 @@ function wp_mail( $to, $subject, $message, $headers = '', $attachments = array()
 		$from_email = 'wordpress@' . $sitename;
 	}
 
-	/**
-	 * Filter the email address to send from.
-	 *
-	 * @since 2.2.0
-	 *
-	 * @param string $from_email Email address to send from.
-	 */
 	$phpmailer->From = apply_filters( 'wp_mail_from', $from_email );
 
-	/**
-	 * Filter the name to associate with the "from" email address.
-	 *
-	 * @since 2.3.0
-	 *
-	 * @param string $from_name Name associated with the "from" email address.
-	 */
 	$phpmailer->FromName = apply_filters( 'wp_mail_from_name', $from_name );
 
 	// Set destination addresses

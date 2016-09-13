@@ -37,26 +37,15 @@ require( ABSPATH . 'wp-includes/default-constants.php' );
 wp_initial_constants();
 
 
-// WordPress calculates offsets from UTC.
 date_default_timezone_set( 'UTC' );
 
-// Turn register_globals off.
 wp_unregister_GLOBALS();
 
-// Standardize $_SERVER variables across setups.
 wp_fix_server_vars();
 
-// Check if we have received a request due to missing favicon.ico
 wp_favicon_request();
 
-// Check if we're in maintenance mode.
-wp_maintenance();
-
 timer_start();
-
-// For an advanced caching plugin to use. Uses a static drop-in because you would only want one.
-if ( WP_CACHE )
-	WP_DEBUG ? include( WP_CONTENT_DIR . '/advanced-cache.php' ) : @include( WP_CONTENT_DIR . '/advanced-cache.php' );
 
 require( ABSPATH . WPINC . '/functions.php' );
 require( ABSPATH . WPINC . '/class-wp.php' );
@@ -86,7 +75,7 @@ function display_header( $body_classes = '' ) {
 	}
 ?>
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" <?php language_attributes(); ?>>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN">
 <head>
 	<meta name="viewport" content="width=device-width" />
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -134,11 +123,11 @@ function display_setup_form( $error = null ) {
 			<td>
 			<?php
 			if ( $user_table ) {
-				_e('User(s) already exists.');
+				echo 'User(s) already exists.';
 				echo '<input name="user_name" type="hidden" value="admin" />';
 			} else {
 				?><input name="user_name" type="text" id="user_login" size="25" value="<?php echo esc_attr( sanitize_user( $user_name, true ) ); ?>" />
-				<p><?php _e( 'Usernames can have only alphanumeric characters, spaces, underscores, hyphens, periods, and the @ symbol.' ); ?></p>
+				<p>Usernames can have only alphanumeric characters, spaces, underscores, hyphens, periods, and the @ symbol.</p>
 			<?php
 			} ?>
 			</td>
@@ -152,14 +141,13 @@ function display_setup_form( $error = null ) {
 					<input type="password" name="admin_password" id="pass1" class="regular-text" autocomplete="off" data-reveal="1" data-pw="<?php echo esc_attr( $initial_password ); ?>" aria-describedby="pass-strength-result" />
 					<button type="button" class="button button-secondary wp-hide-pw hide-if-no-js" data-start-masked="<?php echo (int) isset( $_POST['admin_password'] ); ?>" data-toggle="0" aria-label="<?php esc_attr_e( 'Hide password' ); ?>">
 						<span class="dashicons dashicons-hidden"></span>
-						<span class="text"><?php _e( 'Hide' ); ?></span>
+						<span class="text">Hide</span>
 					</button>
 					<div id="pass-strength-result" aria-live="polite"></div>
 				</div>
 				<p><span class="description important hide-if-no-js">
-				<strong><?php _e( 'Important:' ); ?></strong>
-				<?php /* translators: The non-breaking space prevents 1Password from thinking the text "log in" should trigger a password save prompt. */ ?>
-				<?php _e( 'You will need this password to log&nbsp;in. Please store it in a secure location.' ); ?></span></p>
+				<strong>Important:</strong>
+				You will need this password to log&nbsp;in. Please store it in a secure location.</span></p>
 			</td>
 		</tr>
 		<tr class="form-field form-required user-pass2-wrap hide-if-js">
@@ -184,7 +172,7 @@ function display_setup_form( $error = null ) {
 			<p>请仔细检查电子邮件地址后再继续。</p></td>
 		</tr>
 		<tr>
-			<th scope="row"><?php has_action( 'blog_privacy_selector' ) ? _e( 'Site Visibility' ) : _e( 'Search Engine Visibility' ); ?></th>
+			<th scope="row"><?php has_action( 'blog_privacy_selector' ) ? (echo 'Site Visibility';) : ( echo 'Search Engine Visibility'; ) ?></th>
 			<td>
 				<fieldset>
 					<legend class="screen-reader-text"><span><?php has_action( 'blog_privacy_selector' ) ? _e( 'Site Visibility' ) : _e( 'Search Engine Visibility' ); ?> </span></legend>
@@ -196,18 +184,17 @@ function display_setup_form( $error = null ) {
 						<label for="blog-norobots"><?php _e( 'Discourage search engines from indexing this site' ); ?></label>
 						<p class="description"><?php _e( 'Note: Neither of these options blocks access to your site &mdash; it is up to search engines to honor your request.' ); ?></p>
 						<?php
-						/** This action is documented in wp-admin/options-reading.php */
 						do_action( 'blog_privacy_selector' );
 					 } else { ?>
 						<label for="blog_public"><input name="blog_public" type="checkbox" id="blog_public" value="0" <?php checked( 0, $blog_public ); ?> />
 						<?php _e( 'Discourage search engines from indexing this site' ); ?></label>
-						<p class="description"><?php _e( 'It is up to search engines to honor this request.' ); ?></p>
+						<p class="description">It is up to search engines to honor this request.</p>
 					<?php } ?>
 				</fieldset>
 			</td>
 		</tr>
 	</table>
-	<p class="step"><?php submit_button( __( 'Install WordPress' ), 'large', 'Submit', false, array( 'id' => 'submit' ) ); ?></p>
+	<p class="step"><?php submit_button( 'Install WordPress', 'large', 'Submit', false, array( 'id' => 'submit' ) ); ?></p>
 	<input type="hidden" name="language" value="<?php echo isset( $_REQUEST['language'] ) ? esc_attr( $_REQUEST['language'] ) : ''; ?>" />
 </form>
 <?php

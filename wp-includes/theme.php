@@ -1978,59 +1978,6 @@ function _delete_attachment_theme_mod( $id ) {
 	}
 }
 
-/**
- * Checks if a theme has been changed and runs 'after_switch_theme' hook on the next WP load
- *
- * @since 3.3.0
- */
-function check_theme_switched() {
-	if ( $stylesheet = get_option( 'theme_switched' ) ) {
-		$old_theme = wp_get_theme( $stylesheet );
-
-		// Prevent retrieve_widgets() from running since Customizer already called it up front
-		if ( get_option( 'theme_switched_via_customizer' ) ) {
-			remove_action( 'after_switch_theme', '_wp_sidebars_changed' );
-			update_option( 'theme_switched_via_customizer', false );
-		}
-
-		if ( $old_theme->exists() ) {
-			/**
-			 * Fires on the first WP load after a theme switch if the old theme still exists.
-			 *
-			 * This action fires multiple times and the parameters differs
-			 * according to the context, if the old theme exists or not.
-			 * If the old theme is missing, the parameter will be the slug
-			 * of the old theme.
-			 *
-			 * @since 3.3.0
-			 *
-			 * @param string   $old_name  Old theme name.
-			 * @param WP_Theme $old_theme WP_Theme instance of the old theme.
-			 */
-			do_action( 'after_switch_theme', $old_theme->get( 'Name' ), $old_theme );
-		} else {
-			/** This action is documented in wp-includes/theme.php */
-			do_action( 'after_switch_theme', $stylesheet );
-		}
-		flush_rewrite_rules();
-
-		update_option( 'theme_switched', false );
-	}
-}
-
-/**
- * Includes and instantiates the WP_Customize_Manager class.
- *
- * Loads the Customizer at plugins_loaded when accessing the customize.php admin
- * page or when any request includes a wp_customize=on param, either as a GET
- * query var or as POST data. This param is a signal for whether to bootstrap
- * the Customizer when WordPress is loading, especially in the Customizer preview
- * or when making Customizer Ajax requests for widgets or menus.
- *
- * @since 3.4.0
- *
- * @global WP_Customize_Manager $wp_customize
- */
 function _wp_customize_include() {
 	if ( ! ( ( isset( $_REQUEST['wp_customize'] ) && 'on' == $_REQUEST['wp_customize'] )
 		|| ( is_admin() && 'customize.php' == basename( $_SERVER['PHP_SELF'] ) )
@@ -2042,11 +1989,6 @@ function _wp_customize_include() {
 	$GLOBALS['wp_customize'] = new WP_Customize_Manager();
 }
 
-/**
- * Adds settings for the customize-loader script.
- *
- * @since 3.4.0
- */
 function _wp_customize_loader_settings() {
 	$admin_origin = parse_url( admin_url() );
 	$home_origin  = parse_url( home_url() );

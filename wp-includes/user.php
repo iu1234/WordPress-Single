@@ -2342,11 +2342,6 @@ function wp_get_all_sessions() {
 	return $manager->get_all();
 }
 
-/**
- * Remove the current session token from the database.
- *
- * @since 4.0.0
- */
 function wp_destroy_current_session() {
 	$token = wp_get_session_token();
 	if ( $token ) {
@@ -2355,11 +2350,6 @@ function wp_destroy_current_session() {
 	}
 }
 
-/**
- * Remove all but the current session token for the current user for the database.
- *
- * @since 4.0.0
- */
 function wp_destroy_other_sessions() {
 	$token = wp_get_session_token();
 	if ( $token ) {
@@ -2368,25 +2358,11 @@ function wp_destroy_other_sessions() {
 	}
 }
 
-/**
- * Remove all session tokens for the current user from the database.
- *
- * @since 4.0.0
- */
 function wp_destroy_all_sessions() {
 	$manager = WP_Session_Tokens::get_instance( get_current_user_id() );
 	$manager->destroy_all();
 }
 
-/**
- * Get the user IDs of all users with no role on this site.
- *
- * This function returns an empty array when used on Multisite.
- *
- * @since 4.4.0
- *
- * @return array Array of user IDs.
- */
 function wp_get_users_with_no_role() {
 	global $wpdb;
 
@@ -2407,25 +2383,6 @@ function wp_get_users_with_no_role() {
 	return $users;
 }
 
-/**
- * Retrieves the current user object.
- *
- * Will set the current user, if the current user is not set. The current user
- * will be set to the logged-in person. If no user is logged-in, then it will
- * set the current user to 0, which is invalid and won't have any permissions.
- *
- * This function is used by the pluggable functions wp_get_current_user() and
- * get_currentuserinfo(), the latter of which is deprecated but used for backward
- * compatibility.
- *
- * @since 4.5.0
- * @access private
- *
- * @see wp_get_current_user()
- * @global WP_User $current_user Checks if the current user is set.
- *
- * @return WP_User Current WP_User instance.
- */
 function _wp_get_current_user() {
 	global $current_user;
 
@@ -2434,7 +2391,6 @@ function _wp_get_current_user() {
 			return $current_user;
 		}
 
-		// Upgrade stdClass to WP_User
 		if ( is_object( $current_user ) && isset( $current_user->ID ) ) {
 			$cur_id = $current_user->ID;
 			$current_user = null;
@@ -2442,7 +2398,6 @@ function _wp_get_current_user() {
 			return $current_user;
 		}
 
-		// $current_user has a junk value. Force to WP_User with ID 0.
 		$current_user = null;
 		wp_set_current_user( 0 );
 		return $current_user;
@@ -2453,19 +2408,6 @@ function _wp_get_current_user() {
 		return $current_user;
 	}
 
-	/**
-	 * Filter the current user.
-	 *
-	 * The default filters use this to determine the current user from the
-	 * request's cookies, if available.
-	 *
-	 * Returning a value of false will effectively short-circuit setting
-	 * the current user.
-	 *
-	 * @since 3.9.0
-	 *
-	 * @param int|bool $user_id User ID if one has been determined, false otherwise.
-	 */
 	$user_id = apply_filters( 'determine_current_user', false );
 	if ( ! $user_id ) {
 		wp_set_current_user( 0 );

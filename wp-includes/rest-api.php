@@ -70,17 +70,8 @@ function register_rest_route( $namespace, $route, $args = array(), $override = f
 	return true;
 }
 
-/**
- * Registers rewrite rules for the API.
- *
- * @since 4.4.0
- *
- * @see rest_api_register_rewrites()
- * @global WP $wp Current WordPress environment instance.
- */
 function rest_api_init() {
 	rest_api_register_rewrites();
-
 	global $wp;
 	$wp->add_query_var( 'rest_route' );
 }
@@ -97,14 +88,6 @@ function rest_api_register_rewrites() {
 	add_rewrite_rule( '^' . rest_get_url_prefix() . '/(.*)?','index.php?rest_route=/$matches[1]','top' );
 }
 
-/**
- * Registers the default REST API filters.
- *
- * Attached to the {@see 'rest_api_init'} action
- * to make testing and disabling these filters easier.
- *
- * @since 4.4.0
- */
 function rest_api_default_filters() {
 	// Deprecated reporting.
 	add_action( 'deprecated_function_run', 'rest_handle_deprecated_function', 10, 3 );

@@ -390,38 +390,34 @@ class wpdb {
 		if ( ! $success ) {
 			$this->ready = false;
 			if ( ! did_action( 'template_redirect' ) ) {
-				wp_load_translations_early();
 
-				$message = '<h1>' . __( 'Can&#8217;t select database' ) . "</h1>\n";
+				$message = "<h1>Can&#8217;t select database</h1>\n";
 
 				$message .= '<p>' . sprintf(
-					/* translators: %s: database name */
-					__( 'We were able to connect to the database server (which means your username and password is okay) but not able to select the %s database.' ),
+					'We were able to connect to the database server (which means your username and password is okay) but not able to select the %s database.',
 					'<code>' . htmlspecialchars( $db, ENT_QUOTES ) . '</code>'
 				) . "</p>\n";
 
 				$message .= "<ul>\n";
-				$message .= '<li>' . __( 'Are you sure it exists?' ) . "</li>\n";
+				$message .= "<li>Are you sure it exists?</li>\n";
 
 				$message .= '<li>' . sprintf(
 					/* translators: 1: database user, 2: database name */
-					__( 'Does the user %1$s have permission to use the %2$s database?' ),
+					'Does the user %1$s have permission to use the %2$s database?',
 					'<code>' . htmlspecialchars( $this->dbuser, ENT_QUOTES )  . '</code>',
 					'<code>' . htmlspecialchars( $db, ENT_QUOTES ) . '</code>'
 				) . "</li>\n";
 
 				$message .= '<li>' . sprintf(
-					/* translators: %s: database name */
-					__( 'On some systems the name of your database is prefixed with your username, so it would be like <code>username_%1$s</code>. Could that be the problem?' ),
+					'On some systems the name of your database is prefixed with your username, so it would be like <code>username_%1$s</code>. Could that be the problem?',
 					htmlspecialchars( $db, ENT_QUOTES )
 				). "</li>\n";
 
 				$message .= "</ul>\n";
 
 				$message .= '<p>' . sprintf(
-					/* translators: %s: support forums URL */
-					__( 'If you don&#8217;t know how to set up a database you should <strong>contact your host</strong>. If all else fails you may find help at the <a href="%s">WordPress Support Forums</a>.' ),
-					__( 'https://wordpress.org/support/' )
+					'If you don&#8217;t know how to set up a database you should <strong>contact your host</strong>. If all else fails you may find help at the <a href="%s">WordPress Support Forums</a>.',
+					'https://wordpress.org/support/'
 				) . "</p>\n";
 
 				$this->bail( $message, 'db_select_fail' );
@@ -441,12 +437,7 @@ class wpdb {
 		}
 
 		$class = get_class( $this );
-		if ( function_exists( '__' ) ) {
-			/* translators: %s: database access abstraction class, usually wpdb or a class extending wpdb */
-			_doing_it_wrong( $class, sprintf( __( '%s must set a database connection for use with escaping.' ), $class ), E_USER_NOTICE );
-		} else {
-			_doing_it_wrong( $class, sprintf( '%s must set a database connection for use with escaping.', $class ), E_USER_NOTICE );
-		}
+		_doing_it_wrong( $class, sprintf( '%s must set a database connection for use with escaping.', $class ), E_USER_NOTICE );
 		return addslashes( $string );
 	}
 
@@ -528,12 +519,10 @@ class wpdb {
 		if ( $this->suppress_errors )
 			return false;
 
-		wp_load_translations_early();
-
 		if ( $caller = $this->get_caller() )
-			$error_str = sprintf( __( 'WordPress database error %1$s for query %2$s made by %3$s' ), $str, $this->last_query, $caller );
+			$error_str = sprintf( 'WordPress database error %1$s for query %2$s made by %3$s', $str, $this->last_query, $caller );
 		else
-			$error_str = sprintf( __( 'WordPress database error %1$s for query %2$s' ), $str, $this->last_query );
+			$error_str = sprintf( 'WordPress database error %1$s for query %2$s', $str, $this->last_query );
 
 		error_log( $error_str );
 
@@ -545,7 +534,7 @@ class wpdb {
 		if ( is_multisite() ) {
 			$msg = sprintf(
 				"%s [%s]\n%s\n",
-				__( 'WordPress database error:' ),
+				'WordPress database error:',
 				$str,
 				$this->last_query
 			);
@@ -562,7 +551,7 @@ class wpdb {
 
 			printf(
 				'<div id="error"><p class="wpdberror"><strong>%s</strong> [%s]<br /><code>%s</code></p></div>',
-				__( 'WordPress database error:' ),
+				'WordPress database error:',
 				$str,
 				$query
 			);
@@ -625,8 +614,6 @@ class wpdb {
 		if ( $this->use_mysqli ) {
 			$this->dbh = mysqli_init();
 
-			// mysqli_real_connect doesn't support the host param including a port or socket
-			// like mysql_connect does. This duplicates how mysql_connect detects a port and/or socket file.
 			$port = null;
 			$socket = null;
 			$host = $this->dbhost;
@@ -650,11 +637,6 @@ class wpdb {
 			if ( $this->dbh->connect_errno ) {
 				$this->dbh = null;
 
-				/* It's possible ext/mysqli is misconfigured. Fall back to ext/mysql if:
-		 		 *  - We haven't previously connected, and
-		 		 *  - WP_USE_EXT_MYSQL isn't set to false, and
-		 		 *  - ext/mysql is loaded.
-		 		 */
 				$attempt_fallback = true;
 
 				if ( $this->has_connected ) {
@@ -673,32 +655,29 @@ class wpdb {
 		}
 
 		if ( ! $this->dbh && $allow_bail ) {
-			wp_load_translations_early();
 
-			// Load custom DB error template, if present.
 			if ( file_exists( WP_CONTENT_DIR . '/db-error.php' ) ) {
 				require_once( WP_CONTENT_DIR . '/db-error.php' );
 				die();
 			}
 
-			$message = '<h1>' . __( 'Error establishing a database connection' ) . "</h1>\n";
+			$message = "<h1>Error establishing a database connection</h1>\n";
 
 			$message .= '<p>' . sprintf(
-				__( 'This either means that the username and password information in your %1$s file is incorrect or we can&#8217;t contact the database server at %2$s. This could mean your host&#8217;s database server is down.' ),
+				'This either means that the username and password information in your %1$s file is incorrect or we can&#8217;t contact the database server at %2$s. This could mean your host&#8217;s database server is down.',
 				'<code>wp-load.php</code>',
 				'<code>' . htmlspecialchars( $this->dbhost, ENT_QUOTES ) . '</code>'
 			) . "</p>\n";
 
 			$message .= "<ul>\n";
-			$message .= '<li>' . __( 'Are you sure you have the correct username and password?' ) . "</li>\n";
-			$message .= '<li>' . __( 'Are you sure that you have typed the correct hostname?' ) . "</li>\n";
-			$message .= '<li>' . __( 'Are you sure that the database server is running?' ) . "</li>\n";
+			$message .= "<li>Are you sure you have the correct username and password?</li>\n";
+			$message .= "<li>Are you sure that you have typed the correct hostname?</li>\n";
+			$message .= "<li>Are you sure that the database server is running?</li>\n";
 			$message .= "</ul>\n";
 
 			$message .= '<p>' . sprintf(
-				/* translators: %s: support forums URL */
-				__( 'If you&#8217;re unsure what these terms mean you should probably contact your host. If you still need help you can always visit the <a href="%s">WordPress Support Forums</a>.' ),
-				__( 'https://wordpress.org/support/' )
+				'If you&#8217;re unsure what these terms mean you should probably contact your host. If you still need help you can always visit the <a href="%s">WordPress Support Forums</a>.',
+				'https://wordpress.org/support/'
 			) . "</p>\n";
 
 			$this->bail( $message, 'db_connect_fail' );
@@ -769,32 +748,25 @@ class wpdb {
 		if ( ! $allow_bail ) {
 			return false;
 		}
-
-		wp_load_translations_early();
-
-		$message = '<h1>' . __( 'Error reconnecting to the database' ) . "</h1>\n";
+		$message = "<h1>Error reconnecting to the database</h1>\n";
 
 		$message .= '<p>' . sprintf(
-			/* translators: %s: database host */
-			__( 'This means that we lost contact with the database server at %s. This could mean your host&#8217;s database server is down.' ),
+			'This means that we lost contact with the database server at %s. This could mean your host&#8217;s database server is down.',
 			'<code>' . htmlspecialchars( $this->dbhost, ENT_QUOTES ) . '</code>'
 		) . "</p>\n";
 
 		$message .= "<ul>\n";
-		$message .= '<li>' . __( 'Are you sure that the database server is running?' ) . "</li>\n";
-		$message .= '<li>' . __( 'Are you sure that the database server is not under particularly heavy load?' ) . "</li>\n";
+		$message .= "<li>Are you sure that the database server is running?</li>\n";
+		$message .= "<li>Are you sure that the database server is not under particularly heavy load?</li>\n";
 		$message .= "</ul>\n";
 
 		$message .= '<p>' . sprintf(
-			/* translators: %s: support forums URL */
-			__( 'If you&#8217;re unsure what these terms mean you should probably contact your host. If you still need help you can always visit the <a href="%s">WordPress Support Forums</a>.' ),
-			__( 'https://wordpress.org/support/' )
+			'If you&#8217;re unsure what these terms mean you should probably contact your host. If you still need help you can always visit the <a href="%s">WordPress Support Forums</a>.',
+			'https://wordpress.org/support/'
 		) . "</p>\n";
 
-		// We weren't able to reconnect, so we better bail.
 		$this->bail( $message, 'db_connect_fail' );
 
-		// Call dead_db() if bail didn't die, because this database is no more. It has ceased to be (at least temporarily).
 		dead_db();
 	}
 
@@ -804,16 +776,6 @@ class wpdb {
 			return false;
 		}
 
-		/**
-		 * Filter the database query.
-		 *
-		 * Some queries are made before the plugins have been loaded,
-		 * and thus cannot be filtered with this method.
-		 *
-		 * @since 2.1.0
-		 *
-		 * @param string $query Database query.
-		 */
 		$query = apply_filters( 'query', $query );
 
 		$this->flush();
@@ -835,12 +797,10 @@ class wpdb {
 
 		$this->check_current_query = true;
 
-		// Keep track of the last query for debug..
 		$this->last_query = $query;
 
 		$this->_do_query( $query );
 
-		// MySQL server has gone away, try to reconnect
 		$mysql_errno = 0;
 		if ( ! empty( $this->dbh ) ) {
 			if ( $this->use_mysqli ) {

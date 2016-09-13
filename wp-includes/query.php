@@ -329,413 +329,174 @@ function is_day() {
 	global $wp_query;
 
 	if ( ! isset( $wp_query ) ) {
-		_doing_it_wrong( __FUNCTION__, __( 'Conditional query tags do not work before the query is run. Before then, they always return false.' ), '3.1' );
+		_doing_it_wrong( __FUNCTION__, 'Conditional query tags do not work before the query is run. Before then, they always return false.', '3.1' );
 		return false;
 	}
 
 	return $wp_query->is_day();
 }
 
-/**
- * Is the query for a feed?
- *
- * @since 1.5.0
- *
- * @global WP_Query $wp_query Global WP_Query instance.
- *
- * @param string|array $feeds Optional feed types to check.
- * @return bool
- */
-function is_feed( $feeds = '' ) {
-	global $wp_query;
-
-	if ( ! isset( $wp_query ) ) {
-		_doing_it_wrong( __FUNCTION__, __( 'Conditional query tags do not work before the query is run. Before then, they always return false.' ), '3.1' );
-		return false;
-	}
-
-	return $wp_query->is_feed( $feeds );
-}
-
-/**
- * Is the query for a comments feed?
- *
- * @since 3.0.0
- *
- * @global WP_Query $wp_query Global WP_Query instance.
- *
- * @return bool
- */
-function is_comment_feed() {
-	global $wp_query;
-
-	if ( ! isset( $wp_query ) ) {
-		_doing_it_wrong( __FUNCTION__, __( 'Conditional query tags do not work before the query is run. Before then, they always return false.' ), '3.1' );
-		return false;
-	}
-
-	return $wp_query->is_comment_feed();
-}
-
-/**
- * Is the query for the front page of the site?
- *
- * This is for what is displayed at your site's main URL.
- *
- * Depends on the site's "Front page displays" Reading Settings 'show_on_front' and 'page_on_front'.
- *
- * If you set a static page for the front page of your site, this function will return
- * true when viewing that page.
- *
- * Otherwise the same as @see is_home()
- *
- * @since 2.5.0
- *
- * @global WP_Query $wp_query Global WP_Query instance.
- *
- * @return bool True, if front of site.
- */
 function is_front_page() {
 	global $wp_query;
-
 	if ( ! isset( $wp_query ) ) {
-		_doing_it_wrong( __FUNCTION__, __( 'Conditional query tags do not work before the query is run. Before then, they always return false.' ), '3.1' );
+		_doing_it_wrong( __FUNCTION__, 'Conditional query tags do not work before the query is run. Before then, they always return false.', '3.1' );
 		return false;
 	}
-
 	return $wp_query->is_front_page();
 }
 
-/**
- * Is the query for the blog homepage?
- *
- * This is the page which shows the time based blog content of your site.
- *
- * Depends on the site's "Front page displays" Reading Settings 'show_on_front' and 'page_for_posts'.
- *
- * If you set a static page for the front page of your site, this function will return
- * true only on the page you set as the "Posts page".
- *
- * @see is_front_page()
- *
- * @since 1.5.0
- *
- * @global WP_Query $wp_query Global WP_Query instance.
- *
- * @return bool True if blog view homepage.
- */
 function is_home() {
 	global $wp_query;
 
 	if ( ! isset( $wp_query ) ) {
-		_doing_it_wrong( __FUNCTION__, __( 'Conditional query tags do not work before the query is run. Before then, they always return false.' ), '3.1' );
+		_doing_it_wrong( __FUNCTION__, 'Conditional query tags do not work before the query is run. Before then, they always return false.', '3.1' );
 		return false;
 	}
 
 	return $wp_query->is_home();
 }
 
-/**
- * Is the query for an existing month archive?
- *
- * @since 1.5.0
- *
- * @global WP_Query $wp_query Global WP_Query instance.
- *
- * @return bool
- */
 function is_month() {
 	global $wp_query;
 
 	if ( ! isset( $wp_query ) ) {
-		_doing_it_wrong( __FUNCTION__, __( 'Conditional query tags do not work before the query is run. Before then, they always return false.' ), '3.1' );
+		_doing_it_wrong( __FUNCTION__, 'Conditional query tags do not work before the query is run. Before then, they always return false.', '3.1' );
 		return false;
 	}
 
 	return $wp_query->is_month();
 }
 
-/**
- * Is the query for an existing single page?
- *
- * If the $page parameter is specified, this function will additionally
- * check if the query is for one of the pages specified.
- *
- * @see is_single()
- * @see is_singular()
- *
- * @since 1.5.0
- *
- * @global WP_Query $wp_query Global WP_Query instance.
- *
- * @param int|string|array $page Optional. Page ID, title, slug, or array of such. Default empty.
- * @return bool Whether the query is for an existing single page.
- */
 function is_page( $page = '' ) {
 	global $wp_query;
 
 	if ( ! isset( $wp_query ) ) {
-		_doing_it_wrong( __FUNCTION__, __( 'Conditional query tags do not work before the query is run. Before then, they always return false.' ), '3.1' );
+		_doing_it_wrong( __FUNCTION__, 'Conditional query tags do not work before the query is run. Before then, they always return false.', '3.1' );
 		return false;
 	}
 
 	return $wp_query->is_page( $page );
 }
 
-/**
- * Is the query for paged result and not for the first page?
- *
- * @since 1.5.0
- *
- * @global WP_Query $wp_query Global WP_Query instance.
- *
- * @return bool
- */
 function is_paged() {
 	global $wp_query;
 
 	if ( ! isset( $wp_query ) ) {
-		_doing_it_wrong( __FUNCTION__, __( 'Conditional query tags do not work before the query is run. Before then, they always return false.' ), '3.1' );
+		_doing_it_wrong( __FUNCTION__, 'Conditional query tags do not work before the query is run. Before then, they always return false.', '3.1' );
 		return false;
 	}
 
 	return $wp_query->is_paged();
 }
 
-/**
- * Is the query for a post or page preview?
- *
- * @since 2.0.0
- *
- * @global WP_Query $wp_query Global WP_Query instance.
- *
- * @return bool
- */
 function is_preview() {
 	global $wp_query;
 
 	if ( ! isset( $wp_query ) ) {
-		_doing_it_wrong( __FUNCTION__, __( 'Conditional query tags do not work before the query is run. Before then, they always return false.' ), '3.1' );
+		_doing_it_wrong( __FUNCTION__, 'Conditional query tags do not work before the query is run. Before then, they always return false.', '3.1' );
 		return false;
 	}
 
 	return $wp_query->is_preview();
 }
 
-/**
- * Is the query for the robots file?
- *
- * @since 2.1.0
- *
- * @global WP_Query $wp_query Global WP_Query instance.
- *
- * @return bool
- */
 function is_robots() {
 	global $wp_query;
 
 	if ( ! isset( $wp_query ) ) {
-		_doing_it_wrong( __FUNCTION__, __( 'Conditional query tags do not work before the query is run. Before then, they always return false.' ), '3.1' );
+		_doing_it_wrong( __FUNCTION__, 'Conditional query tags do not work before the query is run. Before then, they always return false.', '3.1' );
 		return false;
 	}
 
 	return $wp_query->is_robots();
 }
 
-/**
- * Is the query for a search?
- *
- * @since 1.5.0
- *
- * @global WP_Query $wp_query Global WP_Query instance.
- *
- * @return bool
- */
 function is_search() {
 	global $wp_query;
-
 	if ( ! isset( $wp_query ) ) {
-		_doing_it_wrong( __FUNCTION__, __( 'Conditional query tags do not work before the query is run. Before then, they always return false.' ), '3.1' );
+		_doing_it_wrong( __FUNCTION__, 'Conditional query tags do not work before the query is run. Before then, they always return false.', '3.1' );
 		return false;
 	}
-
 	return $wp_query->is_search();
 }
 
-/**
- * Is the query for an existing single post?
- *
- * Works for any post type, except attachments and pages
- *
- * If the $post parameter is specified, this function will additionally
- * check if the query is for one of the Posts specified.
- *
- * @see is_page()
- * @see is_singular()
- *
- * @since 1.5.0
- *
- * @global WP_Query $wp_query Global WP_Query instance.
- *
- * @param int|string|array $post Optional. Post ID, title, slug, or array of such. Default empty.
- * @return bool Whether the query is for an existing single post.
- */
 function is_single( $post = '' ) {
 	global $wp_query;
 
 	if ( ! isset( $wp_query ) ) {
-		_doing_it_wrong( __FUNCTION__, __( 'Conditional query tags do not work before the query is run. Before then, they always return false.' ), '3.1' );
+		_doing_it_wrong( __FUNCTION__, 'Conditional query tags do not work before the query is run. Before then, they always return false.', '3.1' );
 		return false;
 	}
 
 	return $wp_query->is_single( $post );
 }
 
-/**
- * Is the query for an existing single post of any post type (post, attachment, page, ... )?
- *
- * If the $post_types parameter is specified, this function will additionally
- * check if the query is for one of the Posts Types specified.
- *
- * @see is_page()
- * @see is_single()
- *
- * @since 1.5.0
- *
- * @global WP_Query $wp_query Global WP_Query instance.
- *
- * @param string|array $post_types Optional. Post type or array of post types. Default empty.
- * @return bool Whether the query is for an existing single post of any of the given post types.
- */
 function is_singular( $post_types = '' ) {
 	global $wp_query;
 
 	if ( ! isset( $wp_query ) ) {
-		_doing_it_wrong( __FUNCTION__, __( 'Conditional query tags do not work before the query is run. Before then, they always return false.' ), '3.1' );
+		_doing_it_wrong( __FUNCTION__, 'Conditional query tags do not work before the query is run. Before then, they always return false.', '3.1' );
 		return false;
 	}
 
 	return $wp_query->is_singular( $post_types );
 }
 
-/**
- * Is the query for a specific time?
- *
- * @since 1.5.0
- *
- * @global WP_Query $wp_query Global WP_Query instance.
- *
- * @return bool
- */
 function is_time() {
 	global $wp_query;
 
 	if ( ! isset( $wp_query ) ) {
-		_doing_it_wrong( __FUNCTION__, __( 'Conditional query tags do not work before the query is run. Before then, they always return false.' ), '3.1' );
+		_doing_it_wrong( __FUNCTION__, 'Conditional query tags do not work before the query is run. Before then, they always return false.', '3.1' );
 		return false;
 	}
 
 	return $wp_query->is_time();
 }
 
-/**
- * Is the query for a trackback endpoint call?
- *
- * @since 1.5.0
- *
- * @global WP_Query $wp_query Global WP_Query instance.
- *
- * @return bool
- */
 function is_trackback() {
 	global $wp_query;
-
 	if ( ! isset( $wp_query ) ) {
-		_doing_it_wrong( __FUNCTION__, __( 'Conditional query tags do not work before the query is run. Before then, they always return false.' ), '3.1' );
+		_doing_it_wrong( __FUNCTION__, 'Conditional query tags do not work before the query is run. Before then, they always return false.', '3.1' );
 		return false;
 	}
-
 	return $wp_query->is_trackback();
 }
 
-/**
- * Is the query for an existing year archive?
- *
- * @since 1.5.0
- *
- * @global WP_Query $wp_query Global WP_Query instance.
- *
- * @return bool
- */
 function is_year() {
 	global $wp_query;
-
 	if ( ! isset( $wp_query ) ) {
-		_doing_it_wrong( __FUNCTION__, __( 'Conditional query tags do not work before the query is run. Before then, they always return false.' ), '3.1' );
+		_doing_it_wrong( __FUNCTION__, 'Conditional query tags do not work before the query is run. Before then, they always return false.', '3.1' );
 		return false;
 	}
-
 	return $wp_query->is_year();
 }
 
-/**
- * Is the query a 404 (returns no results)?
- *
- * @since 1.5.0
- *
- * @global WP_Query $wp_query Global WP_Query instance.
- *
- * @return bool
- */
 function is_404() {
 	global $wp_query;
-
 	if ( ! isset( $wp_query ) ) {
-		_doing_it_wrong( __FUNCTION__, __( 'Conditional query tags do not work before the query is run. Before then, they always return false.' ), '3.1' );
+		_doing_it_wrong( __FUNCTION__, 'Conditional query tags do not work before the query is run. Before then, they always return false.', '3.1' );
 		return false;
 	}
-
 	return $wp_query->is_404();
 }
 
-/**
- * Is the query for an embedded post?
- *
- * @since 4.4.0
- *
- * @global WP_Query $wp_query Global WP_Query instance.
- *
- * @return bool Whether we're in an embedded post or not.
- */
 function is_embed() {
 	global $wp_query;
-
 	if ( ! isset( $wp_query ) ) {
-		_doing_it_wrong( __FUNCTION__, __( 'Conditional query tags do not work before the query is run. Before then, they always return false.' ), '3.1' );
+		_doing_it_wrong( __FUNCTION__, 'Conditional query tags do not work before the query is run. Before then, they always return false.', '3.1' );
 		return false;
 	}
-
 	return $wp_query->is_embed();
 }
 
-/**
- * Is the query the main query?
- *
- * @since 3.3.0
- *
- * @global WP_Query $wp_query Global WP_Query instance.
- *
- * @return bool
- */
 function is_main_query() {
 	if ( 'pre_get_posts' === current_filter() ) {
 		$message = sprintf(
-			/* translators: 1: pre_get_posts 2: WP_Query->is_main_query() 3: is_main_query() 4: link to codex is_main_query() page. */
-			__( 'In %1$s, use the %2$s method, not the %3$s function. See %4$s.' ),
+			'In %1$s, use the %2$s method, not the %3$s function. See %4$s.',
 			'<code>pre_get_posts</code>',
 			'<code>WP_Query->is_main_query()</code>',
 			'<code>is_main_query()</code>',
-			__( 'https://codex.wordpress.org/Function_Reference/is_main_query' )
+			'https://codex.wordpress.org/Function_Reference/is_main_query'
 		);
 		_doing_it_wrong( __FUNCTION__, $message, '3.7' );
 	}
@@ -744,57 +505,21 @@ function is_main_query() {
 	return $wp_query->is_main_query();
 }
 
-/*
- * The Loop. Post loop control.
- */
-
-/**
- * Whether current WordPress query has results to loop over.
- *
- * @since 1.5.0
- *
- * @global WP_Query $wp_query Global WP_Query instance.
- *
- * @return bool
- */
 function have_posts() {
 	global $wp_query;
 	return $wp_query->have_posts();
 }
 
-/**
- * Whether the caller is in the Loop.
- *
- * @since 2.0.0
- *
- * @global WP_Query $wp_query Global WP_Query instance.
- *
- * @return bool True if caller is within loop, false if loop hasn't started or ended.
- */
 function in_the_loop() {
 	global $wp_query;
 	return $wp_query->in_the_loop;
 }
 
-/**
- * Rewind the loop posts.
- *
- * @since 1.5.0
- *
- * @global WP_Query $wp_query Global WP_Query instance.
- */
 function rewind_posts() {
 	global $wp_query;
 	$wp_query->rewind_posts();
 }
 
-/**
- * Iterate the post index in the loop.
- *
- * @since 1.5.0
- *
- * @global WP_Query $wp_query Global WP_Query instance.
- */
 function the_post() {
 	global $wp_query;
 	$wp_query->the_post();
@@ -804,284 +529,68 @@ function the_post() {
  * Comments loop.
  */
 
-/**
- * Whether there are comments to loop over.
- *
- * @since 2.2.0
- *
- * @global WP_Query $wp_query Global WP_Query instance.
- *
- * @return bool
- */
 function have_comments() {
 	global $wp_query;
 	return $wp_query->have_comments();
 }
 
-/**
- * Iterate comment index in the comment loop.
- *
- * @since 2.2.0
- *
- * @global WP_Query $wp_query Global WP_Query instance.
- *
- * @return object
- */
 function the_comment() {
 	global $wp_query;
 	return $wp_query->the_comment();
 }
 
-/*
- * WP_Query
- */
-
-/**
- * The WordPress Query class.
- *
- * @link https://codex.wordpress.org/Function_Reference/WP_Query Codex page.
- *
- * @since 1.5.0
- * @since 4.5.0 Removed the `$comments_popup` property.
- */
 class WP_Query {
 
-	/**
-	 * Query vars set by the user
-	 *
-	 * @since 1.5.0
-	 * @access public
-	 * @var array
-	 */
 	public $query;
 
-	/**
-	 * Query vars, after parsing
-	 *
-	 * @since 1.5.0
-	 * @access public
-	 * @var array
-	 */
 	public $query_vars = array();
 
-	/**
-	 * Taxonomy query, as passed to get_tax_sql()
-	 *
-	 * @since 3.1.0
-	 * @access public
-	 * @var object WP_Tax_Query
-	 */
 	public $tax_query;
 
-	/**
-	 * Metadata query container
-	 *
-	 * @since 3.2.0
-	 * @access public
-	 * @var object WP_Meta_Query
-	 */
 	public $meta_query = false;
 
-	/**
-	 * Date query container
-	 *
-	 * @since 3.7.0
-	 * @access public
-	 * @var object WP_Date_Query
-	 */
 	public $date_query = false;
 
-	/**
-	 * Holds the data for a single object that is queried.
-	 *
-	 * Holds the contents of a post, page, category, attachment.
-	 *
-	 * @since 1.5.0
-	 * @access public
-	 * @var object|array
-	 */
 	public $queried_object;
 
-	/**
-	 * The ID of the queried object.
-	 *
-	 * @since 1.5.0
-	 * @access public
-	 * @var int
-	 */
 	public $queried_object_id;
 
-	/**
-	 * Get post database query.
-	 *
-	 * @since 2.0.1
-	 * @access public
-	 * @var string
-	 */
 	public $request;
 
-	/**
-	 * List of posts.
-	 *
-	 * @since 1.5.0
-	 * @access public
-	 * @var array
-	 */
 	public $posts;
 
-	/**
-	 * The amount of posts for the current query.
-	 *
-	 * @since 1.5.0
-	 * @access public
-	 * @var int
-	 */
 	public $post_count = 0;
 
-	/**
-	 * Index of the current item in the loop.
-	 *
-	 * @since 1.5.0
-	 * @access public
-	 * @var int
-	 */
 	public $current_post = -1;
 
-	/**
-	 * Whether the loop has started and the caller is in the loop.
-	 *
-	 * @since 2.0.0
-	 * @access public
-	 * @var bool
-	 */
 	public $in_the_loop = false;
 
-	/**
-	 * The current post.
-	 *
-	 * @since 1.5.0
-	 * @access public
-	 * @var WP_Post
-	 */
 	public $post;
 
-	/**
-	 * The list of comments for current post.
-	 *
-	 * @since 2.2.0
-	 * @access public
-	 * @var array
-	 */
 	public $comments;
 
-	/**
-	 * The amount of comments for the posts.
-	 *
-	 * @since 2.2.0
-	 * @access public
-	 * @var int
-	 */
 	public $comment_count = 0;
 
-	/**
-	 * The index of the comment in the comment loop.
-	 *
-	 * @since 2.2.0
-	 * @access public
-	 * @var int
-	 */
 	public $current_comment = -1;
 
-	/**
-	 * Current comment ID.
-	 *
-	 * @since 2.2.0
-	 * @access public
-	 * @var int
-	 */
 	public $comment;
 
-	/**
-	 * The amount of found posts for the current query.
-	 *
-	 * If limit clause was not used, equals $post_count.
-	 *
-	 * @since 2.1.0
-	 * @access public
-	 * @var int
-	 */
 	public $found_posts = 0;
 
-	/**
-	 * The amount of pages.
-	 *
-	 * @since 2.1.0
-	 * @access public
-	 * @var int
-	 */
 	public $max_num_pages = 0;
 
-	/**
-	 * The amount of comment pages.
-	 *
-	 * @since 2.7.0
-	 * @access public
-	 * @var int
-	 */
 	public $max_num_comment_pages = 0;
 
-	/**
-	 * Set if query is single post.
-	 *
-	 * @since 1.5.0
-	 * @access public
-	 * @var bool
-	 */
 	public $is_single = false;
 
-	/**
-	 * Set if query is preview of blog.
-	 *
-	 * @since 2.0.0
-	 * @access public
-	 * @var bool
-	 */
 	public $is_preview = false;
 
-	/**
-	 * Set if query returns a page.
-	 *
-	 * @since 1.5.0
-	 * @access public
-	 * @var bool
-	 */
 	public $is_page = false;
 
-	/**
-	 * Set if query is an archive list.
-	 *
-	 * @since 1.5.0
-	 * @access public
-	 * @var bool
-	 */
 	public $is_archive = false;
 
-	/**
-	 * Set if query is part of a date.
-	 *
-	 * @since 1.5.0
-	 * @access public
-	 * @var bool
-	 */
 	public $is_date = false;
 
-	/**
-	 * Set if query contains a year.
-	 *
-	 * @since 1.5.0
-	 * @access public
-	 * @var bool
-	 */
 	public $is_year = false;
 
 	/**

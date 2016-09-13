@@ -30,7 +30,7 @@ wp_maintenance();
 timer_start();
 
 if ( WP_CACHE )
-	WP_DEBUG ? include( WP_CONTENT_DIR . '/advanced-cache.php' ) : @include( WP_CONTENT_DIR . '/advanced-cache.php' );
+	@include( WP_CONTENT_DIR . '/advanced-cache.php' );
 
 require( ABSPATH . WPINC . '/functions.php' );
 require( ABSPATH . WPINC . '/class-wp.php' );
@@ -172,12 +172,8 @@ require_once( ABSPATH . WPINC . '/locale.php' );
 
 $GLOBALS['wp_locale'] = new WP_Locale();
 
-if ( ! wp_installing() || 'wp-activate.php' === $pagenow ) {
-	if ( get_template_directory() !== get_stylesheet_directory() && file_exists( get_stylesheet_directory() . '/functions.php' ) )
-		include( get_stylesheet_directory() . '/functions.php' );
-	if ( file_exists( get_template_directory() . '/functions.php' ) )
-		include( get_template_directory() . '/functions.php' );
-}
+if ( file_exists( get_template_directory() . '/functions.php' ) )
+	include( get_template_directory() . '/functions.php' );
 
 do_action( 'after_setup_theme' );
 

@@ -29,47 +29,20 @@ function wp_initial_constants() {
 	if ( !defined('WP_CONTENT_DIR') )
 		define( 'WP_CONTENT_DIR', ABSPATH . 'wp-content' );
 
-	// Add define('WP_DEBUG_DISPLAY', null); use the globally configured setting for.
-	// display_errors and not force errors to be displayed. Use false to force display_errors off.
-	if ( !defined('WP_DEBUG_DISPLAY') )
-		define( 'WP_DEBUG_DISPLAY', true );
-
-	if ( !defined('WP_DEBUG_LOG') )
-		define('WP_DEBUG_LOG', false);
-
-	if ( !defined('WP_CACHE') )
-		define('WP_CACHE', false);
-
-	// Add define('SCRIPT_DEBUG', true);
-	// non-concatenated scripts and stylesheets.
 	if ( ! defined( 'SCRIPT_DEBUG' ) ) {
 		if ( ! empty( $GLOBALS['wp_version'] ) ) {
 			$develop_src = false !== strpos( $GLOBALS['wp_version'], '-src' );
 		} else {
 			$develop_src = false;
 		}
-
 		define( 'SCRIPT_DEBUG', $develop_src );
 	}
 
 	if ( !defined('MEDIA_TRASH') )
 		define('MEDIA_TRASH', false);
 
-	// Constants for features added to WP that should short-circuit their plugin implementations
 	define( 'WP_FEATURE_BETTER_PASSWORDS', true );
 
-	/**#@+
-	 * Constants for expressing human-readable intervals
-	 * in their respective number of seconds.
-	 *
-	 * Please note that these values are approximate and are provided for convenience.
-	 * For example, MONTH_IN_SECONDS wrongly assumes every month has 30 days and
-	 * YEAR_IN_SECONDS does not take leap years into account.
-	 *
-	 * If you need more accuracy please consider using the DateTime class (http://php.net/manual/class.datetime.php).
-	 *
-	 * @since 4.4.0 Introduced `MONTH_IN_SECONDS`.
-	 */
 	define( 'MINUTE_IN_SECONDS', 60 );
 	define( 'HOUR_IN_SECONDS',   60 * MINUTE_IN_SECONDS );
 	define( 'DAY_IN_SECONDS',    24 * HOUR_IN_SECONDS   );
@@ -77,9 +50,6 @@ function wp_initial_constants() {
 	define( 'MONTH_IN_SECONDS',  30 * DAY_IN_SECONDS    );
 	define( 'YEAR_IN_SECONDS',  365 * DAY_IN_SECONDS    );
 
-	/**#@+
-	 * Constants for expressing human-readable data sizes in their respective number of bytes.
-	 */
 	define( 'KB_IN_BYTES', 1024 );
 	define( 'MB_IN_BYTES', 1024 * KB_IN_BYTES );
 	define( 'GB_IN_BYTES', 1024 * MB_IN_BYTES );
