@@ -145,8 +145,7 @@ function retrieve_password() {
 		if ( empty( $user_data ) )
 			$errors->add('invalid_email', '<strong>ERROR</strong>: There is no user registered with that email address.');
 	} else {
-		$login = trim($_POST['user_login']);
-		$user_data = get_user_by('login', $login);
+		$user_data = get_user_by( 'login', trim( $_POST['user_login'] ) );
 	}
 
 	do_action( 'lostpassword_post', $errors );
@@ -358,7 +357,7 @@ case 'rp' :
 	if ( ( ! $errors->get_error_code() ) && isset( $_POST['pass1'] ) && !empty( $_POST['pass1'] ) ) {
 		reset_password($user, $_POST['pass1']);
 		setcookie( $rp_cookie, ' ', time() - YEAR_IN_SECONDS, $rp_path, COOKIE_DOMAIN, is_ssl(), true );
-		login_header( __( 'Password Reset' ), '<p class="message reset-pass">' . __( 'Your password has been reset.' ) . ' <a href="' . esc_url( wp_login_url() ) . '">' . __( 'Log in' ) . '</a></p>' );
+		login_header( __( 'Password Reset' ), '<p class="message reset-pass">Your password has been reset. <a href="' . esc_url( wp_login_url() ) . '">Log in</a></p>' );
 		login_footer();
 		exit;
 	}
@@ -399,7 +398,7 @@ case 'rp' :
 </form>
 
 <p id="nav">
-<a href="<?php echo esc_url( wp_login_url() ); ?>"><?php _e( 'Log in' ); ?></a>
+<a href="<?php echo esc_url( wp_login_url() ); ?>">Log in</a>
 <?php
 if ( get_option( 'users_can_register' ) ) :
 	$registration_url = sprintf( '<a href="%s">%s</a>', esc_url( wp_registration_url() ), 'Register' );
@@ -454,8 +453,7 @@ case 'register' :
 </form>
 
 <p id="nav">
-<a href="<?php echo esc_url( wp_login_url() ); ?>">登录</a> |
-<a href="<?php echo esc_url( wp_lostpassword_url() ); ?>">忘记密码？</a>
+<a href="<?php echo esc_url( wp_login_url() ); ?>">登录</a> | <a href="<?php echo esc_url( wp_lostpassword_url() ); ?>">忘记密码？</a>
 </p>
 
 <?php
