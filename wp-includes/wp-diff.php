@@ -9,168 +9,60 @@
  */
 
 if ( ! class_exists( 'Text_Diff', false ) ) {
-	/** Text_Diff class */
 	require( dirname(__FILE__).'/Text/Diff.php' );
-	/** Text_Diff_Renderer class */
 	require( dirname(__FILE__).'/Text/Diff/Renderer.php' );
-	/** Text_Diff_Renderer_inline class */
 	require( dirname(__FILE__).'/Text/Diff/Renderer/inline.php' );
 }
 
-/**
- * Table renderer to display the diff lines.
- *
- * @since 2.6.0
- * @uses Text_Diff_Renderer Extends
- */
 class WP_Text_Diff_Renderer_Table extends Text_Diff_Renderer {
 
-	/**
-	 * @see Text_Diff_Renderer::_leading_context_lines
-	 * @var int
-	 * @access public
-	 * @since 2.6.0
-	 */
 	public $_leading_context_lines  = 10000;
 
-	/**
-	 * @see Text_Diff_Renderer::_trailing_context_lines
-	 * @var int
-	 * @access public
-	 * @since 2.6.0
-	 */
 	public $_trailing_context_lines = 10000;
 
-	/**
-	 * Threshold for when a diff should be saved or omitted.
-	 *
-	 * @var float
-	 * @access protected
-	 * @since 2.6.0
-	 */
 	protected $_diff_threshold = 0.6;
 
-	/**
-	 * Inline display helper object name.
-	 *
-	 * @var string
-	 * @access protected
-	 * @since 2.6.0
-	 */
 	protected $inline_diff_renderer = 'WP_Text_Diff_Renderer_inline';
 
-	/**
-	 * Should we show the split view or not
-	 *
-	 * @var string
-	 * @access protected
-	 * @since 3.6.0
-	 */
 	protected $_show_split_view = true;
 
 	protected $compat_fields = array( '_show_split_view', 'inline_diff_renderer', '_diff_threshold' );
 
-	/**
-	 * Constructor - Call parent constructor with params array.
-	 *
-	 * This will set class properties based on the key value pairs in the array.
-	 *
-	 * @since 2.6.0
-	 *
-	 * @param array $params
-	 */
 	public function __construct( $params = array() ) {
 		parent::__construct( $params );
 		if ( isset( $params[ 'show_split_view' ] ) )
 			$this->_show_split_view = $params[ 'show_split_view' ];
 	}
 
-	/**
-	 * @ignore
-	 *
-	 * @param string $header
-	 * @return string
-	 */
 	public function _startBlock( $header ) {
 		return '';
 	}
 
-	/**
-	 * @ignore
-	 *
-	 * @param array $lines
-	 * @param string $prefix
-	 */
 	public function _lines( $lines, $prefix=' ' ) {
 	}
 
-	/**
-	 * @ignore
-	 *
-	 * @param string $line HTML-escape the value.
-	 * @return string
-	 */
 	public function addedLine( $line ) {
 		return "<td class='diff-addedline'>{$line}</td>";
 
 	}
 
-	/**
-	 * @ignore
-	 *
-	 * @param string $line HTML-escape the value.
-	 * @return string
-	 */
 	public function deletedLine( $line ) {
 		return "<td class='diff-deletedline'>{$line}</td>";
 	}
 
-	/**
-	 * @ignore
-	 *
-	 * @param string $line HTML-escape the value.
-	 * @return string
-	 */
 	public function contextLine( $line ) {
 		return "<td class='diff-context'>{$line}</td>";
 	}
 
-	/**
-	 * @ignore
-	 *
-	 * @return string
-	 */
 	public function emptyLine() {
 		return '<td>&nbsp;</td>';
 	}
 
-	/**
-	 * @ignore
-	 * @access public
-	 *
-	 * @param array $lines
-	 * @param bool $encode
-	 * @return string
-	 */
 	public function _added( $lines, $encode = true ) {
 		$r = '';
 		foreach ($lines as $line) {
 			if ( $encode ) {
 				$processed_line = htmlspecialchars( $line );
-
-				/**
-				 * Contextually filter a diffed line.
-				 *
-				 * Filters TextDiff processing of diffed line. By default, diffs are processed with
-				 * htmlspecialchars. Use this filter to remove or change the processing. Passes a context
-				 * indicating if the line is added, deleted or unchanged.
-				 *
-				 * @since 4.1.0
-				 *
-				 * @param String $processed_line The processed diffed line.
-				 * @param String $line           The unprocessed diffed line.
-		 		 * @param string null            The line context. Values are 'added', 'deleted' or 'unchanged'.
-				 */
 				$line = apply_filters( 'process_text_diff_html', $processed_line, $line, 'added' );
 			}
 
@@ -183,14 +75,6 @@ class WP_Text_Diff_Renderer_Table extends Text_Diff_Renderer {
 		return $r;
 	}
 
-	/**
-	 * @ignore
-	 * @access public
-	 *
-	 * @param array $lines
-	 * @param bool $encode
-	 * @return string
-	 */
 	public function _deleted( $lines, $encode = true ) {
 		$r = '';
 		foreach ($lines as $line) {
@@ -210,14 +94,6 @@ class WP_Text_Diff_Renderer_Table extends Text_Diff_Renderer {
 		return $r;
 	}
 
-	/**
-	 * @ignore
-	 * @access public
-	 *
-	 * @param array $lines
-	 * @param bool $encode
-	 * @return string
-	 */
 	public function _context( $lines, $encode = true ) {
 		$r = '';
 		foreach ($lines as $line) {
@@ -236,19 +112,6 @@ class WP_Text_Diff_Renderer_Table extends Text_Diff_Renderer {
 		return $r;
 	}
 
-	/**
-	 * Process changed lines to do word-by-word diffs for extra highlighting.
-	 *
-	 * (TRAC style) sometimes these lines can actually be deleted or added rows.
-	 * We do additional processing to figure that out
-	 *
-	 * @access public
-	 * @since 2.6.0
-	 *
-	 * @param array $orig
-	 * @param array $final
-	 * @return string
-	 */
 	public function _changed( $orig, $final ) {
 		$r = '';
 

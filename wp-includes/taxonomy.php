@@ -985,22 +985,6 @@ function get_terms( $args = array(), $deprecated = '' ) {
 
 	$_fields = $args['fields'];
 
-	/**
-	 * Filter the fields to select in the terms query.
-	 *
-	 * Field lists modified using this filter will only modify the term fields returned
-	 * by the function when the `$fields` parameter set to 'count' or 'all'. In all other
-	 * cases, the term fields in the results array will be determined by the `$fields`
-	 * parameter alone.
-	 *
-	 * Use of this filter can result in unpredictable behavior, and is not recommended.
-	 *
-	 * @since 2.8.0
-	 *
-	 * @param array $selects    An array of fields to select for the terms query.
-	 * @param array $args       An array of term query arguments.
-	 * @param array $taxonomies An array of taxonomies.
-	 */
 	$fields = implode( ', ', apply_filters( 'get_terms_fields', $selects, $args, $taxonomies ) );
 
 	$join .= " INNER JOIN $wpdb->term_taxonomy AS tt ON t.term_id = tt.term_id";
@@ -1009,15 +993,6 @@ function get_terms( $args = array(), $deprecated = '' ) {
 
 	$pieces = array( 'fields', 'join', 'where', 'distinct', 'orderby', 'order', 'limits' );
 
-	/**
-	 * Filter the terms query SQL clauses.
-	 *
-	 * @since 3.1.0
-	 *
-	 * @param array $pieces     Terms query SQL clauses.
-	 * @param array $taxonomies An array of taxonomies.
-	 * @param array $args       An array of terms query arguments.
-	 */
 	$clauses = apply_filters( 'terms_clauses', compact( $pieces ), $taxonomies, $args );
 
 	$fields = isset( $clauses[ 'fields' ] ) ? $clauses[ 'fields' ] : '';
@@ -1365,18 +1340,6 @@ function term_exists( $term, $taxonomy = '', $parent = null ) {
 	return $wpdb->get_var( $wpdb->prepare("SELECT term_id FROM $wpdb->terms as t WHERE $else_where $orderby $limit", $else_where_fields) );
 }
 
-/**
- * Check if a term is an ancestor of another term.
- *
- * You can use either an id or the term object for both parameters.
- *
- * @since 3.4.0
- *
- * @param int|object $term1    ID or object to check if this is the parent term.
- * @param int|object $term2    The child term.
- * @param string     $taxonomy Taxonomy name that $term1 and `$term2` belong to.
- * @return bool Whether `$term2` is a child of `$term1`.
- */
 function term_is_ancestor_of( $term1, $term2, $taxonomy ) {
 	if ( ! isset( $term1->term_id ) )
 		$term1 = get_term( $term1, $taxonomy );

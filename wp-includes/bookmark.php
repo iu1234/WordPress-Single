@@ -6,18 +6,6 @@
  * @subpackage Bookmark
  */
 
-/**
- * Retrieve Bookmark data
- *
- * @since 2.1.0
- *
- * @global wpdb $wpdb WordPress database abstraction object.
- *
- * @param int|stdClass $bookmark
- * @param string $output Optional. Either OBJECT, ARRAY_N, or ARRAY_A constant
- * @param string $filter Optional, default is 'raw'.
- * @return array|object|null Type returned depends on $output value.
- */
 function get_bookmark($bookmark, $output = OBJECT, $filter = 'raw') {
 	global $wpdb;
 
@@ -57,16 +45,6 @@ function get_bookmark($bookmark, $output = OBJECT, $filter = 'raw') {
 	}
 }
 
-/**
- * Retrieve single bookmark data item or field.
- *
- * @since 2.3.0
- *
- * @param string $field The name of the data field to return
- * @param int $bookmark The bookmark ID to get field
- * @param string $context Optional. The context of how the field will be used.
- * @return string|WP_Error
- */
 function get_bookmark_field( $field, $bookmark, $context = 'display' ) {
 	$bookmark = (int) $bookmark;
 	$bookmark = get_bookmark( $bookmark );
@@ -83,37 +61,6 @@ function get_bookmark_field( $field, $bookmark, $context = 'display' ) {
 	return sanitize_bookmark_field($field, $bookmark->$field, $bookmark->link_id, $context);
 }
 
-/**
- * Retrieves the list of bookmarks
- *
- * Attempts to retrieve from the cache first based on MD5 hash of arguments. If
- * that fails, then the query will be built from the arguments and executed. The
- * results will be stored to the cache.
- *
- * @since 2.1.0
- *
- * @global wpdb $wpdb WordPress database abstraction object.
- *
- * @param string|array $args {
- *     Optional. String or array of arguments to retrieve bookmarks.
- *
- *     @type string   $orderby        How to order the links by. Accepts post fields. Default 'name'.
- *     @type string   $order          Whether to order bookmarks in ascending or descending order.
- *                                    Accepts 'ASC' (ascending) or 'DESC' (descending). Default 'ASC'.
- *     @type int      $limit          Amount of bookmarks to display. Accepts 1+ or -1 for all.
- *                                    Default -1.
- *     @type string   $category       Comma-separated list of category ids to include links from.
- *                                    Default empty.
- *     @type string   $category_name  Category to retrieve links for by name. Default empty.
- *     @type int|bool $hide_invisible Whether to show or hide links marked as 'invisible'. Accepts
- *                                    1|true or 0|false. Default 1|true.
- *     @type int|bool $show_updated   Whether to display the time the bookmark was last updated.
- *                                    Accepts 1|true or 0|false. Default 0|false.
- *     @type string   $include        Comma-separated list of bookmark IDs to include. Default empty.
- *     @type string   $exclude        Comma-separated list of bookmark IDs to exclude. Default empty.
- * }
- * @return array List of bookmark row objects.
- */
 function get_bookmarks( $args = '' ) {
 	global $wpdb;
 
@@ -131,21 +78,7 @@ function get_bookmarks( $args = '' ) {
 	if ( $cache = wp_cache_get( 'get_bookmarks', 'bookmark' ) ) {
 		if ( is_array( $cache ) && isset( $cache[ $key ] ) ) {
 			$bookmarks = $cache[ $key ];
-			/**
-			 * Filter the returned list of bookmarks.
-			 *
-			 * The first time the hook is evaluated in this file, it returns the cached
-			 * bookmarks list. The second evaluation returns a cached bookmarks list if the
-			 * link category is passed but does not exist. The third evaluation returns
-			 * the full cached results.
-			 *
-			 * @since 2.1.0
-			 *
-			 * @see get_bookmarks()
-			 *
-			 * @param array $bookmarks List of the cached bookmarks.
-			 * @param array $r         An array of bookmark query arguments.
-			 */
+
 			return apply_filters( 'get_bookmarks', $bookmarks, $r );
 		}
 	}
@@ -328,30 +261,6 @@ function sanitize_bookmark($bookmark, $context = 'display') {
 	return $bookmark;
 }
 
-/**
- * Sanitizes a bookmark field
- *
- * Sanitizes the bookmark fields based on what the field name is. If the field
- * has a strict value set, then it will be tested for that, else a more generic
- * filtering is applied. After the more strict filter is applied, if the
- * $context is 'raw' then the value is immediately return.
- *
- * Hooks exist for the more generic cases. With the 'edit' context, the
- * 'edit_$field' filter will be called and passed the $value and $bookmark_id
- * respectively. With the 'db' context, the 'pre_$field' filter is called and
- * passed the value. The 'display' context is the final context and has the
- * $field has the filter name and is passed the $value, $bookmark_id, and
- * $context respectively.
- *
- * @since 2.3.0
- *
- * @param string $field The bookmark field
- * @param mixed $value The bookmark field value
- * @param int $bookmark_id Bookmark ID
- * @param string $context How to filter the field value. Either 'raw', 'edit',
- *		'attribute', 'js', 'db', or 'display'
- * @return mixed The filtered value
- */
 function sanitize_bookmark_field($field, $value, $bookmark_id, $context) {
 	switch ( $field ) {
 	case 'link_id' : // ints
@@ -387,10 +296,8 @@ function sanitize_bookmark_field($field, $value, $bookmark_id, $context) {
 			$value = esc_attr($value);
 		}
 	} elseif ( 'db' == $context ) {
-		/** This filter is documented in wp-includes/post.php */
 		$value = apply_filters( "pre_$field", $value );
 	} else {
-		/** This filter is documented in wp-includes/post.php */
 		$value = apply_filters( $field, $value, $bookmark_id, $context );
 
 		if ( 'attribute' == $context ) {
@@ -403,13 +310,6 @@ function sanitize_bookmark_field($field, $value, $bookmark_id, $context) {
 	return $value;
 }
 
-/**
- * Deletes the bookmark cache.
- *
- * @since 2.7.0
- *
- * @param int $bookmark_id Bookmark ID.
- */
 function clean_bookmark_cache( $bookmark_id ) {
 	wp_cache_delete( $bookmark_id, 'bookmark' );
 	wp_cache_delete( 'get_bookmarks', 'bookmark' );

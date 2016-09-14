@@ -19,37 +19,12 @@ function get_the_author($deprecated = '') {
 	return apply_filters('the_author', is_object($authordata) ? $authordata->display_name : null);
 }
 
-function the_author( $deprecated = '', $deprecated_echo = true ) {
-	if ( ! empty( $deprecated ) ) {
-		_deprecated_argument( __FUNCTION__, '2.1' );
-	}
-
-	if ( true !== $deprecated_echo ) {
-		_deprecated_argument( __FUNCTION__, '1.5',
-			/* translators: %s: get_the_author() */
-			sprintf( __( 'Use %s instead if you do not want the value echoed.' ),
-				'<code>get_the_author()</code>'
-			)
-		);
-	}
-
-	if ( $deprecated_echo ) {
-		echo get_the_author();
-	}
-
-	return get_the_author();
-}
-
 function get_the_modified_author() {
 	if ( $last_id = get_post_meta( get_post()->ID, '_edit_last', true) ) {
 		$last_user = get_userdata($last_id);
 
 		return apply_filters('the_modified_author', $last_user->display_name);
 	}
-}
-
-function the_modified_author() {
-	echo get_the_modified_author();
 }
 
 function get_the_author_meta( $field = '', $user_id = false ) {
@@ -68,12 +43,6 @@ function get_the_author_meta( $field = '', $user_id = false ) {
 	$value = isset( $authordata->$field ) ? $authordata->$field : '';
 
 	return apply_filters( 'get_the_author_' . $field, $value, $user_id, $original_user_id );
-}
-
-function the_author_meta( $field = '', $user_id = false ) {
-	$author_meta = get_the_author_meta( $field, $user_id );
-
-	echo apply_filters( 'the_author_' . $field, $author_meta, $user_id );
 }
 
 function get_the_author_link() {
@@ -105,13 +74,6 @@ function get_the_author_posts_link() {
 		get_the_author()
 	);
 
-	/**
-	 * Filter the link to the author page of the author of the current post.
-	 *
-	 * @since 2.9.0
-	 *
-	 * @param string $link HTML link.
-	 */
 	return apply_filters( 'the_author_posts_link', $link );
 }
 
@@ -170,59 +132,44 @@ function wp_list_authors( $args = '' ) {
 	}
 	foreach ( $authors as $author_id ) {
 		$author = get_userdata( $author_id );
-
 		if ( $args['exclude_admin'] && 'admin' == $author->display_name ) {
 			continue;
 		}
-
 		$posts = isset( $author_count[$author->ID] ) ? $author_count[$author->ID] : 0;
-
 		if ( ! $posts && $args['hide_empty'] ) {
 			continue;
 		}
-
 		if ( $args['show_fullname'] && $author->first_name && $author->last_name ) {
 			$name = "$author->first_name $author->last_name";
 		} else {
 			$name = $author->display_name;
 		}
-
 		if ( ! $args['html'] ) {
 			$return .= $name . ', ';
-
-			continue; // No need to go further to process HTML.
+			continue;
 		}
-
 		if ( 'list' == $args['style'] ) {
 			$return .= '<li>';
 		}
-
-		$link = '<a href="' . get_author_posts_url( $author->ID, $author->user_nicename ) . '" title="' . esc_attr( sprintf(__("Posts by %s"), $author->display_name) ) . '">' . $name . '</a>';
-
+		$link = '<a href="' . get_author_posts_url( $author->ID, $author->user_nicename ) . '" title="' . esc_attr( sprintf("Posts by %s", $author->display_name) ) . '">' . $name . '</a>';
 		if ( ! empty( $args['feed_image'] ) || ! empty( $args['feed'] ) ) {
 			$link .= ' ';
 			if ( empty( $args['feed_image'] ) ) {
 				$link .= '(';
 			}
-
 			$link .= '<a href="' . get_author_feed_link( $author->ID, $args['feed_type'] ) . '"';
-
 			$alt = '';
 			if ( ! empty( $args['feed'] ) ) {
 				$alt = ' alt="' . esc_attr( $args['feed'] ) . '"';
 				$name = $args['feed'];
 			}
-
 			$link .= '>';
-
 			if ( ! empty( $args['feed_image'] ) ) {
 				$link .= '<img src="' . esc_url( $args['feed_image'] ) . '" style="border: none;"' . $alt . ' />';
 			} else {
 				$link .= $name;
 			}
-
 			$link .= '</a>';
-
 			if ( empty( $args['feed_image'] ) ) {
 				$link .= ')';
 			}
@@ -242,27 +189,4 @@ function wp_list_authors( $args = '' ) {
 		return $return;
 	}
 	echo $return;
-}
-
-function is_multi_author() {
-	global $wpdb;
-
-	if ( false === ( $is_multi_author = get_transient( 'is_multi_author' ) ) ) {
-		$rows = (array) $wpdb->get_col("SELECT DISTINCT post_author FROM $wpdb->posts WHERE post_type = 'post' AND post_status = 'publish' LIMIT 2");
-		$is_multi_author = 1 < count( $rows ) ? 1 : 0;
-		set_transient( 'is_multi_author', $is_multi_author );
-	}
-
-	/**
-	 * Filter whether the site has more than one author with published posts.
-	 *
-	 * @since 3.2.0
-	 *
-	 * @param bool $is_multi_author Whether $is_multi_author should evaluate as true.
-	 */
-	return apply_filters( 'is_multi_author', (bool) $is_multi_author );
-}
-
-function __clear_multi_author_cache() {
-	delete_transient( 'is_multi_author' );
 }

@@ -50,35 +50,35 @@ function wp_default_scripts( &$scripts ) {
 	$scripts->add( 'sack', "/wp-includes/js/tw-sack.js", array(), '1.6.1', 1 );
 	$scripts->add( 'quicktags', "/wp-includes/js/quicktags.js", array(), false, 1 );
 	did_action( 'init' ) && $scripts->localize( 'quicktags', 'quicktagsL10n', array(
-		'closeAllOpenTags'      => __( 'Close all open tags' ),
-		'closeTags'             => __( 'close tags' ),
-		'enterURL'              => __( 'Enter the URL' ),
-		'enterImageURL'         => __( 'Enter the URL of the image' ),
-		'enterImageDescription' => __( 'Enter a description of the image' ),
-		'textdirection'         => __( 'text direction' ),
-		'toggleTextdirection'   => __( 'Toggle Editor Text Direction' ),
-		'dfw'                   => __( 'Distraction-free writing mode' ),
-		'strong'          => __( 'Bold' ),
-		'strongClose'     => __( 'Close bold tag' ),
-		'em'              => __( 'Italic' ),
-		'emClose'         => __( 'Close italic tag' ),
-		'link'            => __( 'Insert link' ),
-		'blockquote'      => __( 'Blockquote' ),
-		'blockquoteClose' => __( 'Close blockquote tag' ),
-		'del'             => __( 'Deleted text (strikethrough)' ),
-		'delClose'        => __( 'Close deleted text tag' ),
-		'ins'             => __( 'Inserted text' ),
-		'insClose'        => __( 'Close inserted text tag' ),
-		'image'           => __( 'Insert image' ),
-		'ul'              => __( 'Bulleted list' ),
-		'ulClose'         => __( 'Close bulleted list tag' ),
-		'ol'              => __( 'Numbered list' ),
-		'olClose'         => __( 'Close numbered list tag' ),
-		'li'              => __( 'List item' ),
-		'liClose'         => __( 'Close list item tag' ),
-		'code'            => __( 'Code' ),
-		'codeClose'       => __( 'Close code tag' ),
-		'more'            => __( 'Insert Read More tag' ),
+		'closeAllOpenTags'      => 'Close all open tags',
+		'closeTags'             => 'close tags',
+		'enterURL'              => 'Enter the URL',
+		'enterImageURL'         => 'Enter the URL of the image',
+		'enterImageDescription' => 'Enter a description of the image',
+		'textdirection'         => 'text direction',
+		'toggleTextdirection'   => 'Toggle Editor Text Direction',
+		'dfw'                   => 'Distraction-free writing mode',
+		'strong'          => 'Bold',
+		'strongClose'     => 'Close bold tag',
+		'em'              => 'Italic',
+		'emClose'         => 'Close italic tag',
+		'link'            => 'Insert link',
+		'blockquote'      => 'Blockquote',
+		'blockquoteClose' => 'Close blockquote tag',
+		'del'             => 'Deleted text (strikethrough)',
+		'delClose'        => 'Close deleted text tag',
+		'ins'             => 'Inserted text',
+		'insClose'        => 'Close inserted text tag',
+		'image'           => 'Insert image',
+		'ul'              => 'Bulleted list',
+		'ulClose'         => 'Close bulleted list tag',
+		'ol'              => 'Numbered list',
+		'olClose'         => 'Close numbered list tag',
+		'li'              => 'List item',
+		'liClose'         => 'Close list item tag',
+		'code'            => 'Code',
+		'codeClose'       => 'Close code tag',
+		'more'            => 'Insert Read More tag',
 	) );
 
 	$scripts->add( 'colorpicker', "/wp-includes/js/colorpicker.js", array('prototype'), '3517m' );
@@ -163,12 +163,10 @@ function wp_default_scripts( &$scripts ) {
 	$scripts->add( 'jquery-ui-tooltip', "/wp-includes/js/jquery/ui/tooltipx.js", array( 'jquery-ui-core', 'jquery-ui-widget', 'jquery-ui-position' ), '1.11.4', 1 );
 	$scripts->add( 'jquery-ui-widget', "/wp-includes/js/jquery/ui/widget.js", array('jquery'), '1.11.4', 1 );
 
-	// Strings for 'jquery-ui-autocomplete' live region messages
 	did_action( 'init' ) && $scripts->localize( 'jquery-ui-autocomplete', 'uiAutocompleteL10n', array(
-		'noResults' => __( 'No search results.' ),
-		/* translators: Number of results found when using jQuery UI Autocomplete */
-		'oneResult' => __( '1 result found. Use up and down arrow keys to navigate.' ),
-		'manyResults' => __( '%d results found. Use up and down arrow keys to navigate.' ),
+		'noResults' => 'No search results.',
+		'oneResult' => '1 result found. Use up and down arrow keys to navigate.',
+		'manyResults' => '%d results found. Use up and down arrow keys to navigate.',
 	) );
 
 	$scripts->add( 'jquery-form', "/wp-includes/js/jquery/jquery.form.js", array('jquery'), '3.37.0', 1 );
@@ -296,12 +294,12 @@ function wp_default_scripts( &$scripts ) {
 	$scripts->add( 'froogaloop',  "/wp-includes/js/mediaelement/froogaloop.min.js", array(), '2.0' );
 	$scripts->add( 'wp-playlist', "/wp-includes/js/mediaelement/wp-playlist$suffix.js", array( 'wp-util', 'backbone', 'mediaelement' ), false, 1 );
 
-	$scripts->add( 'zxcvbn-async', "/wp-includes/js/zxcvbn-async$suffix.js", array(), '1.0' );
+	$scripts->add( 'zxcvbn-async', "/wp-includes/js/zxcvbn-async.js", array(), '1.0' );
 	did_action( 'init' ) && $scripts->localize( 'zxcvbn-async', '_zxcvbnSettings', array(
 		'src' => empty( $guessed_url ) ? includes_url( '/js/zxcvbn.min.js' ) : $scripts->base_url . '/wp-includes/js/zxcvbn.min.js',
 	) );
 
-	$scripts->add( 'password-strength-meter', "/wp-admin/js/password-strength-meter$suffix.js", array( 'jquery', 'zxcvbn-async' ), false, 1 );
+	$scripts->add( 'password-strength-meter', "/wp-admin/js/password-strength-meter.js", array( 'jquery', 'zxcvbn-async' ), false, 1 );
 	did_action( 'init' ) && $scripts->localize( 'password-strength-meter', 'pwsL10n', array(
 		'short'    => _x( 'Very weak', 'password strength' ),
 		'bad'      => _x( 'Weak', 'password strength' ),
@@ -310,7 +308,7 @@ function wp_default_scripts( &$scripts ) {
 		'mismatch' => _x( 'Mismatch', 'password mismatch' ),
 	) );
 
-	$scripts->add( 'user-profile', "/wp-admin/js/user-profile$suffix.js", array( 'jquery', 'password-strength-meter', 'wp-util' ), false, 1 );
+	$scripts->add( 'user-profile', "/wp-admin/js/user-profile.js", array( 'jquery', 'password-strength-meter', 'wp-util' ), false, 1 );
 	did_action( 'init' ) && $scripts->localize( 'user-profile', 'userProfileL10n', array(
 		'warn'     => __( 'Your new password has not been saved.' ),
 		'show'     => __( 'Show' ),

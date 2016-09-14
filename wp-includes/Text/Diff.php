@@ -17,22 +17,8 @@
  */
 class Text_Diff {
 
-    /**
-     * Array of changes.
-     *
-     * @var array
-     */
     var $_edits;
 
-    /**
-     * Computes diffs between sequences of strings.
-     *
-     * @param string $engine     Name of the diffing engine to use.  'auto'
-     *                           will automatically select the best.
-     * @param array $params      Parameters to pass to the diffing engine.
-     *                           Normally an array of two arrays, each
-     *                           containing the lines from a file.
-     */
     function __construct( $engine, $params )
     {
         // Backward compatibility workaround.
@@ -70,13 +56,6 @@ class Text_Diff {
         return $this->_edits;
     }
 
-    /**
-     * returns the number of new (added) lines in a given diff.
-     *
-     * @since Text_Diff 1.1.0
-     *
-     * @return integer The number of new lines
-     */
     function countAddedLines()
     {
         $count = 0;
@@ -89,13 +68,6 @@ class Text_Diff {
         return $count;
     }
 
-    /**
-     * Returns the number of deleted (removed) lines in a given diff.
-     *
-     * @since Text_Diff 1.1.0
-     *
-     * @return integer The number of deleted lines
-     */
     function countDeletedLines()
     {
         $count = 0;
@@ -108,20 +80,6 @@ class Text_Diff {
         return $count;
     }
 
-    /**
-     * Computes a reversed diff.
-     *
-     * Example:
-     * <code>
-     * $diff = new Text_Diff($lines1, $lines2);
-     * $rev = $diff->reverse();
-     * </code>
-     *
-     * @return Text_Diff  A Diff object representing the inverse of the
-     *                    original diff.  Note that we purposely don't return a
-     *                    reference here, since this essentially is a clone()
-     *                    method.
-     */
     function reverse()
     {
         if (version_compare(zend_version(), '2', '>')) {
@@ -136,11 +94,6 @@ class Text_Diff {
         return $rev;
     }
 
-    /**
-     * Checks for an empty diff.
-     *
-     * @return boolean  True if two sequences were identical.
-     */
     function isEmpty()
     {
         foreach ($this->_edits as $edit) {
@@ -151,13 +104,6 @@ class Text_Diff {
         return true;
     }
 
-    /**
-     * Computes the length of the Longest Common Subsequence (LCS).
-     *
-     * This is mostly for diagnostic purposes.
-     *
-     * @return integer  The length of the LCS.
-     */
     function lcs()
     {
         $lcs = 0;
@@ -169,13 +115,6 @@ class Text_Diff {
         return $lcs;
     }
 
-    /**
-     * Gets the original set of lines.
-     *
-     * This reconstructs the $from_lines parameter passed to the constructor.
-     *
-     * @return array  The original sequence of strings.
-     */
     function getOriginal()
     {
         $lines = array();
@@ -187,13 +126,6 @@ class Text_Diff {
         return $lines;
     }
 
-    /**
-     * Gets the final set of lines.
-     *
-     * This reconstructs the $to_lines parameter passed to the constructor.
-     *
-     * @return array  The sequence of strings.
-     */
     function getFinal()
     {
         $lines = array();
@@ -295,22 +227,6 @@ class Text_Diff {
  */
 class Text_MappedDiff extends Text_Diff {
 
-    /**
-     * Computes a diff between sequences of strings.
-     *
-     * This can be used to compute things like case-insensitve diffs, or diffs
-     * which ignore changes in white-space.
-     *
-     * @param array $from_lines         An array of strings.
-     * @param array $to_lines           An array of strings.
-     * @param array $mapped_from_lines  This array should have the same size
-     *                                  number of elements as $from_lines.  The
-     *                                  elements in $mapped_from_lines and
-     *                                  $mapped_to_lines are what is actually
-     *                                  compared when computing the diff.
-     * @param array $mapped_to_lines    This array should have the same number
-     *                                  of elements as $to_lines.
-     */
     function __construct($from_lines, $to_lines,
                              $mapped_from_lines, $mapped_to_lines)
     {

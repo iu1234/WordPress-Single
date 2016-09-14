@@ -186,9 +186,6 @@ function locate_template($template_names, $load = false, $require_once = true ) 
 		} elseif ( file_exists(get_template_directory() . '/' . $template_name) ) {
 			$located = get_template_directory() . '/' . $template_name;
 			break;
-		} elseif ( file_exists( ABSPATH . WPINC . '/theme-compat/' . $template_name ) ) {
-			$located = ABSPATH . WPINC . '/theme-compat/' . $template_name;
-			break;
 		}
 	}
 	if ( $load && '' != $located )
