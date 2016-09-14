@@ -6,27 +6,10 @@
  * @subpackage Administration
  */
 
-/**
- * Creates a new user from the "Users" form using $_POST information.
- *
- * @since 2.0.0
- *
- * @return int|WP_Error WP_Error or User ID.
- */
 function add_user() {
 	return edit_user();
 }
 
-/**
- * Edit user settings based on contents of $_POST
- *
- * Used on user-edit.php and profile.php to manage and process user options, passwords etc.
- *
- * @since 2.0.0
- *
- * @param int $user_id Optional. User ID.
- * @return int|WP_Error user id of the updated user
- */
 function edit_user( $user_id = 0 ) {
 	$wp_roles = wp_roles();
 	$user = new stdClass;
@@ -113,30 +96,19 @@ function edit_user( $user_id = 0 ) {
 		$errors->add( 'nickname', __( '<strong>ERROR</strong>: Please enter a nickname.' ) );
 	}
 
-	/**
-	 * Fires before the password and confirm password fields are checked for congruity.
-	 *
-	 * @since 1.5.1
-	 *
-	 * @param string $user_login The username.
-	 * @param string &$pass1     The password, passed by reference.
-	 * @param string &$pass2     The confirmed password, passed by reference.
-	 */
 	do_action_ref_array( 'check_passwords', array( $user->user_login, &$pass1, &$pass2 ) );
 
-	// Check for blank password when adding a user.
 	if ( ! $update && empty( $pass1 ) ) {
-		$errors->add( 'pass', __( '<strong>ERROR</strong>: Please enter a password.' ), array( 'form-field' => 'pass1' ) );
+		$errors->add( 'pass', '<strong>ERROR</strong>: Please enter a password.', array( 'form-field' => 'pass1' ) );
 	}
 
 	// Check for "\" in password.
 	if ( false !== strpos( wp_unslash( $pass1 ), "\\" ) ) {
-		$errors->add( 'pass', __( '<strong>ERROR</strong>: Passwords may not contain the character "\\".' ), array( 'form-field' => 'pass1' ) );
+		$errors->add( 'pass', '<strong>ERROR</strong>: Passwords may not contain the character "\\".', array( 'form-field' => 'pass1' ) );
 	}
 
-	// Checking the password has been typed twice the same.
 	if ( ( $update || ! empty( $pass1 ) ) && $pass1 != $pass2 ) {
-		$errors->add( 'pass', __( '<strong>ERROR</strong>: Please enter the same password in both password fields.' ), array( 'form-field' => 'pass1' ) );
+		$errors->add( 'pass', '<strong>ERROR</strong>: Please enter the same password in both password fields.', array( 'form-field' => 'pass1' ) );
 	}
 
 	if ( !empty( $pass1 ) )
@@ -164,15 +136,6 @@ function edit_user( $user_id = 0 ) {
 		$errors->add( 'email_exists', __('<strong>ERROR</strong>: This email is already registered, please choose another one.'), array( 'form-field' => 'email' ) );
 	}
 
-	/**
-	 * Fires before user profile update errors are returned.
-	 *
-	 * @since 2.8.0
-	 *
-	 * @param WP_Error &$errors WP_Error object, passed by reference.
-	 * @param bool     $update  Whether this is a user update.
-	 * @param WP_User  &$user   WP_User object, passed by reference.
-	 */
 	do_action_ref_array( 'user_profile_update_errors', array( &$errors, $update, &$user ) );
 
 	if ( $errors->get_error_codes() )
@@ -198,22 +161,6 @@ function edit_user( $user_id = 0 ) {
 	return $user_id;
 }
 
-/**
- * Fetch a filtered list of user roles that the current user is
- * allowed to edit.
- *
- * Simple function who's main purpose is to allow filtering of the
- * list of roles in the $wp_roles object so that plugins can remove
- * inappropriate ones depending on the situation or user making edits.
- * Specifically because without filtering anyone with the edit_users
- * capability can edit others to be administrators, even if they are
- * only editors or authors. This filter allows admins to delegate
- * user management.
- *
- * @since 2.8.0
- *
- * @return array
- */
 function get_editable_roles() {
 	$all_roles = wp_roles()->roles;
 
@@ -229,14 +176,6 @@ function get_editable_roles() {
 	return $editable_roles;
 }
 
-/**
- * Retrieve user data and filter it.
- *
- * @since 2.0.5
- *
- * @param int $user_id User ID.
- * @return WP_User|bool WP_User object on success, false on failure.
- */
 function get_user_to_edit( $user_id ) {
 	$user = get_userdata( $user_id );
 
@@ -246,47 +185,14 @@ function get_user_to_edit( $user_id ) {
 	return $user;
 }
 
-/**
- * Retrieve the user's drafts.
- *
- * @since 2.0.0
- *
- * @global wpdb $wpdb WordPress database abstraction object.
- *
- * @param int $user_id User ID.
- * @return array
- */
 function get_users_drafts( $user_id ) {
 	global $wpdb;
 	$query = $wpdb->prepare("SELECT ID, post_title FROM $wpdb->posts WHERE post_type = 'post' AND post_status = 'draft' AND post_author = %d ORDER BY post_modified DESC", $user_id);
 
-	/**
-	 * Filter the user's drafts query string.
-	 *
-	 * @since 2.0.0
-	 *
-	 * @param string $query The user's drafts query string.
-	 */
 	$query = apply_filters( 'get_users_drafts', $query );
 	return $wpdb->get_results( $query );
 }
 
-/**
- * Remove user and optionally reassign posts and links to another user.
- *
- * If the $reassign parameter is not assigned to a User ID, then all posts will
- * be deleted of that user. The action 'delete_user' that is passed the User ID
- * being deleted will be run after the posts are either reassigned or deleted.
- * The user meta will also be deleted that are for that User ID.
- *
- * @since 2.0.0
- *
- * @global wpdb $wpdb WordPress database abstraction object.
- *
- * @param int $id User ID.
- * @param int $reassign Optional. Reassign posts and links to new User ID.
- * @return bool True when finished.
- */
 function wp_delete_user( $id, $reassign = null ) {
 	global $wpdb;
 
@@ -307,15 +213,6 @@ function wp_delete_user( $id, $reassign = null ) {
 		$reassign = (int) $reassign;
 	}
 
-	/**
-	 * Fires immediately before a user is deleted from the database.
-	 *
-	 * @since 2.0.0
-	 *
-	 * @param int      $id       ID of the user to delete.
-	 * @param int|null $reassign ID of the user to reassign posts and links to.
-	 *                           Default null, for no reassignment.
-	 */
 	do_action( 'delete_user', $id, $reassign );
 
 	if ( null === $reassign ) {
@@ -328,14 +225,6 @@ function wp_delete_user( $id, $reassign = null ) {
 			}
 		}
 
-		/**
-		 * Filter the list of post types to delete with a user.
-		 *
-		 * @since 3.4.0
-		 *
-		 * @param array $post_types_to_delete Post types to delete.
-		 * @param int   $id                   User ID.
-		 */
 		$post_types_to_delete = apply_filters( 'post_types_to_delete_with_user', $post_types_to_delete, $id );
 		$post_types_to_delete = implode( "', '", $post_types_to_delete );
 		$post_ids = $wpdb->get_col( $wpdb->prepare( "SELECT ID FROM $wpdb->posts WHERE post_author = %d AND post_type IN ('$post_types_to_delete')", $id ) );
@@ -379,27 +268,11 @@ function wp_delete_user( $id, $reassign = null ) {
 
 	clean_user_cache( $user );
 
-	/**
-	 * Fires immediately after a user is deleted from the database.
-	 *
-	 * @since 2.9.0
-	 *
-	 * @param int      $id       ID of the deleted user.
-	 * @param int|null $reassign ID of the user to reassign posts and links to.
-	 *                           Default null, for no reassignment.
-	 */
 	do_action( 'deleted_user', $id, $reassign );
 
 	return true;
 }
 
-/**
- * Remove all capabilities from user.
- *
- * @since 2.1.0
- *
- * @param int $id User ID.
- */
 function wp_revoke_user($id) {
 	$id = (int) $id;
 
@@ -407,13 +280,6 @@ function wp_revoke_user($id) {
 	$user->remove_all_caps();
 }
 
-/**
- * @since 2.8.0
- *
- * @global int $user_ID
- *
- * @param false $errors Deprecated.
- */
 function default_password_nag_handler($errors = false) {
 	global $user_ID;
 	// Short-circuit it.
@@ -427,12 +293,6 @@ function default_password_nag_handler($errors = false) {
 	}
 }
 
-/**
- * @since 2.8.0
- *
- * @param int    $user_ID
- * @param object $old_data
- */
 function default_password_nag_edit_user($user_ID, $old_data) {
 	// Short-circuit it.
 	if ( ! get_user_option('default_password_nag', $user_ID) )
@@ -447,31 +307,22 @@ function default_password_nag_edit_user($user_ID, $old_data) {
 	}
 }
 
-/**
- * @since 2.8.0
- *
- * @global string $pagenow
- */
 function default_password_nag() {
 	global $pagenow;
-	// Short-circuit it.
+
 	if ( 'profile.php' == $pagenow || ! get_user_option('default_password_nag') )
 		return;
 
 	echo '<div class="error default-password-nag">';
 	echo '<p>';
-	echo '<strong>' . __('Notice:') . '</strong> ';
+	echo '<strong>Notice:</strong> ';
 	_e('You&rsquo;re using the auto-generated password for your account. Would you like to change it?');
 	echo '</p><p>';
-	printf( '<a href="%s">' . __('Yes, take me to my profile page') . '</a> | ', get_edit_profile_url() . '#password' );
-	printf( '<a href="%s" id="default-password-nag-no">' . __('No thanks, do not remind me again') . '</a>', '?default_password_nag=0' );
+	printf( '<a href="%s">Yes, take me to my profile page</a> | ', get_edit_profile_url() . '#password' );
+	printf( '<a href="%s" id="default-password-nag-no">No thanks, do not remind me again</a>', '?default_password_nag=0' );
 	echo '</p></div>';
 }
 
-/**
- * @since 3.5.0
- * @access private
- */
 function delete_users_add_js() { ?>
 <script>
 jQuery(document).ready( function($) {
@@ -487,13 +338,6 @@ jQuery(document).ready( function($) {
 <?php
 }
 
-/**
- * Optional SSL preference that can be turned on by hooking to the 'personal_options' action.
- *
- * @since 2.7.0
- *
- * @param object $user User data object
- */
 function use_ssl_preference($user) {
 ?>
 	<tr class="user-use-ssl-wrap">
@@ -503,11 +347,6 @@ function use_ssl_preference($user) {
 <?php
 }
 
-/**
- *
- * @param string $text
- * @return string
- */
 function admin_created_user_email( $text ) {
 	$roles = get_editable_roles();
 	$role = $roles[ $_REQUEST['role'] ];

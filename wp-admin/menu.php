@@ -33,7 +33,7 @@ elseif ( current_user_can( 'update_plugins' ) )
 	$cap = 'update_plugins';
 else
 	$cap = 'update_themes';
-$submenu[ 'index.php' ][10] = array( sprintf( __('Updates %s'), "<span class='update-plugins count-{$update_data['counts']['total']}' title='{$update_data['title']}'><span class='update-count'>" . number_format_i18n($update_data['counts']['total']) . "</span></span>" ), $cap, 'update-core.php');
+$submenu[ 'index.php' ][10] = array( sprintf( 'Updates %s', "<span class='update-plugins count-{$update_data['counts']['total']}' title='{$update_data['title']}'><span class='update-count'>" . number_format_i18n($update_data['counts']['total']) . "</span></span>" ), $cap, 'update-core.php');
 unset( $cap );
 
 $menu[4] = array( '', 'read', 'separator1', '', 'wp-menu-separator' );
@@ -41,7 +41,7 @@ $menu[4] = array( '', 'read', 'separator1', '', 'wp-menu-separator' );
 // $menu[5] = Posts
 
 $menu[10] = array( 'Media', 'upload_files', 'upload.php', '', 'menu-top menu-icon-media', 'menu-media', 'dashicons-admin-media' );
-	$submenu['upload.php'][5] = array( __('Library'), 'upload_files', 'upload.php');
+	$submenu['upload.php'][5] = array( 'Library', 'upload_files', 'upload.php');
 	/* translators: add new file */
 	$submenu['upload.php'][10] = array( _x('Add New', 'file'), 'upload_files', 'media-new.php');
 	$i = 15;
@@ -54,10 +54,10 @@ $menu[10] = array( 'Media', 'upload_files', 'upload.php', '', 'menu-top menu-ico
 	unset( $tax, $i );
 
 $menu[15] = array( 'Links', 'manage_links', 'link-manager.php', '', 'menu-top menu-icon-links', 'menu-links', 'dashicons-admin-links' );
-	$submenu['link-manager.php'][5] = array( _x('All Links', 'admin menu'), 'manage_links', 'link-manager.php' );
+	$submenu['link-manager.php'][5] = array( 'All Links', 'manage_links', 'link-manager.php' );
 	/* translators: add new links */
-	$submenu['link-manager.php'][10] = array( _x('Add New', 'link'), 'manage_links', 'link-add.php' );
-	$submenu['link-manager.php'][15] = array( __('Link Categories'), 'manage_categories', 'edit-tags.php?taxonomy=link_category' );
+	$submenu['link-manager.php'][10] = array( 'Add New', 'manage_links', 'link-add.php' );
+	$submenu['link-manager.php'][15] = array( 'Link Categories', 'manage_categories', 'edit-tags.php?taxonomy=link_category' );
 
 // $menu[20] = Pages
 
@@ -77,7 +77,7 @@ if ( current_user_can( 'edit_posts' ) ) {
 	unset( $awaiting_mod );
 }
 
-$submenu[ 'edit-comments.php' ][0] = array( __('All Comments'), 'edit_posts', 'edit-comments.php' );
+$submenu[ 'edit-comments.php' ][0] = array( 'All Comments', 'edit_posts', 'edit-comments.php' );
 
 $_wp_last_object_menu = 25; // The index of the last top-level menu in the object menu group
 
@@ -179,7 +179,7 @@ function _add_themes_utility_last() {
 }
 
 $count = '';
-if ( ! is_multisite() && current_user_can( 'update_plugins' ) ) {
+if ( current_user_can( 'update_plugins' ) ) {
 	if ( ! isset( $update_data ) )
 		$update_data = wp_get_update_data();
 	$count = "<span class='update-plugins count-{$update_data['counts']['plugins']}'><span class='plugin-count'>" . number_format_i18n($update_data['counts']['plugins']) . "</span></span>";

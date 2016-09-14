@@ -10,10 +10,8 @@
 // Bookmark hooks.
 add_action( 'admin_page_access_denied', 'wp_link_manager_disabled_message' );
 
-// Dashboard hooks.
 add_action( 'activity_box_end', 'wp_dashboard_quota' );
 
-// Media hooks.
 add_action( 'attachment_submitbox_misc_actions', 'attachment_submitbox_metadata' );
 
 add_action( 'media_upload_image', 'wp_media_upload_handler' );
@@ -37,7 +35,6 @@ add_filter( 'media_upload_library', 'media_upload_library' );
 
 add_filter( 'media_upload_tabs', 'update_gallery_tab' );
 
-// Misc hooks.
 add_action( 'admin_head', 'wp_admin_canonical_url'   );
 add_action( 'admin_head', 'wp_color_scheme_settings' );
 add_action( 'admin_head', 'wp_site_icon'             );
@@ -96,7 +93,6 @@ add_action( 'admin_notices', 'default_password_nag' );
 
 add_action( 'profile_update', 'default_password_nag_edit_user', 10, 2 );
 
-// Update hooks.
 add_action( 'admin_init', 'wp_plugin_update_rows' );
 add_action( 'admin_init', 'wp_theme_update_rows'  );
 
@@ -105,8 +101,6 @@ add_action( 'admin_notices', 'maintenance_nag', 10 );
 
 add_filter( 'update_footer', 'core_update_footer' );
 
-// Update Core hooks.
 add_action( '_core_updated_successfully', '_redirect_to_about_wordpress' );
 
-// Upgrade hooks.
 add_action( 'upgrader_process_complete', array( 'Language_Pack_Upgrader', 'async_upgrade' ), 20 );

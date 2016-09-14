@@ -7,41 +7,13 @@
  */
 
 if ( is_network_admin() ) {
-
-	/**
-	 * Fires before the administration menu loads in the Network Admin.
-	 *
-	 * The hook fires before menus and sub-menus are removed based on user privileges.
-	 *
-	 * @private
-	 * @since 3.1.0
-	 */
 	do_action( '_network_admin_menu' );
 } elseif ( is_user_admin() ) {
-
-	/**
-	 * Fires before the administration menu loads in the User Admin.
-	 *
-	 * The hook fires before menus and sub-menus are removed based on user privileges.
-	 *
-	 * @private
-	 * @since 3.1.0
-	 */
 	do_action( '_user_admin_menu' );
 } else {
-
-	/**
-	 * Fires before the administration menu loads in the admin.
-	 *
-	 * The hook fires before menus and sub-menus are removed based on user privileges.
-	 *
-	 * @private
-	 * @since 2.2.0
-	 */
 	do_action( '_admin_menu' );
 }
 
-// Create list of page plugin hook names.
 foreach ($menu as $menu_page) {
 	if ( false !== $pos = strpos($menu_page[2], '?') ) {
 		// Handle post_type=post|page|foo pages.
@@ -85,11 +57,6 @@ foreach ($submenu as $parent => $sub) {
 }
 unset($sub, $parent);
 
-/*
- * Loop over the top-level menu.
- * Menus for which the original parent is not accessible due to lack of privileges
- * will have the next submenu in line be assigned as the new menu parent.
- */
 foreach ( $menu as $id => $data ) {
 	if ( empty($submenu[$data[2]]) )
 		continue;
@@ -97,10 +64,7 @@ foreach ( $menu as $id => $data ) {
 	$first_sub = reset( $subs );
 	$old_parent = $data[2];
 	$new_parent = $first_sub[2];
-	/*
-	 * If the first submenu is not the same as the assigned parent,
-	 * make the first submenu the new parent.
-	 */
+
 	if ( $new_parent != $old_parent ) {
 		$_wp_real_parent_file[$old_parent] = $new_parent;
 		$menu[$id][2] = $new_parent;
@@ -246,31 +210,10 @@ if ( apply_filters( 'custom_menu_order', false ) ) {
 	unset($menu_item);
 	$default_menu_order = $menu_order;
 
-	/**
-	 * Filter the order of administration menu items.
-	 *
-	 * A truthy value must first be passed to the {@see 'custom_menu_order'} filter
-	 * for this filter to work. Use the following to enable custom menu ordering:
-	 *
-	 *     add_filter( 'custom_menu_order', '__return_true' );
-	 *
-	 * @since 2.8.0
-	 *
-	 * @param array $menu_order An ordered array of menu items.
-	 */
 	$menu_order = apply_filters( 'menu_order', $menu_order );
 	$menu_order = array_flip($menu_order);
 	$default_menu_order = array_flip($default_menu_order);
 
-	/**
-	 *
-	 * @global array $menu_order
-	 * @global array $default_menu_order
-	 *
-	 * @param array $a
-	 * @param array $b
-	 * @return int
-	 */
 	function sort_menu($a, $b) {
 		global $menu_order, $default_menu_order;
 		$a = $a[2];
@@ -321,11 +264,6 @@ unset( $last_menu_key );
 
 if ( !user_can_access_admin_page() ) {
 
-	/**
-	 * Fires when access to an admin page is denied.
-	 *
-	 * @since 2.5.0
-	 */
 	do_action( 'admin_page_access_denied' );
 
 	wp_die( 'You do not have sufficient permissions to access this page.', 403 );

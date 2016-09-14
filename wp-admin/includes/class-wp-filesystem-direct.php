@@ -6,63 +6,21 @@
  * @subpackage Filesystem
  */
 
-/**
- * WordPress Filesystem Class for direct PHP file and folder manipulation.
- *
- * @since 2.5.0
- * @package WordPress
- * @subpackage Filesystem
- * @uses WP_Filesystem_Base Extends class
- */
 class WP_Filesystem_Direct extends WP_Filesystem_Base {
 
-	/**
-	 * constructor
-	 *
-	 * @access public
-	 *
-	 * @param mixed $arg ignored argument
-	 */
 	public function __construct($arg) {
 		$this->method = 'direct';
 		$this->errors = new WP_Error();
 	}
 
-	/**
-	 * Reads entire file into a string
-	 *
-	 * @access public
-	 *
-	 * @param string $file Name of the file to read.
-	 * @return string|bool The function returns the read data or false on failure.
-	 */
 	public function get_contents($file) {
 		return @file_get_contents($file);
 	}
 
-	/**
-	 * Reads entire file into an array
-	 *
-	 * @access public
-	 *
-	 * @param string $file Path to the file.
-	 * @return array|bool the file contents in an array or false on failure.
-	 */
 	public function get_contents_array($file) {
 		return @file($file);
 	}
 
-	/**
-	 * Write a string to a file
-	 *
-	 * @access public
-	 *
-	 * @param string $file     Remote path to the file where to write the data.
-	 * @param string $contents The data to write.
-	 * @param int    $mode     Optional. The file permissions as octal number, usually 0644.
-	 *                         Default false.
-	 * @return bool False upon failure, true otherwise.
-	 */
 	public function put_contents( $file, $contents, $mode = false ) {
 		$fp = @fopen( $file, 'wb' );
 		if ( ! $fp )
@@ -97,28 +55,10 @@ class WP_Filesystem_Direct extends WP_Filesystem_Base {
 		return @getcwd();
 	}
 
-	/**
-	 * Change directory
-	 *
-	 * @access public
-	 *
-	 * @param string $dir The new current directory.
-	 * @return bool Returns true on success or false on failure.
-	 */
 	public function chdir($dir) {
 		return @chdir($dir);
 	}
 
-	/**
-	 * Changes file group
-	 *
-	 * @access public
-	 *
-	 * @param string $file      Path to the file.
-	 * @param mixed  $group     A group name or number.
-	 * @param bool   $recursive Optional. If set True changes file group recursively. Default false.
-	 * @return bool Returns true on success or false on failure.
-	 */
 	public function chgrp($file, $group, $recursive = false) {
 		if ( ! $this->exists($file) )
 			return false;
