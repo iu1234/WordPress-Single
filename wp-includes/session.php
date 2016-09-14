@@ -18,7 +18,6 @@ abstract class WP_Session_Tokens {
 	}
 
 	final private function hash_token( $token ) {
-		// If ext/hash is not present, use sha1() instead.
 		if ( function_exists( 'hash' ) ) {
 			return hash( 'sha256', $token );
 		} else {

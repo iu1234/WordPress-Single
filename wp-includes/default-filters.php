@@ -140,17 +140,6 @@ add_filter( 'widget_text', 'balanceTags' );
 
 add_filter( 'date_i18n', 'wp_maybe_decline_date' );
 
-add_filter( 'the_title_rss',      'strip_tags'                    );
-add_filter( 'the_title_rss',      'ent2ncr',                    8 );
-add_filter( 'the_title_rss',      'esc_html'                      );
-add_filter( 'the_content_rss',    'ent2ncr',                    8 );
-add_filter( 'the_content_feed',   '_oembed_filter_feed_content'   );
-add_filter( 'the_excerpt_rss',    'convert_chars'                 );
-add_filter( 'the_excerpt_rss',    'ent2ncr',                    8 );
-add_filter( 'comment_author_rss', 'ent2ncr',                    8 );
-add_filter( 'comment_text_rss',   'ent2ncr',                    8 );
-add_filter( 'comment_text_rss',   'esc_html'                      );
-add_filter( 'bloginfo_rss',       'ent2ncr',                    8 );
 add_filter( 'the_author',         'ent2ncr',                    8 );
 add_filter( 'the_guid',           'esc_url'                       );
 
@@ -215,13 +204,6 @@ add_action( 'login_head',          'print_admin_styles',            9     );
 add_action( 'login_head',          'wp_site_icon',                  99    );
 add_action( 'login_footer',        'wp_print_footer_scripts',       20    );
 add_action( 'login_init',          'send_frame_options_header',     10, 0 );
-
-foreach ( array( 'rss2_head', 'commentsrss2_head', 'rss_head', 'rdf_header', 'atom_head', 'comments_atom_head', 'opml_head', 'app_head' ) as $action ) {
-	add_action( $action, 'the_generator' );
-}
-
-add_action( 'atom_head', 'atom_site_icon' );
-add_action( 'rss2_head', 'rss2_site_icon' );
 
 add_action( 'do_pings',                   'do_all_pings',                            10, 1 );
 add_action( 'do_robots',                  'do_robots'                                      );
