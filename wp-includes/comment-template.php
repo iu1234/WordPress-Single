@@ -12,7 +12,7 @@ function get_comment_author( $comment_ID = 0 ) {
 	$comment = get_comment( $comment_ID );
 
 	if ( empty( $comment->comment_author ) ) {
-		if ( $comment->user_id && $user = get_userdata( $comment->user_id ) )
+		if ( $comment->user_id && $user = get_user_by( 'id', $comment->user_id ) )
 			$author = $user->display_name;
 		else
 			$author = 'Anonymous';
@@ -143,11 +143,9 @@ function get_comment_class( $class = '', $comment_id = null, $post_id = null ) {
 		return $classes;
 	}
 
-	// Get the comment type (comment, trackback),
 	$classes[] = ( empty( $comment->comment_type ) ) ? 'comment' : $comment->comment_type;
 
-	// Add classes for comment authors that are registered users.
-	if ( $comment->user_id > 0 && $user = get_userdata( $comment->user_id ) ) {
+	if ( $comment->user_id > 0 && $user = get_user_by( 'id', $comment->user_id ) ) {
 		$classes[] = 'byuser';
 		$classes[] = 'comment-author-' . sanitize_html_class( $user->user_nicename, $comment->user_id );
 		// For comment authors who are the author of the post

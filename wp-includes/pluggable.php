@@ -33,12 +33,6 @@ function wp_get_current_user() {
 }
 endif;
 
-if ( !function_exists('get_userdata') ) :
-function get_userdata( $user_id ) {
-	return get_user_by( 'id', $user_id );
-}
-endif;
-
 if ( !function_exists('get_user_by') ) :
 function get_user_by( $field, $value ) {
 	$userdata = WP_User::get_data_by( $field, $value );
@@ -61,7 +55,6 @@ function cache_users( $user_ids ) {
 
 	$list = implode( ',', $clean );
 	$users = $wpdb->get_results( "SELECT * FROM $wpdb->users WHERE ID IN ($list)" );
-
 	$ids = array();
 	foreach ( $users as $user ) {
 		update_user_caches( $user );
@@ -305,11 +298,8 @@ function wp_mail( $to, $subject, $message, $headers = '', $attachments = array()
 	try {
 		return $phpmailer->Send();
 	} catch ( phpmailerException $e ) {
-
 		$mail_error_data = compact( 'to', 'subject', 'message', 'headers', 'attachments' );
-
  		do_action( 'wp_mail_failed', new WP_Error( $e->getCode(), $e->getMessage(), $mail_error_data ) );
-
 		return false;
 	}
 }
@@ -319,19 +309,14 @@ if ( !function_exists('wp_authenticate') ) :
 function wp_authenticate($username, $password) {
 	$username = sanitize_user($username);
 	$password = trim($password);
-
 	$user = apply_filters( 'authenticate', null, $username, $password );
-
 	if ( $user == null ) {
 		$user = new WP_Error( 'authentication_failed', '<strong>ERROR</strong>: Invalid username, email address or incorrect password.' );
 	}
-
 	$ignore_codes = array('empty_username', 'empty_password');
-
 	if (is_wp_error($user) && !in_array($user->get_error_code(), $ignore_codes) ) {
 		do_action( 'wp_login_failed', $username );
 	}
-
 	return $user;
 }
 endif;
@@ -357,9 +342,8 @@ function wp_validate_auth_cookie($cookie = '', $scheme = '') {
 	$token = $cookie_elements['token'];
 	$expired = $expiration = $cookie_elements['expiration'];
 
-	// Allow a grace period for POST and AJAX requests
 	if ( defined('DOING_AJAX') || 'POST' == $_SERVER['REQUEST_METHOD'] ) {
-		$expired += HOUR_IN_SECONDS;
+		$expired += 3600;
 	}
 
 	if ( $expired < time() ) {
@@ -377,7 +361,6 @@ function wp_validate_auth_cookie($cookie = '', $scheme = '') {
 
 	$key = wp_hash( $username . '|' . $pass_frag . '|' . $expiration . '|' . $token, $scheme );
 
-	// If ext/hash is not present, compat.php's hash_hmac() does not support sha256.
 	$algo = function_exists( 'hash' ) ? 'sha256' : 'sha1';
 	$hash = hash_hmac( $algo, $username . '|' . $expiration . '|' . $token, $key );
 
@@ -404,26 +387,16 @@ endif;
 
 if ( !function_exists('wp_generate_auth_cookie') ) :
 function wp_generate_auth_cookie( $user_id, $expiration, $scheme = 'auth', $token = '' ) {
-	$user = get_userdata($user_id);
-	if ( ! $user ) {
-		return '';
-	}
-
+	$user = get_user_by( 'id', $user_id );
+	if ( ! $user ) { return ''; }
 	if ( ! $token ) {
 		$manager = WP_Session_Tokens::get_instance( $user_id );
 		$token = $manager->create( $expiration );
 	}
-
 	$pass_frag = substr($user->user_pass, 8, 4);
-
 	$key = wp_hash( $user->user_login . '|' . $pass_frag . '|' . $expiration . '|' . $token, $scheme );
-
-	// If ext/hash is not present, compat.php's hash_hmac() does not support sha256.
-	$algo = function_exists( 'hash' ) ? 'sha256' : 'sha1';
-	$hash = hash_hmac( $algo, $user->user_login . '|' . $expiration . '|' . $token, $key );
-
+	$hash = hash_hmac( 'sha256', $user->user_login . '|' . $expiration . '|' . $token, $key );
 	$cookie = $user->user_login . '|' . $expiration . '|' . $token . '|' . $hash;
-
 	return apply_filters( 'auth_cookie', $cookie, $user_id, $expiration, $scheme, $token );
 }
 endif;
@@ -461,45 +434,28 @@ function wp_parse_auth_cookie($cookie = '', $scheme = '') {
 endif;
 
 if ( !function_exists('wp_set_auth_cookie') ) :
-function wp_set_auth_cookie( $user_id, $remember = false, $secure = '', $token = '' ) {
+function wp_set_auth_cookie( $user_id, $remember = false, $token = '' ) {
 	if ( $remember ) {
-		$expiration = time() + apply_filters( 'auth_cookie_expiration', 14 * DAY_IN_SECONDS, $user_id, $remember );
-		$expire = $expiration + ( 12 * HOUR_IN_SECONDS );
+		$expiration = time() + apply_filters( 'auth_cookie_expiration', 14 * 86400, $user_id, $remember );
+		$expire = $expiration + ( 12 * 3600 );
 	} else {
-		$expiration = time() + apply_filters( 'auth_cookie_expiration', 2 * DAY_IN_SECONDS, $user_id, $remember );
+		$expiration = time() + apply_filters( 'auth_cookie_expiration', 2 * 86400, $user_id, $remember );
 		$expire = 0;
 	}
 
-	if ( '' === $secure ) {
-		$secure = is_ssl();
-	}
-
 	$secure_logged_in_cookie = $secure && 'https' === parse_url( get_option( 'home' ), PHP_URL_SCHEME );
-
 	$secure = apply_filters( 'secure_auth_cookie', $secure, $user_id );
-
 	$secure_logged_in_cookie = apply_filters( 'secure_logged_in_cookie', $secure_logged_in_cookie, $user_id, $secure );
-
-	if ( $secure ) {
-		$auth_cookie_name = SECURE_AUTH_COOKIE;
-		$scheme = 'secure_auth';
-	} else {
-		$auth_cookie_name = AUTH_COOKIE;
-		$scheme = 'auth';
-	}
-
+	$auth_cookie_name = AUTH_COOKIE;
+	$scheme = 'auth';
 	if ( '' === $token ) {
 		$manager = WP_Session_Tokens::get_instance( $user_id );
 		$token   = $manager->create( $expiration );
 	}
-
 	$auth_cookie = wp_generate_auth_cookie( $user_id, $expiration, $scheme, $token );
 	$logged_in_cookie = wp_generate_auth_cookie( $user_id, $expiration, 'logged_in', $token );
-
 	do_action( 'set_auth_cookie', $auth_cookie, $expire, $expiration, $user_id, $scheme );
-
 	do_action( 'set_logged_in_cookie', $logged_in_cookie, $expire, $expiration, $user_id, 'logged_in' );
-
 	setcookie($auth_cookie_name, $auth_cookie, $expire, PLUGINS_COOKIE_PATH, COOKIE_DOMAIN, $secure, true);
 	setcookie($auth_cookie_name, $auth_cookie, $expire, ADMIN_COOKIE_PATH, COOKIE_DOMAIN, $secure, true);
 	setcookie(LOGGED_IN_COOKIE, $logged_in_cookie, $expire, COOKIEPATH, COOKIE_DOMAIN, $secure_logged_in_cookie, true);
@@ -519,13 +475,11 @@ function wp_clear_auth_cookie() {
 	setcookie( LOGGED_IN_COOKIE,   ' ', time() - YEAR_IN_SECONDS, COOKIEPATH,          COOKIE_DOMAIN );
 	setcookie( LOGGED_IN_COOKIE,   ' ', time() - YEAR_IN_SECONDS, SITECOOKIEPATH,      COOKIE_DOMAIN );
 
-	// Old cookies
 	setcookie( AUTH_COOKIE,        ' ', time() - YEAR_IN_SECONDS, COOKIEPATH,     COOKIE_DOMAIN );
 	setcookie( AUTH_COOKIE,        ' ', time() - YEAR_IN_SECONDS, SITECOOKIEPATH, COOKIE_DOMAIN );
 	setcookie( SECURE_AUTH_COOKIE, ' ', time() - YEAR_IN_SECONDS, COOKIEPATH,     COOKIE_DOMAIN );
 	setcookie( SECURE_AUTH_COOKIE, ' ', time() - YEAR_IN_SECONDS, SITECOOKIEPATH, COOKIE_DOMAIN );
 
-	// Even older cookies
 	setcookie( USER_COOKIE, ' ', time() - YEAR_IN_SECONDS, COOKIEPATH,     COOKIE_DOMAIN );
 	setcookie( PASS_COOKIE, ' ', time() - YEAR_IN_SECONDS, COOKIEPATH,     COOKIE_DOMAIN );
 	setcookie( USER_COOKIE, ' ', time() - YEAR_IN_SECONDS, SITECOOKIEPATH, COOKIE_DOMAIN );
@@ -686,11 +640,8 @@ endif;
 
 if ( !function_exists('wp_safe_redirect') ) :
 function wp_safe_redirect($location, $status = 302) {
-
 	$location = wp_sanitize_redirect($location);
-
 	$location = wp_validate_redirect( $location, apply_filters( 'wp_safe_redirect_fallback', admin_url(), $status ) );
-
 	wp_redirect($location, $status);
 }
 endif;
@@ -750,7 +701,7 @@ function wp_notify_postauthor( $comment_id, $deprecated = null ) {
 		return false;
 
 	$post    = get_post( $comment->comment_post_ID );
-	$author  = get_userdata( $post->post_author );
+	$author  = get_user_by( 'id', $post->post_author );
 
 	$emails = array();
 	if ( $author ) {
@@ -852,7 +803,7 @@ function wp_notify_moderator($comment_id) {
 	}
 	$comment = get_comment($comment_id);
 	$post = get_post($comment->comment_post_ID);
-	$user = get_userdata( $post->post_author );
+	$user = get_user_by( 'id', $post->post_author );
 	// Send to the administration and to the post author if the author can modify the comment.
 	$emails = array( get_option( 'admin_email' ) );
 	if ( $user && user_can( $user->ID, 'edit_comment', $comment_id ) && ! empty( $user->user_email ) ) {
@@ -907,26 +858,18 @@ endif;
 
 if ( !function_exists('wp_password_change_notification') ) :
 function wp_password_change_notification( $user ) {
-	// send a copy of password change notification to the admin
-	// but check to see if it's the admin whose password we're changing, and skip this
 	if ( 0 !== strcasecmp( $user->user_email, get_option( 'admin_email' ) ) ) {
-		$message = sprintf(__('Password Lost and Changed for user: %s'), $user->user_login) . "\r\n";
-		// The blogname option is escaped with esc_html on the way into the database in sanitize_option
-		// we want to reverse this for the plain text arena of emails.
+		$message = sprintf('Password Lost and Changed for user: %s', $user->user_login) . "\r\n";
 		$blogname = wp_specialchars_decode(get_option('blogname'), ENT_QUOTES);
-		wp_mail(get_option('admin_email'), sprintf(__('[%s] Password Lost/Changed'), $blogname), $message);
+		wp_mail(get_option('admin_email'), sprintf('[%s] Password Lost/Changed', $blogname), $message);
 	}
 }
 endif;
 
 if ( !function_exists('wp_new_user_notification') ) :
-function wp_new_user_notification( $user_id, $deprecated = null, $notify = '' ) {
-	if ( $deprecated !== null ) {
-		_deprecated_argument( __FUNCTION__, '4.3.1' );
-	}
-
+function wp_new_user_notification( $user_id, $notify = '' ) {
 	global $wpdb, $wp_hasher;
-	$user = get_userdata( $user_id );
+	$user = get_user_by( 'id', $user_id );
 
 	$blogname = wp_specialchars_decode(get_option('blogname'), ENT_QUOTES);
 
@@ -936,18 +879,11 @@ function wp_new_user_notification( $user_id, $deprecated = null, $notify = '' ) 
 
 	@wp_mail(get_option('admin_email'), sprintf('[%s] New User Registration', $blogname), $message);
 
-	// `$deprecated was pre-4.3 `$plaintext_pass`. An empty `$plaintext_pass` didn't sent a user notifcation.
-	if ( 'admin' === $notify || ( empty( $deprecated ) && empty( $notify ) ) ) {
+	if ( 'admin' === $notify || empty( $notify ) ) {
 		return;
 	}
-
-	// Generate something random for a password reset key.
 	$key = wp_generate_password( 20, false );
-
-	/** This action is documented in wp-login.php */
 	do_action( 'retrieve_password_key', $user->user_login, $key );
-
-	// Now insert the key, hashed, into the DB.
 	if ( empty( $wp_hasher ) ) {
 		require_once ABSPATH . WPINC . '/class-phpass.php';
 		$wp_hasher = new PasswordHash( 8, true );
@@ -958,9 +894,7 @@ function wp_new_user_notification( $user_id, $deprecated = null, $notify = '' ) 
 	$message = sprintf('Username: %s', $user->user_login) . "\r\n\r\n";
 	$message .= "To set your password, visit the following address:\r\n\r\n";
 	$message .= '<' . network_site_url("wp-login.php?action=rp&key=$key&login=" . rawurlencode($user->user_login), 'login') . ">\r\n\r\n";
-
 	$message .= wp_login_url() . "\r\n";
-
 	wp_mail($user->user_email, sprintf('[%s] Your username and password info', $blogname), $message);
 }
 endif;

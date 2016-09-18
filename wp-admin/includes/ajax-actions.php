@@ -1332,7 +1332,7 @@ function wp_ajax_add_user( $action ) {
 		) );
 		$x->send();
 	}
-	$user_object = get_userdata( $user_id );
+	$user_object = get_user_by( 'id', $user_id );
 
 	$wp_list_table = _get_list_table('WP_Users_List_Table');
 
@@ -1344,8 +1344,7 @@ function wp_ajax_add_user( $action ) {
 		'data' => $wp_list_table->single_row( $user_object, '', $role ),
 		'supplemental' => array(
 			'show-link' => sprintf(
-				/* translators: %s: the new user */
-				__( 'User %s added' ),
+				'User %s added',
 				'<a href="#user-' . $user_id . '">' . $user_object->user_login . '</a>'
 			),
 			'role' => $role,
@@ -1605,16 +1604,16 @@ function wp_ajax_inline_save() {
 
 	if ( 'page' == $_POST['post_type'] ) {
 		if ( ! current_user_can( 'edit_page', $post_ID ) )
-			wp_die( __( 'You are not allowed to edit this page.' ) );
+			wp_die( 'You are not allowed to edit this page.' );
 	} else {
 		if ( ! current_user_can( 'edit_post', $post_ID ) )
-			wp_die( __( 'You are not allowed to edit this post.' ) );
+			wp_die( 'You are not allowed to edit this post.' );
 	}
 
 	if ( $last = wp_check_post_lock( $post_ID ) ) {
-		$last_user = get_userdata( $last );
-		$last_user_name = $last_user ? $last_user->display_name : __( 'Someone' );
-		printf( $_POST['post_type'] == 'page' ? __( 'Saving is disabled: %s is currently editing this page.' ) : __( 'Saving is disabled: %s is currently editing this post.' ),	esc_html( $last_user_name ) );
+		$last_user = get_user_by( 'id', $last );
+		$last_user_name = $last_user ? $last_user->display_name : 'Someone';
+		printf( $_POST['post_type'] == 'page' ? 'Saving is disabled: %s is currently editing this page.' : 'Saving is disabled: %s is currently editing this post.',	esc_html( $last_user_name ) );
 		wp_die();
 	}
 
@@ -1622,13 +1621,11 @@ function wp_ajax_inline_save() {
 
 	$post = get_post( $post_ID, ARRAY_A );
 
-	// Since it's coming from the database.
 	$post = wp_slash($post);
 
 	$data['content'] = $post['post_content'];
 	$data['excerpt'] = $post['post_excerpt'];
 
-	// Rename.
 	$data['user_ID'] = get_current_user_id();
 
 	if ( isset($data['post_parent']) )
@@ -2237,28 +2234,23 @@ function wp_ajax_wp_fullscreen_save_post() {
 	}
 
 	if ( $post ) {
-		$last_date = mysql2date( __( 'F j, Y' ), $post->post_modified );
-		$last_time = mysql2date( __( 'g:i a' ), $post->post_modified );
+		$last_date = mysql2date( 'F j, Y', $post->post_modified );
+		$last_time = mysql2date( 'g:i a', $post->post_modified );
 	} else {
-		$last_date = date_i18n( __( 'F j, Y' ) );
-		$last_time = date_i18n( __( 'g:i a' ) );
+		$last_date = date_i18n( 'F j, Y' );
+		$last_time = date_i18n( 'g:i a' );
 	}
 
 	if ( $last_id = get_post_meta( $post_id, '_edit_last', true ) ) {
-		$last_user = get_userdata( $last_id );
-		$last_edited = sprintf( __('Last edited by %1$s on %2$s at %3$s'), esc_html( $last_user->display_name ), $last_date, $last_time );
+		$last_user = get_user_by( 'id', $last_id );
+		$last_edited = sprintf( 'Last edited by %1$s on %2$s at %3$s', esc_html( $last_user->display_name ), $last_date, $last_time );
 	} else {
-		$last_edited = sprintf( __('Last edited on %1$s at %2$s'), $last_date, $last_time );
+		$last_edited = sprintf( 'Last edited on %1$s at %2$s', $last_date, $last_time );
 	}
 
 	wp_send_json_success( array( 'last_edited' => $last_edited ) );
 }
 
-/**
- * Ajax handler for removing a post lock.
- *
- * @since 3.1.0
- */
 function wp_ajax_wp_remove_post_lock() {
 	if ( empty( $_POST['post_ID'] ) || empty( $_POST['active_post_lock'] ) )
 		wp_die( 0 );
@@ -3028,13 +3020,8 @@ function wp_ajax_parse_media_shortcode() {
 	) );
 }
 
-/**
- * AJAX handler for destroying multiple open sessions for a user.
- *
- * @since 4.1.0
- */
 function wp_ajax_destroy_sessions() {
-	$user = get_userdata( (int) $_POST['user_id'] );
+	$user = get_user_by( 'id', (int) $_POST['user_id'] );
 	if ( $user ) {
 		if ( ! current_user_can( 'edit_user', $user->ID ) ) {
 			$user = false;
@@ -3045,7 +3032,7 @@ function wp_ajax_destroy_sessions() {
 
 	if ( ! $user ) {
 		wp_send_json_error( array(
-			'message' => __( 'Could not log out user sessions. Please try again.' ),
+			'message' => 'Could not log out user sessions. Please try again.',
 		) );
 	}
 
@@ -3053,24 +3040,15 @@ function wp_ajax_destroy_sessions() {
 
 	if ( $user->ID === get_current_user_id() ) {
 		$sessions->destroy_others( wp_get_session_token() );
-		$message = __( 'You are now logged out everywhere else.' );
+		$message = 'You are now logged out everywhere else.';
 	} else {
 		$sessions->destroy_all();
-		/* translators: 1: User's display name. */
-		$message = sprintf( __( '%s has been logged out.' ), $user->display_name );
+		$message = sprintf( '%s has been logged out.', $user->display_name );
 	}
 
 	wp_send_json_success( array( 'message' => $message ) );
 }
 
-
-/**
- * AJAX handler for updating a plugin.
- *
- * @since 4.2.0
- *
- * @see Plugin_Upgrader
- */
 function wp_ajax_update_plugin() {
 	global $wp_filesystem;
 
@@ -3086,11 +3064,11 @@ function wp_ajax_update_plugin() {
 
 	$plugin_data = get_plugin_data( WP_PLUGIN_DIR . '/' . $plugin );
 	if ( $plugin_data['Version'] ) {
-		$status['oldVersion'] = sprintf( __( 'Version %s' ), $plugin_data['Version'] );
+		$status['oldVersion'] = sprintf( 'Version %s', $plugin_data['Version'] );
 	}
 
 	if ( ! current_user_can( 'update_plugins' ) ) {
-		$status['error'] = __( 'You do not have sufficient permissions to update plugins for this site.' );
+		$status['error'] = 'You do not have sufficient permissions to update plugins for this site.';
  		wp_send_json_error( $status );
 	}
 

@@ -659,7 +659,7 @@ function wp_allow_comment( $commentdata ) {
 	);
 
 	if ( ! empty( $commentdata['user_id'] ) ) {
-		$user = get_userdata( $commentdata['user_id'] );
+		$user = get_user_by( 'id', $commentdata['user_id'] );
 		$post_author = $wpdb->get_var( $wpdb->prepare(
 			"SELECT post_author FROM $wpdb->posts WHERE ID = %d LIMIT 1",
 			$commentdata['comment_post_ID']

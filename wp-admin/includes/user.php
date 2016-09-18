@@ -16,7 +16,7 @@ function edit_user( $user_id = 0 ) {
 	if ( $user_id ) {
 		$update = true;
 		$user->ID = (int) $user_id;
-		$userdata = get_userdata( $user_id );
+		$userdata = get_user_by( 'id', $user_id );
 		$user->user_login = wp_slash( $userdata->user_login );
 	} else {
 		$update = false;
@@ -146,38 +146,19 @@ function edit_user( $user_id = 0 ) {
 	} else {
 		$user_id = wp_insert_user( $user );
 		$notify  = isset( $_POST['send_user_notification'] ) ? 'both' : 'admin';
-
-		/**
-		  * Fires after a new user has been created.
-		  *
-		  * @since 4.4.0
-		  *
-		  * @param int    $user_id ID of the newly created user.
-		  * @param string $notify  Type of notification that should happen. See {@see wp_send_new_user_notifications()}
-		  *                        for more information on possible values.
-		  */
-		do_action( 'edit_user_created_user', $user_id, $notify );
 	}
 	return $user_id;
 }
 
 function get_editable_roles() {
 	$all_roles = wp_roles()->roles;
-
-	/**
-	 * Filter the list of editable roles.
-	 *
-	 * @since 2.8.0
-	 *
-	 * @param array $all_roles List of roles.
-	 */
 	$editable_roles = apply_filters( 'editable_roles', $all_roles );
 
 	return $editable_roles;
 }
 
 function get_user_to_edit( $user_id ) {
-	$user = get_userdata( $user_id );
+	$user = get_user_by( 'id', $user_id );
 
 	if ( $user )
 		$user->filter = 'edit';
@@ -206,7 +187,6 @@ function wp_delete_user( $id, $reassign = null ) {
 	if ( !$user->exists() )
 		return false;
 
-	// Normalize $reassign to null or a user ID. 'novalue' was an older default.
 	if ( 'novalue' === $reassign ) {
 		$reassign = null;
 	} elseif ( null !== $reassign ) {
@@ -294,13 +274,11 @@ function default_password_nag_handler($errors = false) {
 }
 
 function default_password_nag_edit_user($user_ID, $old_data) {
-	// Short-circuit it.
 	if ( ! get_user_option('default_password_nag', $user_ID) )
 		return;
 
-	$new_data = get_userdata($user_ID);
+	$new_data = get_user_by('id', $user_ID);
 
-	// Remove the nag if the password has been changed.
 	if ( $new_data->user_pass != $old_data->user_pass ) {
 		delete_user_setting('default_password_nag');
 		update_user_option($user_ID, 'default_password_nag', false, true);
@@ -316,7 +294,7 @@ function default_password_nag() {
 	echo '<div class="error default-password-nag">';
 	echo '<p>';
 	echo '<strong>Notice:</strong> ';
-	_e('You&rsquo;re using the auto-generated password for your account. Would you like to change it?');
+	echo 'You&rsquo;re using the auto-generated password for your account. Would you like to change it?';
 	echo '</p><p>';
 	printf( '<a href="%s">Yes, take me to my profile page</a> | ', get_edit_profile_url() . '#password' );
 	printf( '<a href="%s" id="default-password-nag-no">No thanks, do not remind me again</a>', '?default_password_nag=0' );
@@ -341,8 +319,8 @@ jQuery(document).ready( function($) {
 function use_ssl_preference($user) {
 ?>
 	<tr class="user-use-ssl-wrap">
-		<th scope="row"><?php _e('Use https')?></th>
-		<td><label for="use_ssl"><input name="use_ssl" type="checkbox" id="use_ssl" value="1" <?php checked('1', $user->use_ssl); ?> /> <?php _e('Always use https when visiting the admin'); ?></label></td>
+		<th scope="row">Use https</th>
+		<td><label for="use_ssl"><input name="use_ssl" type="checkbox" id="use_ssl" value="1" <?php checked('1', $user->use_ssl); ?> /> Always use https when visiting the admin</label></td>
 	</tr>
 <?php
 }
@@ -350,7 +328,6 @@ function use_ssl_preference($user) {
 function admin_created_user_email( $text ) {
 	$roles = get_editable_roles();
 	$role = $roles[ $_REQUEST['role'] ];
-	/* translators: 1: Site name, 2: site URL, 3: role */
 	return sprintf( __( 'Hi,
 You\'ve been invited to join \'%1$s\' at
 %2$s with the role of %3$s.

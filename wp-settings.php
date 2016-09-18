@@ -147,21 +147,14 @@ if ( WP_CACHE && function_exists( 'wp_cache_postload' ) )
 do_action( 'plugins_loaded' );
 
 wp_functionality_constants();
-
 wp_magic_quotes();
 
 do_action( 'sanitize_comment_cookies' );
-
 $GLOBALS['wp_the_query'] = new WP_Query();
-
 $GLOBALS['wp_query'] = $GLOBALS['wp_the_query'];
-
 $GLOBALS['wp_rewrite'] = new WP_Rewrite();
-
 $GLOBALS['wp'] = new WP();
-
 $GLOBALS['wp_widget_factory'] = new WP_Widget_Factory();
-
 $GLOBALS['wp_roles'] = new WP_Roles();
 
 do_action( 'setup_theme' );
@@ -178,7 +171,5 @@ if ( file_exists( get_template_directory() . '/functions.php' ) )
 do_action( 'after_setup_theme' );
 
 $GLOBALS['wp']->init();
-
 do_action( 'init' );
-
 do_action( 'wp_loaded' );

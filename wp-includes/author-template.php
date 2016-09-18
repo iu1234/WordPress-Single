@@ -21,7 +21,7 @@ function get_the_author($deprecated = '') {
 
 function get_the_modified_author() {
 	if ( $last_id = get_post_meta( get_post()->ID, '_edit_last', true) ) {
-		$last_user = get_userdata($last_id);
+		$last_user = get_user_by('id', $last_id);
 
 		return apply_filters('the_modified_author', $last_user->display_name);
 	}
@@ -34,7 +34,7 @@ function get_the_author_meta( $field = '', $user_id = false ) {
 		global $authordata;
 		$user_id = isset( $authordata->ID ) ? $authordata->ID : 0;
 	} else {
-		$authordata = get_userdata( $user_id );
+		$authordata = get_user_by( 'id', $user_id );
 	}
 
 	if ( in_array( $field, array( 'login', 'pass', 'nicename', 'email', 'url', 'registered', 'activation_key', 'status' ) ) )
@@ -94,7 +94,7 @@ function get_author_posts_url( $author_id, $author_nicename = '' ) {
 		$link = $file . '?author=' . $auth_ID;
 	} else {
 		if ( '' == $author_nicename ) {
-			$user = get_userdata($author_id);
+			$user = get_user_by('id', $author_id);
 			if ( !empty($user->user_nicename) )
 				$author_nicename = $user->user_nicename;
 		}
@@ -131,7 +131,7 @@ function wp_list_authors( $args = '' ) {
 		$author_count[$row->post_author] = $row->count;
 	}
 	foreach ( $authors as $author_id ) {
-		$author = get_userdata( $author_id );
+		$author = get_user_by( 'id' $author_id );
 		if ( $args['exclude_admin'] && 'admin' == $author->display_name ) {
 			continue;
 		}

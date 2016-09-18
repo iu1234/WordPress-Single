@@ -8,13 +8,10 @@
 
 function get_query_template( $type, $templates = array() ) {
 	$type = preg_replace( '|[^a-z0-9-]+|', '', $type );
-
 	if ( empty( $templates ) )
 		$templates = array("{$type}.php");
-
 	$template = locate_template( $templates );
-
-	return apply_filters( "{$type}_template", $template );
+	return $template;
 }
 
 function get_archive_template() {
@@ -150,12 +147,9 @@ function get_embed_template() {
 	return get_query_template( 'embed', $templates );
 }
 
-function get_singular_template() {
-	return get_query_template( 'singular' );
-}
-
 function get_attachment_template() {
-	$attachment = get_queried_object();
+	global $wp_query;
+	$attachment = $wp_query->get_queried_object();
 	$templates = array();
 	if ( $attachment ) {
 		if ( false !== strpos( $attachment->post_mime_type, '/' ) ) {
@@ -163,7 +157,6 @@ function get_attachment_template() {
 		} else {
 			list( $type, $subtype ) = array( $attachment->post_mime_type, '' );
 		}
-
 		if ( ! empty( $subtype ) ) {
 			$templates[] = "{$type}-{$subtype}.php";
 			$templates[] = "{$subtype}.php";
@@ -171,7 +164,6 @@ function get_attachment_template() {
 		$templates[] = "{$type}.php";
 	}
 	$templates[] = 'attachment.php';
-
 	return get_query_template( 'attachment', $templates );
 }
 
@@ -195,15 +187,12 @@ function locate_template($template_names, $load = false, $require_once = true ) 
 
 function load_template( $_template_file, $require_once = true ) {
 	global $posts, $post, $wp_did_header, $wp_query, $wp_rewrite, $wpdb, $wp_version, $wp, $id, $comment, $user_ID;
-
 	if ( is_array( $wp_query->query_vars ) ) {
 		extract( $wp_query->query_vars, EXTR_SKIP );
 	}
-
 	if ( isset( $s ) ) {
 		$s = esc_attr( $s );
 	}
-
 	if ( $require_once ) {
 		require_once( $_template_file );
 	} else {

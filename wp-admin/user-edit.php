@@ -19,7 +19,7 @@ if ( ! $user_id && IS_PROFILE_PAGE )
 	$user_id = $current_user->ID;
 elseif ( ! $user_id && ! IS_PROFILE_PAGE )
 	wp_die( 'Invalid user ID.' );
-elseif ( ! get_userdata( $user_id ) )
+elseif ( ! get_user_by( 'id', $user_id ) )
 	wp_die( 'Invalid user ID.' );
 
 wp_enqueue_script('user-profile');

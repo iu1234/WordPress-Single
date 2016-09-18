@@ -7,14 +7,6 @@
  * @since 3.0.0
  */
 
-/**
- * Determine if uploaded file exceeds space quota.
- *
- * @since 3.0.0
- *
- * @param array $file $_FILES array for a given file.
- * @return array $_FILES array with 'error' key set if file exceeds quota. 'error' is empty otherwise.
- */
 function check_upload_size( $file ) {
 	if ( get_site_option( 'upload_space_check_disabled' ) )
 		return $file;
@@ -560,34 +552,16 @@ function update_user_status( $id, $pref, $value, $deprecated = null ) {
 	return $value;
 }
 
-/**
- * Cleans the user cache for a specific user.
- *
- * @since 3.0.0
- *
- * @param int $id The user ID.
- * @return bool|int The ID of the refreshed user or false if the user does not exist.
- */
 function refresh_user_details( $id ) {
 	$id = (int) $id;
 
-	if ( !$user = get_userdata( $id ) )
+	if ( !$user = get_user_by( 'id', $id ) )
 		return false;
 
 	clean_user_cache( $user );
-
 	return $id;
 }
 
-/**
- * Returns the language for a language code.
- *
- * @since 3.0.0
- *
- * @param string $code Optional. The two-letter language code. Default empty.
- * @return string The language corresponding to $code if it exists. If it does not exist,
- *                then the first two letters of $code is returned.
- */
 function format_code_lang( $code = '' ) {
 	$code = strtolower( substr( $code, 0, 2 ) );
 	$lang_codes = array(
@@ -603,30 +577,10 @@ function format_code_lang( $code = '' ) {
 		'sv' => 'Swedish', 'ty' => 'Tahitian', 'ta' => 'Tamil', 'tt' => 'Tatar', 'te' => 'Telugu', 'tg' => 'Tajik', 'tl' => 'Tagalog', 'th' => 'Thai', 'bo' => 'Tibetan', 'ti' => 'Tigrinya', 'to' => 'Tonga (Tonga Islands)', 'tn' => 'Tswana', 'ts' => 'Tsonga', 'tk' => 'Turkmen', 'tr' => 'Turkish', 'tw' => 'Twi', 'ug' => 'Uighur; Uyghur', 'uk' => 'Ukrainian', 'ur' => 'Urdu', 'uz' => 'Uzbek',
 		've' => 'Venda', 'vi' => 'Vietnamese', 'vo' => 'Volapük', 'cy' => 'Welsh','wa' => 'Walloon','wo' => 'Wolof', 'xh' => 'Xhosa', 'yi' => 'Yiddish', 'yo' => 'Yoruba', 'za' => 'Zhuang; Chuang', 'zu' => 'Zulu' );
 
-	/**
-	 * Filter the language codes.
-	 *
-	 * @since MU
-	 *
-	 * @param array  $lang_codes Key/value pair of language codes where key is the short version.
-	 * @param string $code       A two-letter designation of the language.
-	 */
 	$lang_codes = apply_filters( 'lang_codes', $lang_codes, $code );
 	return strtr( $code, $lang_codes );
 }
 
-/**
- * Synchronize category and post tag slugs when global terms are enabled.
- *
- * @since 3.0.0
- *
- * @param object $term     The term.
- * @param string $taxonomy The taxonomy for $term. Should be 'category' or 'post_tag', as these are
- *                         the only taxonomies which are processed by this function; anything else
- *                         will be returned untouched.
- * @return object|array Returns `$term`, after filtering the 'slug' field with {@see sanitize_title()}
- *                      if $taxonomy is 'category' or 'post_tag'.
- */
 function sync_category_tag_slugs( $term, $taxonomy ) {
 	if ( global_terms_enabled() && ( $taxonomy == 'category' || $taxonomy == 'post_tag' ) ) {
 		if ( is_object( $term ) ) {
@@ -638,13 +592,6 @@ function sync_category_tag_slugs( $term, $taxonomy ) {
 	return $term;
 }
 
-/**
- * Displays an access denied message when a user tries to view a site's dashboard they
- * do not have access to.
- *
- * @since 3.2.0
- * @access private
- */
 function _access_denied_splash() {
 	if ( ! is_user_logged_in() || is_network_admin() )
 		return;
@@ -662,7 +609,7 @@ function _access_denied_splash() {
 	$output = '<p>' . sprintf( __( 'You attempted to access the "%1$s" dashboard, but you do not currently have privileges on this site. If you believe you should be able to access the "%1$s" dashboard, please contact your network administrator.' ), $blog_name ) . '</p>';
 	$output .= '<p>' . __( 'If you reached this screen by accident and meant to visit one of your own sites, here are some shortcuts to help you find your way.' ) . '</p>';
 
-	$output .= '<h3>' . __('Your Sites') . '</h3>';
+	$output .= '<h3>Your Sites</h3>';
 	$output .= '<table>';
 
 	foreach ( $blogs as $blog ) {
@@ -868,78 +815,36 @@ function grant_super_admin( $user_id ) {
 		return false;
 	}
 
-	/**
-	 * Fires before the user is granted Super Admin privileges.
-	 *
-	 * @since 3.0.0
-	 *
-	 * @param int $user_id ID of the user that is about to be granted Super Admin privileges.
-	 */
 	do_action( 'grant_super_admin', $user_id );
 
 	// Directly fetch site_admins instead of using get_super_admins()
 	$super_admins = get_site_option( 'site_admins', array( 'admin' ) );
 
-	$user = get_userdata( $user_id );
+	$user = get_user_by( 'id', $user_id );
 	if ( $user && ! in_array( $user->user_login, $super_admins ) ) {
 		$super_admins[] = $user->user_login;
 		update_site_option( 'site_admins' , $super_admins );
 
-		/**
-		 * Fires after the user is granted Super Admin privileges.
-		 *
-		 * @since 3.0.0
-		 *
-		 * @param int $user_id ID of the user that was granted Super Admin privileges.
-		 */
 		do_action( 'granted_super_admin', $user_id );
 		return true;
 	}
 	return false;
 }
 
-/**
- * Revokes Super Admin privileges.
- *
- * @since 3.0.0
- *
- * @global array $super_admins
- *
- * @param int $user_id ID of the user Super Admin privileges to be revoked from.
- * @return bool True on success, false on failure. This can fail when the user's email
- *              is the network admin email or when the `$super_admins` global is defined.
- */
 function revoke_super_admin( $user_id ) {
-	// If global super_admins override is defined, there is nothing to do here.
 	if ( isset( $GLOBALS['super_admins'] ) ) {
 		return false;
 	}
 
-	/**
-	 * Fires before the user's Super Admin privileges are revoked.
-	 *
-	 * @since 3.0.0
-	 *
-	 * @param int $user_id ID of the user Super Admin privileges are being revoked from.
-	 */
 	do_action( 'revoke_super_admin', $user_id );
 
-	// Directly fetch site_admins instead of using get_super_admins()
 	$super_admins = get_site_option( 'site_admins', array( 'admin' ) );
 
-	$user = get_userdata( $user_id );
+	$user = get_user_by( 'id', $user_id );
 	if ( $user && 0 !== strcasecmp( $user->user_email, get_site_option( 'admin_email' ) ) ) {
 		if ( false !== ( $key = array_search( $user->user_login, $super_admins ) ) ) {
 			unset( $super_admins[$key] );
 			update_site_option( 'site_admins', $super_admins );
-
-			/**
-			 * Fires after the user's Super Admin privileges are revoked.
-			 *
-			 * @since 3.0.0
-			 *
-			 * @param int $user_id ID of the user Super Admin privileges were revoked from.
-			 */
 			do_action( 'revoked_super_admin', $user_id );
 			return true;
 		}
@@ -947,19 +852,6 @@ function revoke_super_admin( $user_id ) {
 	return false;
 }
 
-/**
- * Whether or not we can edit this network from this page.
- *
- * By default editing of network is restricted to the Network Admin for that `$site_id`
- * this allows for this to be overridden.
- *
- * @since 3.1.0
- *
- * @global wpdb $wpdb WordPress database abstraction object.
- *
- * @param int $site_id The network/site ID to check.
- * @return bool True if network can be edited, otherwise false.
- */
 function can_edit_network( $site_id ) {
 	global $wpdb;
 
@@ -968,24 +860,9 @@ function can_edit_network( $site_id ) {
 	else
 		$result = false;
 
-	/**
-	 * Filter whether this network can be edited from this page.
-	 *
-	 * @since 3.1.0
-	 *
-	 * @param bool $result  Whether the network can be edited from this page.
-	 * @param int  $site_id The network/site ID to check.
-	 */
 	return apply_filters( 'can_edit_network', $result, $site_id );
 }
 
-/**
- * Thickbox image paths for Network Admin.
- *
- * @since 3.1.0
- *
- * @access private
- */
 function _thickbox_path_admin_subfolder() {
 ?>
 <script type="text/javascript">
@@ -994,10 +871,6 @@ var tb_pathToImage = "<?php echo includes_url( 'js/thickbox/loadingAnimation.gif
 <?php
 }
 
-/**
- *
- * @param array $users
- */
 function confirm_delete_users( $users ) {
 	$current_user = wp_get_current_user();
 	if ( ! is_array( $users ) || empty( $users ) ) {
@@ -1007,9 +880,9 @@ function confirm_delete_users( $users ) {
 	<h1><?php esc_html_e( 'Users' ); ?></h1>
 
 	<?php if ( 1 == count( $users ) ) : ?>
-		<p><?php _e( 'You have chosen to delete the user from all networks and sites.' ); ?></p>
+		<p>You have chosen to delete the user from all networks and sites.</p>
 	<?php else : ?>
-		<p><?php _e( 'You have chosen to delete the following users from all networks and sites.' ); ?></p>
+		<p>You have chosen to delete the following users from all networks and sites.</p>
 	<?php endif; ?>
 
 	<form action="users.php?action=dodelete" method="post">
@@ -1021,14 +894,14 @@ function confirm_delete_users( $users ) {
 	<table class="form-table">
 	<?php foreach ( ( $allusers = (array) $_POST['allusers'] ) as $user_id ) {
 		if ( $user_id != '' && $user_id != '0' ) {
-			$delete_user = get_userdata( $user_id );
+			$delete_user = get_user_by( 'id', $user_id );
 
 			if ( ! current_user_can( 'delete_user', $delete_user->ID ) ) {
-				wp_die( sprintf( __( 'Warning! User %s cannot be deleted.' ), $delete_user->user_login ) );
+				wp_die( sprintf( 'Warning! User %s cannot be deleted.', $delete_user->user_login ) );
 			}
 
 			if ( in_array( $delete_user->user_login, $site_admins ) ) {
-				wp_die( sprintf( __( 'Warning! User cannot be deleted. The user %s is a network administrator.' ), '<em>' . $delete_user->user_login . '</em>' ) );
+				wp_die( sprintf( 'Warning! User cannot be deleted. The user %s is a network administrator.', '<em>' . $delete_user->user_login . '</em>' ) );
 			}
 			?>
 			<tr>
@@ -1040,8 +913,7 @@ function confirm_delete_users( $users ) {
 			if ( ! empty( $blogs ) ) {
 				?>
 				<td><fieldset><p><legend><?php printf(
-					/* translators: user login */
-					__( 'What should be done with content owned by %s?' ),
+					'What should be done with content owned by %s?',
 					'<em>' . $delete_user->user_login . '</em>'
 				); ?></legend></p>
 				<?php

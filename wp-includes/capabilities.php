@@ -394,7 +394,7 @@ function author_can( $post, $capability ) {
 	if ( !$post = get_post($post) )
 		return false;
 
-	$author = get_userdata( $post->post_author );
+	$author = get_user_by( 'id', $post->post_author );
 
 	if ( ! $author )
 		return false;
@@ -407,7 +407,7 @@ function author_can( $post, $capability ) {
 
 function user_can( $user, $capability ) {
 	if ( ! is_object( $user ) )
-		$user = get_userdata( $user );
+		$user = get_user_by( 'id', $user );
 
 	if ( ! $user || ! $user->exists() )
 		return false;
@@ -455,7 +455,7 @@ function is_super_admin( $user_id = false ) {
 	if ( ! $user_id || $user_id == get_current_user_id() )
 		$user = wp_get_current_user();
 	else
-		$user = get_userdata( $user_id );
+		$user = get_user_by( 'id', $user_id );
 
 	if ( ! $user || ! $user->exists() )
 		return false;

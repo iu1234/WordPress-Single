@@ -563,7 +563,7 @@ function get_oembed_response_data( $post, $width ) {
 		'type'          => 'link',
 	);
 
-	$author = get_userdata( $post->post_author );
+	$author = get_user_by( 'id', $post->post_author );
 
 	if ( $author ) {
 		$data['author_name'] = $author->display_name;

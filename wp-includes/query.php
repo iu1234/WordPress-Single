@@ -16,11 +16,6 @@ function get_query_var( $var, $default = '' ) {
 	return $wp_query->get( $var, $default );
 }
 
-function get_queried_object() {
-	global $wp_query;
-	return $wp_query->get_queried_object();
-}
-
 function get_queried_object_id() {
 	global $wp_query;
 	return $wp_query->get_queried_object_id();
@@ -506,8 +501,6 @@ class WP_Query {
 
 	public $is_search = false;
 
-	public $is_feed = false;
-
 	public $is_comment_feed = false;
 
 	public $is_trackback = false;
@@ -945,13 +938,6 @@ class WP_Query {
 		$this->query_vars_hash = md5( serialize( $this->query_vars ) );
 		$this->query_vars_changed = false;
 
-		/**
-		 * Fires after the main query vars have been parsed.
-		 *
-		 * @since 1.5.0
-		 *
-		 * @param WP_Query &$this The WP_Query instance (passed by reference).
-		 */
 		do_action_ref_array( 'parse_query', array( &$this ) );
 	}
 
@@ -1175,16 +1161,6 @@ class WP_Query {
 		do_action( 'parse_tax_query', $this );
 	}
 
-	/**
-	 * Generate SQL for the WHERE clause based on passed search terms.
-	 *
-	 * @since 3.7.0
-	 *
-	 * @global wpdb $wpdb WordPress database abstraction object.
-	 *
-	 * @param array $q Query variables.
-	 * @return string WHERE clause.
-	 */
 	protected function parse_search( &$q ) {
 		global $wpdb;
 
@@ -1271,21 +1247,10 @@ class WP_Query {
 		return $checked;
 	}
 
-	/**
-	 * Retrieve stopwords used when parsing search terms.
-	 *
-	 * @since 3.7.0
-	 *
-	 * @return array Stopwords.
-	 */
 	protected function get_search_stopwords() {
 		if ( isset( $this->stopwords ) )
 			return $this->stopwords;
 
-		/* translators: This is a comma-separated list of very common words that should be excluded from a search,
-		 * like a, an, and the. These are usually called "stopwords". You should not simply translate these individual
-		 * words into your language. Instead, look for and provide commonly accepted stopwords in your language.
-		 */
 		$words = explode( ',', _x( 'about,an,are,as,at,be,by,com,for,from,how,in,is,it,of,on,or,that,the,this,to,was,what,when,where,who,will,with,www',
 			'Comma-separated list of search stopwords in your language' ) );
 
@@ -1449,12 +1414,8 @@ class WP_Query {
 	}
 
 	public function set_404() {
-		$is_feed = $this->is_feed;
-
 		$this->init_query_flags();
 		$this->is_404 = true;
-
-		$this->is_feed = $is_feed;
 	}
 
 	public function get( $query_var, $default = '' ) {
@@ -1474,20 +1435,8 @@ class WP_Query {
 
 		$this->parse_query();
 
-		/**
-		 * Fires after the query variable object is created, but before the actual query is run.
-		 *
-		 * Note: If using conditional tags, use the method versions within the passed instance
-		 * (e.g. $this->is_main_query() instead of is_main_query()). This is because the functions
-		 * like is_main_query() test against the global $wp_query instance, not the passed one.
-		 *
-		 * @since 2.0.0
-		 *
-		 * @param WP_Query &$this The WP_Query instance (passed by reference).
-		 */
 		do_action_ref_array( 'pre_get_posts', array( &$this ) );
 
-		// Shorthand.
 		$q = &$this->query_vars;
 
 		// Fill again in case pre_get_posts unset some vars.
@@ -1781,14 +1730,6 @@ class WP_Query {
 		}
 
 		if ( ! $q['suppress_filters'] ) {
-			/**
-			 * Filter the search SQL that is used in the WHERE clause of WP_Query.
-			 *
-			 * @since 3.0.0
-			 *
-			 * @param string   $search Search SQL for WHERE clause.
-			 * @param WP_Query $this   The current WP_Query object.
-			 */
 			$search = apply_filters_ref_array( 'posts_search', array( $search, &$this ) );
 		}
 
@@ -2003,14 +1944,6 @@ class WP_Query {
 				$search_orderby = $this->parse_search_order( $q );
 
 			if ( ! $q['suppress_filters'] ) {
-				/**
-				 * Filter the ORDER BY used when ordering search results.
-				 *
-				 * @since 3.7.0
-				 *
-				 * @param string   $search_orderby The ORDER BY clause.
-				 * @param WP_Query $this           The current WP_Query instance.
-				 */
 				$search_orderby = apply_filters( 'posts_search_orderby', $search_orderby, $this );
 			}
 
@@ -2338,14 +2271,6 @@ class WP_Query {
 
 			$this->request = "SELECT $found_rows $distinct $wpdb->posts.ID FROM $wpdb->posts $join WHERE 1=1 $where $groupby $orderby $limits";
 
-			/**
-			 * Filter the Post IDs SQL request before sending.
-			 *
-			 * @since 3.4.0
-			 *
-			 * @param string   $request The post ID request.
-			 * @param WP_Query $this    The WP_Query instance.
-			 */
 			$this->request = apply_filters( 'posts_request_ids', $this->request, $this );
 
 			$ids = $wpdb->get_col( $this->request );
@@ -2439,14 +2364,6 @@ class WP_Query {
 			}
 
 			if ( $this->is_preview && $this->posts && current_user_can( $edit_cap, $this->posts[0]->ID ) ) {
-				/**
-				 * Filter the single post for preview mode.
-				 *
-				 * @since 2.7.0
-				 *
-				 * @param WP_Post  $post_preview  The Post object.
-				 * @param WP_Query &$this         The WP_Query instance (passed by reference).
-				 */
 				$this->posts[0] = get_post( apply_filters_ref_array( 'the_preview', array( $this->posts[0], &$this ) ) );
 			}
 		}
@@ -2498,20 +2415,9 @@ class WP_Query {
 		}
 
 		if ( ! $q['suppress_filters'] ) {
-			/**
-			 * Filter the array of retrieved posts after they've been fetched and
-			 * internally processed.
-			 *
-			 * @since 1.5.0
-			 *
-			 * @param array    $posts The array of retrieved posts.
-			 * @param WP_Query &$this The WP_Query instance (passed by reference).
-			 */
 			$this->posts = apply_filters_ref_array( 'the_posts', array( $this->posts, &$this ) );
 		}
 
-		// Ensure that any posts added/modified via one of the filters above are
-		// of the type WP_Post and are filtered.
 		if ( $this->posts ) {
 			$this->post_count = count( $this->posts );
 
@@ -2533,62 +2439,23 @@ class WP_Query {
 		return $this->posts;
 	}
 
-	/**
-	 * Set up the amount of found posts and the number of pages (if limit clause was used)
-	 * for the current query.
-	 *
-	 * @since 3.5.0
-	 * @access private
-	 *
-	 * @global wpdb $wpdb WordPress database abstraction object.
-	 *
-	 * @param array  $q      Query variables.
-	 * @param string $limits LIMIT clauses of the query.
-	 */
 	private function set_found_posts( $q, $limits ) {
 		global $wpdb;
-
-		// Bail if posts is an empty array. Continue if posts is an empty string,
-		// null, or false to accommodate caching plugins that fill posts later.
 		if ( $q['no_found_rows'] || ( is_array( $this->posts ) && ! $this->posts ) )
 			return;
 
 		if ( ! empty( $limits ) ) {
-			/**
-			 * Filter the query to run for retrieving the found posts.
-			 *
-			 * @since 2.1.0
-			 *
-			 * @param string   $found_posts The query to run to find the found posts.
-			 * @param WP_Query &$this       The WP_Query instance (passed by reference).
-			 */
 			$this->found_posts = $wpdb->get_var( apply_filters_ref_array( 'found_posts_query', array( 'SELECT FOUND_ROWS()', &$this ) ) );
 		} else {
 			$this->found_posts = count( $this->posts );
 		}
 
-		/**
-		 * Filter the number of found posts for the query.
-		 *
-		 * @since 2.1.0
-		 *
-		 * @param int      $found_posts The number of posts found.
-		 * @param WP_Query &$this       The WP_Query instance (passed by reference).
-		 */
 		$this->found_posts = apply_filters_ref_array( 'found_posts', array( $this->found_posts, &$this ) );
 
 		if ( ! empty( $limits ) )
 			$this->max_num_pages = ceil( $this->found_posts / $q['posts_per_page'] );
 	}
 
-	/**
-	 * Set up the next post and iterate current post index.
-	 *
-	 * @since 1.5.0
-	 * @access public
-	 *
-	 * @return WP_Post Next post.
-	 */
 	public function next_post() {
 
 		$this->current_post++;
@@ -2597,56 +2464,21 @@ class WP_Query {
 		return $this->post;
 	}
 
-	/**
-	 * Sets up the current post.
-	 *
-	 * Retrieves the next post, sets up the post, sets the 'in the loop'
-	 * property to true.
-	 *
-	 * @since 1.5.0
-	 * @access public
-	 *
-	 * @global WP_Post $post
-	 */
 	public function the_post() {
 		global $post;
 		$this->in_the_loop = true;
 
 		if ( $this->current_post == -1 ) // loop has just started
-			/**
-			 * Fires once the loop is started.
-			 *
-			 * @since 2.0.0
-			 *
-			 * @param WP_Query &$this The WP_Query instance (passed by reference).
-			 */
 			do_action_ref_array( 'loop_start', array( &$this ) );
 
 		$post = $this->next_post();
 		$this->setup_postdata( $post );
 	}
 
-	/**
-	 * Whether there are more posts available in the loop.
-	 *
-	 * Calls action 'loop_end', when the loop is complete.
-	 *
-	 * @since 1.5.0
-	 * @access public
-	 *
-	 * @return bool True if posts are available, false if end of loop.
-	 */
 	public function have_posts() {
 		if ( $this->current_post + 1 < $this->post_count ) {
 			return true;
 		} elseif ( $this->current_post + 1 == $this->post_count && $this->post_count > 0 ) {
-			/**
-			 * Fires once the loop has ended.
-			 *
-			 * @since 2.0.0
-			 *
-			 * @param WP_Query &$this The WP_Query instance (passed by reference).
-			 */
 			do_action_ref_array( 'loop_end', array( &$this ) );
 			// Do some cleaning up after the loop
 			$this->rewind_posts();
@@ -2656,12 +2488,6 @@ class WP_Query {
 		return false;
 	}
 
-	/**
-	 * Rewind the posts and reset post index.
-	 *
-	 * @since 1.5.0
-	 * @access public
-	 */
 	public function rewind_posts() {
 		$this->current_post = -1;
 		if ( $this->post_count > 0 ) {
@@ -2669,14 +2495,6 @@ class WP_Query {
 		}
 	}
 
-	/**
-	 * Iterate current comment index and return WP_Comment object.
-	 *
-	 * @since 2.2.0
-	 * @access public
-	 *
-	 * @return WP_Comment Comment object.
-	 */
 	public function next_comment() {
 		$this->current_comment++;
 
@@ -2684,38 +2502,14 @@ class WP_Query {
 		return $this->comment;
 	}
 
-	/**
-	 * Sets up the current comment.
-	 *
-	 * @since 2.2.0
-	 * @access public
-	 * @global WP_Comment $comment Current comment.
-	 */
 	public function the_comment() {
 		global $comment;
-
 		$comment = $this->next_comment();
-
 		if ( $this->current_comment == 0 ) {
-			/**
-			 * Fires once the comment loop is started.
-			 *
-			 * @since 2.2.0
-			 */
 			do_action( 'comment_loop_start' );
 		}
 	}
 
-	/**
-	 * Whether there are more comments available.
-	 *
-	 * Automatically rewinds comments when finished.
-	 *
-	 * @since 2.2.0
-	 * @access public
-	 *
-	 * @return bool True, if more comments. False, if no more posts.
-	 */
 	public function have_comments() {
 		if ( $this->current_comment + 1 < $this->comment_count ) {
 			return true;
@@ -2726,12 +2520,6 @@ class WP_Query {
 		return false;
 	}
 
-	/**
-	 * Rewind the comments, resets the comment index and comment to first.
-	 *
-	 * @since 2.2.0
-	 * @access public
-	 */
 	public function rewind_comments() {
 		$this->current_comment = -1;
 		if ( $this->comment_count > 0 ) {
@@ -2739,33 +2527,12 @@ class WP_Query {
 		}
 	}
 
-	/**
-	 * Sets up the WordPress query by parsing query string.
-	 *
-	 * @since 1.5.0
-	 * @access public
-	 *
-	 * @param string $query URL query string.
-	 * @return array List of posts.
-	 */
 	public function query( $query ) {
 		$this->init();
 		$this->query = $this->query_vars = wp_parse_args( $query );
 		return $this->get_posts();
 	}
 
-	/**
-	 * Retrieve queried object.
-	 *
-	 * If queried object is not set, then the queried object will be set from
-	 * the category, tag, taxonomy, posts page, single post, page, or author
-	 * query variable. After it is set up, it will be returned.
-	 *
-	 * @since 1.5.0
-	 * @access public
-	 *
-	 * @return object
-	 */
 	public function get_queried_object() {
 		if ( isset($this->queried_object) )
 			return $this->queried_object;
@@ -2787,9 +2554,7 @@ class WP_Query {
 					$term = get_term_by( 'slug', $this->get( 'tag' ), 'post_tag' );
 				}
 			} else {
-				// For other tax queries, grab the first term from the first clause.
 				$tax_query_in_and = wp_list_filter( $this->tax_query->queried_terms, array( 'operator' => 'NOT IN' ), 'NOT' );
-
 				if ( ! empty( $tax_query_in_and ) ) {
 					$queried_taxonomies = array_keys( $tax_query_in_and );
 					$matched_taxonomy = reset( $queried_taxonomies );
@@ -2826,27 +2591,16 @@ class WP_Query {
 			$this->queried_object_id = (int) $this->post->ID;
 		} elseif ( $this->is_author ) {
 			$this->queried_object_id = (int) $this->get('author');
-			$this->queried_object = get_userdata( $this->queried_object_id );
+			$this->queried_object = get_user_id( 'id', $this->queried_object_id );
 		}
-
 		return $this->queried_object;
 	}
 
-	/**
-	 * Retrieve ID of the current queried object.
-	 *
-	 * @since 1.5.0
-	 * @access public
-	 *
-	 * @return int
-	 */
 	public function get_queried_object_id() {
 		$this->get_queried_object();
-
 		if ( isset($this->queried_object_id) ) {
 			return $this->queried_object_id;
 		}
-
 		return 0;
 	}
 
@@ -3178,8 +2932,7 @@ class WP_Query {
 
 		$id = (int) $post->ID;
 
-		$authordata = get_userdata($post->post_author);
-
+		$authordata = get_user_by('id', $post->post_author);
 		$currentday = mysql2date('d.m.y', $post->post_date, false);
 		$currentmonth = mysql2date('m', $post->post_date, false);
 		$numpages = 1;

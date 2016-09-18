@@ -467,14 +467,12 @@ default :
 	if ( $customize_login )
 		wp_enqueue_script( 'customize-base' );
 
-	if ( !empty($_POST['log']) && !force_ssl_admin() ) {
+	if ( !empty($_POST['log']) ) {
 		$user_name = sanitize_user($_POST['log']);
 		$user = get_user_by( 'login', $user_name );
-
 		if ( ! $user && strpos( $user_name, '@' ) ) {
 			$user = get_user_by( 'email', $user_name );
 		}
-
 		if ( $user ) {
 			if ( get_user_option('use_ssl', $user->ID) ) {
 				$secure_cookie = true;
@@ -497,18 +495,14 @@ default :
 
 	if ( empty( $_COOKIE[ LOGGED_IN_COOKIE ] ) ) {
 		if ( headers_sent() ) {
-			$user = new WP_Error( 'test_cookie', sprintf( '<strong>ERROR</strong>: Cookies are blocked due to unexpected output. For help, please see <a href="%1$s">this documentation</a> or try the <a href="%2$s">support forums</a>.',
-				'https://codex.wordpress.org/Cookies', 'https://wordpress.org/support/' ) );
+			$user = new WP_Error( 'test_cookie', '<strong>ERROR</strong>: Cookies are blocked due to unexpected output.' );
 		} elseif ( isset( $_POST['testcookie'] ) && empty( $_COOKIE[ TEST_COOKIE ] ) ) {
-			$user = new WP_Error( 'test_cookie', sprintf( '<strong>ERROR</strong>: Cookies are blocked or not supported by your browser. You must <a href="%s">enable cookies</a> to use WordPress.',
-				'https://codex.wordpress.org/Cookies' ) );
+			$user = new WP_Error( 'test_cookie', '<strong>ERROR</strong>: Cookies are blocked or not supported by your browser.' );
 		}
 	}
 
 	$requested_redirect_to = isset( $_REQUEST['redirect_to'] ) ? $_REQUEST['redirect_to'] : '';
-
 	$redirect_to = apply_filters( 'login_redirect', $redirect_to, $requested_redirect_to, $user );
-
 	if ( !is_wp_error($user) && !$reauth ) {
 		if ( $interim_login ) {
 			$message = '<p class="message">You have logged in successfully.</p>';
@@ -524,10 +518,9 @@ default :
 <?php		exit;
 		}
 
-		if ( ( empty( $redirect_to ) || $redirect_to == 'wp-admin/' || $redirect_to == admin_url() ) ) {
+		if ( empty( $redirect_to ) || $redirect_to == 'wp-admin/' || $redirect_to == admin_url() ) {
 			if ( !$user->has_cap('edit_posts') )
 				$redirect_to = $user->has_cap( 'read' ) ? admin_url( 'profile.php' ) : home_url();
-
 			wp_redirect( $redirect_to );
 			exit();
 		}
@@ -563,7 +556,7 @@ default :
 	if ( $reauth )
 		wp_clear_auth_cookie();
 
-	login_header('Log In', '', $errors);
+	login_header('登录', '', $errors);
 
 	if ( isset($_POST['log']) )
 		$user_login = ( 'incorrect_password' == $errors->get_error_code() || 'empty_password' == $errors->get_error_code() ) ? esc_attr(wp_unslash($_POST['log'])) : '';

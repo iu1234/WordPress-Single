@@ -366,7 +366,7 @@ class WP {
 		}
 
 		if ( $wp_query->is_author() && isset( $wp_query->post ) )
-			$GLOBALS['authordata'] = get_userdata( $wp_query->post->post_author );
+			$GLOBALS['authordata'] = get_user_by( 'id', $wp_query->post->post_author );
 	}
 
 	public function init() {

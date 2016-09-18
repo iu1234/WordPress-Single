@@ -100,7 +100,7 @@ function get_permalink( $post = 0, $leavename = false ) {
 
 		$author = '';
 		if ( strpos($permalink, '%author%') !== false ) {
-			$authordata = get_userdata($post->post_author);
+			$authordata = get_user_by('id',$post->post_author);
 			$author = $authordata->user_nicename;
 		}
 
@@ -836,7 +836,7 @@ function get_edit_user_link( $user_id = null ) {
 	if ( empty( $user_id ) || ! current_user_can( 'edit_user', $user_id ) )
 		return '';
 
-	$user = get_userdata( $user_id );
+	$user = get_user_by( 'id', $user_id );
 
 	if ( ! $user )
 		return '';

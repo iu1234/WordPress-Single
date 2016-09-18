@@ -7,44 +7,12 @@
  * @since 3.1.0
  */
 
-/**
- * Core class used to implement displaying users in a list table.
- *
- * @since 3.1.0
- * @access private
- *
- * @see WP_List_Table
- */
 class WP_Users_List_Table extends WP_List_Table {
 
-	/**
-	 * Site ID to generate the Users list table for.
-	 *
-	 * @since 3.1.0
-	 * @access public
-	 * @var int
-	 */
 	public $site_id;
 
-	/**
-	 * Whether or not the current Users list table is for Multisite.
-	 *
-	 * @since 3.1.0
-	 * @access public
-	 * @var bool
-	 */
 	public $is_site_users;
 
-	/**
-	 * Constructor.
-	 *
-	 * @since 3.1.0
-	 * @access public
-	 *
-	 * @see WP_List_Table::__construct() for more information on default arguments.
-	 *
-	 * @param array $args An associative array of arguments.
-	 */
 	public function __construct( $args = array() ) {
 		parent::__construct( array(
 			'singular' => 'user',
@@ -58,14 +26,6 @@ class WP_Users_List_Table extends WP_List_Table {
 			$this->site_id = isset( $_REQUEST['id'] ) ? intval( $_REQUEST['id'] ) : 0;
 	}
 
-	/**
-	 * Check the current user's permissions.
-	 *
- 	 * @since 3.1.0
-	 * @access public
-	 *
-	 * @return bool
-	 */
 	public function ajax_user_can() {
 		if ( $this->is_site_users )
 			return current_user_can( 'manage_sites' );
@@ -73,15 +33,6 @@ class WP_Users_List_Table extends WP_List_Table {
 			return current_user_can( 'list_users' );
 	}
 
-	/**
-	 * Prepare the users list for display.
-	 *
-	 * @since 3.1.0
-	 * @access public
-	 *
-	 * @global string $role
-	 * @global string $usersearch
-	 */
 	public function prepare_items() {
 		global $role, $usersearch;
 
@@ -362,24 +313,9 @@ class WP_Users_List_Table extends WP_List_Table {
 		}
 	}
 
-	/**
-	 * Generate HTML for a single row on the users.php admin panel.
-	 *
-	 * @since 3.1.0
-	 * @since 4.2.0 The `$style` parameter was deprecated.
-	 * @since 4.4.0 The `$role` parameter was deprecated.
-	 * @access public
-	 *
-	 * @param object $user_object The current user object.
-	 * @param string $style       Deprecated. Not used.
-	 * @param string $role        Deprecated. Not used.
-	 * @param int    $numposts    Optional. Post count to display for this user. Defaults
-	 *                            to zero, as in, a new user has made zero posts.
-	 * @return string Output for a single row.
-	 */
 	public function single_row( $user_object, $style = '', $role = '', $numposts = 0 ) {
 		if ( ! ( $user_object instanceof WP_User ) ) {
-			$user_object = get_userdata( (int) $user_object );
+			$user_object = get_user_by( 'id', (int) $user_object );
 		}
 		$user_object->filter = 'display';
 		$email = $user_object->user_email;
@@ -408,25 +344,11 @@ class WP_Users_List_Table extends WP_List_Table {
 
 			if ( !is_multisite() && get_current_user_id() != $user_object->ID && current_user_can( 'delete_user', $user_object->ID ) )
 				$actions['delete'] = "<a class='submitdelete' href='" . wp_nonce_url( "users.php?action=delete&amp;user=$user_object->ID", 'bulk-users' ) . "'>" . __( 'Delete' ) . "</a>";
-			if ( is_multisite() && get_current_user_id() != $user_object->ID && current_user_can( 'remove_user', $user_object->ID ) )
-				$actions['remove'] = "<a class='submitdelete' href='" . wp_nonce_url( $url."action=remove&amp;user=$user_object->ID", 'bulk-users' ) . "'>" . __( 'Remove' ) . "</a>";
 
-			/**
-			 * Filter the action links displayed under each user in the Users list table.
-			 *
-			 * @since 2.8.0
-			 *
-			 * @param array   $actions     An array of action links to be displayed.
-			 *                             Default 'Edit', 'Delete' for single site, and
-			 *                             'Edit', 'Remove' for Multisite.
-			 * @param WP_User $user_object WP_User object for the currently-listed user.
-			 */
 			$actions = apply_filters( 'user_row_actions', $actions, $user_object );
 
-			// Role classes.
 			$role_classes = esc_attr( implode( ' ', array_keys( $user_roles ) ) );
 
-			// Set up the checkbox ( because the user is editable, otherwise it's empty )
 			$checkbox = '<label class="screen-reader-text" for="user_' . $user_object->ID . '">' . sprintf( __( 'Select %s' ), $user_object->user_login ) . '</label>'
 						. "<input type='checkbox' name='users[]' id='user_{$user_object->ID}' class='{$role_classes}' value='{$user_object->ID}' />";
 
@@ -487,15 +409,6 @@ class WP_Users_List_Table extends WP_List_Table {
 						}
 						break;
 					default:
-						/**
-						 * Filter the display output of custom columns in the Users list table.
-						 *
-						 * @since 2.8.0
-						 *
-						 * @param string $output      Custom column output. Default empty.
-						 * @param string $column_name Column name.
-						 * @param int    $user_id     ID of the currently-listed user.
-						 */
 						$r .= apply_filters( 'manage_users_custom_column', '', $column_name, $user_object->ID );
 				}
 
@@ -510,27 +423,10 @@ class WP_Users_List_Table extends WP_List_Table {
 		return $r;
 	}
 
-	/**
-	 * Gets the name of the default primary column.
-	 *
-	 * @since 4.3.0
-	 * @access protected
-	 *
-	 * @return string Name of the default primary column, in this case, 'username'.
-	 */
 	protected function get_default_primary_column_name() {
 		return 'username';
 	}
 
-	/**
-	 * Returns an array of user roles for a given user object.
-	 *
-	 * @since 4.4.0
-	 * @access protected
-	 *
-	 * @param WP_User $user_object The WP_User object.
-	 * @return array An array of user roles.
-	 */
 	protected function get_role_list( $user_object ) {
 		$wp_roles = wp_roles();
 
@@ -546,14 +442,6 @@ class WP_Users_List_Table extends WP_List_Table {
 			$role_list['none'] = _x( 'None', 'no user roles' );
 		}
 
-		/**
-		 * Filter the returned array of roles for a user.
-		 *
-		 * @since 4.4.0
-		 *
-		 * @param array   $role_list   An array of user roles.
-		 * @param WP_User $user_object A WP_User object.
-		 */
 		return apply_filters( 'get_role_list', $role_list, $user_object );
 	}
 

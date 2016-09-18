@@ -17,66 +17,18 @@
  */
 class WP_Posts_List_Table extends WP_List_Table {
 
-	/**
-	 * Whether the items should be displayed hierarchically or linearly.
-	 *
-	 * @since 3.1.0
-	 * @var bool
-	 * @access protected
-	 */
 	protected $hierarchical_display;
 
-	/**
-	 * Holds the number of pending comments for each post.
-	 *
-	 * @since 3.1.0
-	 * @var array
-	 * @access protected
-	 */
 	protected $comment_pending_count;
 
-	/**
-	 * Holds the number of posts for this user.
-	 *
-	 * @since 3.1.0
-	 * @var int
-	 * @access private
-	 */
 	private $user_posts_count;
 
-	/**
-	 * Holds the number of posts which are sticky.
-	 *
-	 * @since 3.1.0
-	 * @var int
-	 * @access private
-	 */
 	private $sticky_posts_count = 0;
 
 	private $is_trash;
 
-	/**
-	 * Current level for output.
-	 *
-	 * @since 4.3.0
-	 * @access protected
-	 * @var int
-	 */
 	protected $current_level = 0;
 
-	/**
-	 * Constructor.
-	 *
-	 * @since 3.1.0
-	 * @access public
-	 *
-	 * @see WP_List_Table::__construct() for more information on default arguments.
-	 *
-	 * @global object $post_type_object
-	 * @global wpdb   $wpdb
-	 *
-	 * @param array $args An associative array of arguments.
-	 */
 	public function __construct( $args = array() ) {
 		global $post_type_object, $wpdb;
 
@@ -900,9 +852,9 @@ class WP_Posts_List_Table extends WP_List_Table {
 			$lock_holder = wp_check_post_lock( $post->ID );
 
 			if ( $lock_holder ) {
-				$lock_holder = get_userdata( $lock_holder );
+				$lock_holder = get_user_by( 'id', $lock_holder );
 				$locked_avatar = get_avatar( $lock_holder->ID, 18 );
-				$locked_text = esc_html( sprintf( __( '%s is currently editing' ), $lock_holder->display_name ) );
+				$locked_text = esc_html( sprintf( '%s is currently editing', $lock_holder->display_name ) );
 			} else {
 				$locked_avatar = $locked_text = '';
 			}
@@ -917,33 +869,23 @@ class WP_Posts_List_Table extends WP_List_Table {
 		get_inline_data( $post );
 	}
 
-	/**
-	 * Handles the post date column output.
-	 *
-	 * @since 4.3.0
-	 * @access public
-	 *
-	 * @global string $mode
-	 *
-	 * @param WP_Post $post The current WP_Post object.
-	 */
 	public function column_date( $post ) {
 		global $mode;
 
 		if ( '0000-00-00 00:00:00' === $post->post_date ) {
-			$t_time = $h_time = __( 'Unpublished' );
+			$t_time = $h_time = 'Unpublished';
 			$time_diff = 0;
 		} else {
-			$t_time = get_the_time( __( 'Y/m/d g:i:s a' ) );
+			$t_time = get_the_time( 'Y/m/d g:i:s a' );
 			$m_time = $post->post_date;
 			$time = get_post_time( 'G', true, $post );
 
 			$time_diff = time() - $time;
 
 			if ( $time_diff > 0 && $time_diff < DAY_IN_SECONDS ) {
-				$h_time = sprintf( __( '%s ago' ), human_time_diff( $time ) );
+				$h_time = sprintf( '%s ago', human_time_diff( $time ) );
 			} else {
-				$h_time = mysql2date( __( 'Y/m/d' ), $m_time );
+				$h_time = mysql2date( 'Y/m/d', $m_time );
 			}
 		}
 
@@ -951,29 +893,15 @@ class WP_Posts_List_Table extends WP_List_Table {
 			_e( 'Published' );
 		} elseif ( 'future' === $post->post_status ) {
 			if ( $time_diff > 0 ) {
-				echo '<strong class="error-message">' . __( 'Missed schedule' ) . '</strong>';
+				echo '<strong class="error-message">Missed schedule</strong>';
 			} else {
-				_e( 'Scheduled' );
+				echo 'Scheduled';
 			}
 		} else {
-			_e( 'Last Modified' );
+			echo 'Last Modified';
 		}
 		echo '<br />';
 		if ( 'excerpt' === $mode ) {
-			/**
-			 * Filter the published time of the post.
-			 *
-			 * If `$mode` equals 'excerpt', the published time and date are both displayed.
-			 * If `$mode` equals 'list' (default), the publish date is displayed, with the
-			 * time and date together available as an abbreviation definition.
-			 *
-			 * @since 2.5.1
-			 *
-			 * @param string  $t_time      The published time.
-			 * @param WP_Post $post        Post object.
-			 * @param string  $column_name The column name.
-			 * @param string  $mode        The list display mode ('excerpt' or 'list').
-			 */
 			echo apply_filters( 'post_date_column_time', $t_time, $post, 'date', $mode );
 		} else {
 
@@ -982,14 +910,6 @@ class WP_Posts_List_Table extends WP_List_Table {
 		}
 	}
 
-	/**
-	 * Handles the comments column output.
-	 *
-	 * @since 4.3.0
-	 * @access public
-	 *
-	 * @param WP_Post $post The current WP_Post object.
-	 */
 	public function column_comments( $post ) {
 		?>
 		<div class="post-com-count-wrapper">
@@ -1002,14 +922,6 @@ class WP_Posts_List_Table extends WP_List_Table {
 		<?php
 	}
 
-	/**
-	 * Handles the post author column output.
-	 *
-	 * @since 4.3.0
-	 * @access public
-	 *
-	 * @param WP_Post $post The current WP_Post object.
-	 */
 	public function column_author( $post ) {
 		$args = array(
 			'post_type' => $post->post_type,
@@ -1018,15 +930,6 @@ class WP_Posts_List_Table extends WP_List_Table {
 		echo $this->get_edit_link( $args, get_the_author() );
 	}
 
-	/**
-	 * Handles the default column output.
-	 *
-	 * @since 4.3.0
-	 * @access public
-	 *
-	 * @param WP_Post $post        The current WP_Post object.
-	 * @param string  $column_name The current column name.
-	 */
 	public function column_default( $post, $column_name ) {
 		if ( 'categories' === $column_name ) {
 			$taxonomy = 'category';
@@ -1066,54 +969,13 @@ class WP_Posts_List_Table extends WP_List_Table {
 		}
 
 		if ( is_post_type_hierarchical( $post->post_type ) ) {
-
-			/**
-			 * Fires in each custom column on the Posts list table.
-			 *
-			 * This hook only fires if the current post type is hierarchical,
-			 * such as pages.
-			 *
-			 * @since 2.5.0
-			 *
-			 * @param string $column_name The name of the column to display.
-			 * @param int    $post_id     The current post ID.
-			 */
 			do_action( 'manage_pages_custom_column', $column_name, $post->ID );
 		} else {
-
-			/**
-			 * Fires in each custom column in the Posts list table.
-			 *
-			 * This hook only fires if the current post type is non-hierarchical,
-			 * such as posts.
-			 *
-			 * @since 1.5.0
-			 *
-			 * @param string $column_name The name of the column to display.
-			 * @param int    $post_id     The current post ID.
-			 */
 			do_action( 'manage_posts_custom_column', $column_name, $post->ID );
 		}
-
-		/**
-		 * Fires for each custom column of a specific post type in the Posts list table.
-		 *
-		 * The dynamic portion of the hook name, `$post->post_type`, refers to the post type.
-		 *
-		 * @since 3.1.0
-		 *
-		 * @param string $column_name The name of the column to display.
-		 * @param int    $post_id     The current post ID.
-		 */
 		do_action( "manage_{$post->post_type}_posts_custom_column", $column_name, $post->ID );
 	}
 
-	/**
-	 * @global WP_Post $post
-	 *
-	 * @param int|WP_Post $post
-	 * @param int         $level
-	 */
 	public function single_row( $post, $level = 0 ) {
 		$global_post = get_post();
 
@@ -1144,29 +1006,10 @@ class WP_Posts_List_Table extends WP_List_Table {
 		$GLOBALS['post'] = $global_post;
 	}
 
-	/**
-	 * Gets the name of the default primary column.
-	 *
-	 * @since 4.3.0
-	 * @access protected
-	 *
-	 * @return string Name of the default primary column, in this case, 'title'.
-	 */
 	protected function get_default_primary_column_name() {
 		return 'title';
 	}
 
-	/**
-	 * Generates and displays row action links.
-	 *
-	 * @since 4.3.0
-	 * @access protected
-	 *
-	 * @param object $post        Post being acted upon.
-	 * @param string $column_name Current column name.
-	 * @param string $primary     Primary column name.
-	 * @return string Row actions output for posts.
-	 */
 	protected function handle_row_actions( $post, $column_name, $primary ) {
 		if ( $primary !== $column_name ) {
 			return '';
@@ -1246,47 +1089,14 @@ class WP_Posts_List_Table extends WP_List_Table {
 		}
 
 		if ( is_post_type_hierarchical( $post->post_type ) ) {
-
-			/**
-			 * Filter the array of row action links on the Pages list table.
-			 *
-			 * The filter is evaluated only for hierarchical post types.
-			 *
-			 * @since 2.8.0
-			 *
-			 * @param array $actions An array of row action links. Defaults are
-			 *                         'Edit', 'Quick Edit', 'Restore, 'Trash',
-			 *                         'Delete Permanently', 'Preview', and 'View'.
-			 * @param WP_Post $post The post object.
-			 */
 			$actions = apply_filters( 'page_row_actions', $actions, $post );
 		} else {
-
-			/**
-			 * Filter the array of row action links on the Posts list table.
-			 *
-			 * The filter is evaluated only for non-hierarchical post types.
-			 *
-			 * @since 2.8.0
-			 *
-			 * @param array $actions An array of row action links. Defaults are
-			 *                         'Edit', 'Quick Edit', 'Restore, 'Trash',
-			 *                         'Delete Permanently', 'Preview', and 'View'.
-			 * @param WP_Post $post The post object.
-			 */
 			$actions = apply_filters( 'post_row_actions', $actions, $post );
 		}
 
 		return $this->row_actions( $actions );
 	}
 
-	/**
-	 * Outputs the hidden row displayed when inline editing
-	 *
-	 * @since 3.1.0
-	 *
-	 * @global string $mode
-	 */
 	public function inline_edit() {
 		global $mode;
 
@@ -1304,15 +1114,6 @@ class WP_Posts_List_Table extends WP_List_Table {
 
 			$show_in_quick_edit = $taxonomy->show_in_quick_edit;
 
-			/**
-			 * Filter whether the current taxonomy should be shown in the Quick Edit panel.
-			 *
-			 * @since 4.2.0
-			 *
-			 * @param bool   $show_in_quick_edit Whether to show the current taxonomy in Quick Edit.
-			 * @param string $taxonomy_name      Taxonomy name.
-			 * @param string $post_type          Post type of current Quick Edit post.
-			 */
 			if ( ! apply_filters( 'quick_edit_show_taxonomy', $show_in_quick_edit, $taxonomy_name, $screen->post_type ) ) {
 				continue;
 			}
@@ -1455,13 +1256,13 @@ class WP_Posts_List_Table extends WP_List_Table {
 			if ( $post_type_object->hierarchical ) :
 		?>
 			<label>
-				<span class="title"><?php _e( 'Parent' ); ?></span>
+				<span class="title">Parent</span>
 	<?php
 		$dropdown_args = array(
 			'post_type'         => $post_type_object->name,
 			'selected'          => $post->post_parent,
 			'name'              => 'post_parent',
-			'show_option_none'  => __( 'Main Page (no parent)' ),
+			'show_option_none'  => 'Main Page (no parent)',
 			'option_none_value' => 0,
 			'sort_column'       => 'menu_order, post_title',
 		);
@@ -1469,15 +1270,6 @@ class WP_Posts_List_Table extends WP_List_Table {
 		if ( $bulk )
 			$dropdown_args['show_option_no_change'] =  __( '&mdash; No Change &mdash;' );
 
-		/**
-		 * Filter the arguments used to generate the Quick Edit page-parent drop-down.
-		 *
-		 * @since 2.7.0
-		 *
-		 * @see wp_dropdown_pages()
-		 *
-		 * @param array $dropdown_args An array of arguments.
-		 */
 		$dropdown_args = apply_filters( 'quick_edit_dropdown_pages_args', $dropdown_args );
 
 		wp_dropdown_pages( $dropdown_args );
@@ -1659,26 +1451,8 @@ class WP_Posts_List_Table extends WP_List_Table {
 				continue;
 
 			if ( $bulk ) {
-
-				/**
-				 * Fires once for each column in Bulk Edit mode.
-				 *
-				 * @since 2.7.0
-				 *
-				 * @param string  $column_name Name of the column to edit.
-				 * @param WP_Post $post_type   The post type slug.
-				 */
 				do_action( 'bulk_edit_custom_box', $column_name, $screen->post_type );
 			} else {
-
-				/**
-				 * Fires once for each column in Quick Edit mode.
-				 *
-				 * @since 2.7.0
-				 *
-				 * @param string $column_name Name of the column to edit.
-				 * @param string $post_type   The post type slug.
-				 */
 				do_action( 'quick_edit_custom_box', $column_name, $screen->post_type );
 			}
 

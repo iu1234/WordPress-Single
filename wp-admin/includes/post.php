@@ -6,18 +6,6 @@
  * @subpackage Administration
  */
 
-/**
- * Rename $_POST data from form names to DB post columns.
- *
- * Manipulates $_POST directly.
- *
- * @package WordPress
- * @since 2.6.0
- *
- * @param bool $update Are we updating a pre-existing post?
- * @param array $post_data Array of post data. Defaults to the contents of $_POST.
- * @return object|bool WP_Error on failure, true on success.
- */
 function _wp_translate_postdata( $update = false, $post_data = null ) {
 
 	if ( empty($post_data) )
@@ -30,14 +18,14 @@ function _wp_translate_postdata( $update = false, $post_data = null ) {
 
 	if ( $update && ! current_user_can( 'edit_post', $post_data['ID'] ) ) {
 		if ( 'page' == $post_data['post_type'] )
-			return new WP_Error( 'edit_others_pages', __( 'You are not allowed to edit pages as this user.' ) );
+			return new WP_Error( 'edit_others_pages', 'You are not allowed to edit pages as this user.' );
 		else
-			return new WP_Error( 'edit_others_posts', __( 'You are not allowed to edit posts as this user.' ) );
+			return new WP_Error( 'edit_others_posts', 'You are not allowed to edit posts as this user.' );
 	} elseif ( ! $update && ! current_user_can( $ptype->cap->create_posts ) ) {
 		if ( 'page' == $post_data['post_type'] )
-			return new WP_Error( 'edit_others_pages', __( 'You are not allowed to create pages as this user.' ) );
+			return new WP_Error( 'edit_others_pages', 'You are not allowed to create pages as this user.' );
 		else
-			return new WP_Error( 'edit_others_posts', __( 'You are not allowed to create posts as this user.' ) );
+			return new WP_Error( 'edit_others_posts', 'You are not allowed to create posts as this user.' );
 	}
 
 	if ( isset( $post_data['content'] ) )
@@ -1492,32 +1480,15 @@ function wp_set_post_lock( $post_id ) {
 	return array( $now, $user_id );
 }
 
-/**
- * Outputs the HTML for the notice to say that someone else is editing or has taken over editing of this post.
- *
- * @since 2.8.5
- * @return none
- */
 function _admin_notice_post_locked() {
 	if ( ! $post = get_post() )
 		return;
 
 	$user = null;
 	if (  $user_id = wp_check_post_lock( $post->ID ) )
-		$user = get_userdata( $user_id );
+		$user = get_user_by( 'id', $user_id );
 
 	if ( $user ) {
-
-		/**
-		 * Filter whether to show the post locked dialog.
-		 *
-		 * Returning a falsey value to the filter will short-circuit displaying the dialog.
-		 *
-		 * @since 3.6.0
-		 *
-		 * @param bool         $display Whether to display the dialog. Default true.
-		 * @param WP_User|bool $user    WP_User object on success, false otherwise.
-		 */
 		if ( ! apply_filters( 'show_post_locked_dialog', true, $post, $user ) )
 			return;
 
@@ -1560,18 +1531,6 @@ function _admin_notice_post_locked() {
 
 		$preview_link = get_preview_post_link( $post->ID, $query_args );
 
-		/**
-		 * Filter whether to allow the post lock to be overridden.
-		 *
-		 * Returning a falsey value to the filter will disable the ability
-		 * to override the post lock.
-		 *
-		 * @since 3.6.0
-		 *
-		 * @param bool    $override Whether to allow overriding post locks. Default true.
-		 * @param WP_Post $post     Post object.
-		 * @param WP_User $user     User object.
-		 */
 		$override = apply_filters( 'override_post_lock', true, $post, $user );
 		$tab_last = $override ? '' : ' wp-tab-last';
 
@@ -1580,19 +1539,12 @@ function _admin_notice_post_locked() {
 		<div class="post-locked-avatar"><?php echo get_avatar( $user->ID, 64 ); ?></div>
 		<p class="currently-editing wp-tab-first" tabindex="0">
 		<?php
-			_e( 'This content is currently locked.' );
+			echo 'This content is currently locked.';
 			if ( $override )
-				printf( ' ' . __( 'If you take over, %s will be blocked from continuing to edit.' ), esc_html( $user->display_name ) );
+				printf( ' If you take over, %s will be blocked from continuing to edit.', esc_html( $user->display_name ) );
 		?>
 		</p>
 		<?php
-		/**
-		 * Fires inside the post locked dialog before the buttons are displayed.
-		 *
-		 * @since 3.6.0
-		 *
-		 * @param WP_Post $post Post object.
-		 */
 		do_action( 'post_locked_dialog', $post );
 		?>
 		<p>
@@ -1643,16 +1595,6 @@ function _admin_notice_post_locked() {
 	<?php
 }
 
-/**
- * Creates autosave data for the specified post from $_POST data.
- *
- * @package WordPress
- * @subpackage Post_Revisions
- * @since 2.6.0
- *
- * @param mixed $post_data Associative array containing the post data or int post ID.
- * @return mixed The autosave revision ID. WP_Error or 0 on error.
- */
 function wp_create_post_autosave( $post_data ) {
 	if ( is_numeric( $post_data ) ) {
 		$post_id = $post_data;
@@ -1707,25 +1649,17 @@ function wp_create_post_autosave( $post_data ) {
 	return _wp_put_post_revision( $post_data, true );
 }
 
-/**
- * Save draft or manually autosave for showing preview.
- *
- * @package WordPress
- * @since 2.7.0
- *
- * @return str URL to redirect to show the preview
- */
 function post_preview() {
 
 	$post_ID = (int) $_POST['post_ID'];
 	$_POST['ID'] = $post_ID;
 
 	if ( ! $post = get_post( $post_ID ) ) {
-		wp_die( __( 'You are not allowed to edit this post.' ) );
+		wp_die( 'You are not allowed to edit this post.' );
 	}
 
 	if ( ! current_user_can( 'edit_post', $post->ID ) ) {
-		wp_die( __( 'You are not allowed to edit this post.' ) );
+		wp_die( 'You are not allowed to edit this post.' );
 	}
 
 	$is_autosave = false;
@@ -1757,19 +1691,7 @@ function post_preview() {
 	return get_preview_post_link( $post, $query_args );
 }
 
-/**
- * Save a post submitted with XHR
- *
- * Intended for use with heartbeat and autosave.js
- *
- * @since 3.9.0
- *
- * @param array $post_data Associative array of the submitted post data.
- * @return mixed The value 0 or WP_Error on failure. The saved post ID on success.
- *               The ID can be the draft post_id or the autosave revision post_id.
- */
 function wp_autosave( $post_data ) {
-	// Back-compat
 	if ( ! defined( 'DOING_AUTOSAVE' ) )
 		define( 'DOING_AUTOSAVE', true );
 
@@ -1777,13 +1699,13 @@ function wp_autosave( $post_data ) {
 	$post_data['ID'] = $post_data['post_ID'] = $post_id;
 
 	if ( false === wp_verify_nonce( $post_data['_wpnonce'], 'update-post_' . $post_id ) ) {
-		return new WP_Error( 'invalid_nonce', __( 'Error while saving.' ) );
+		return new WP_Error( 'invalid_nonce', 'Error while saving.' );
 	}
 
 	$post = get_post( $post_id );
 
 	if ( ! current_user_can( 'edit_post', $post->ID ) ) {
-		return new WP_Error( 'edit_posts', __( 'You are not allowed to edit this item.' ) );
+		return new WP_Error( 'edit_posts', 'You are not allowed to edit this item.' );
 	}
 
 	if ( 'auto-draft' == $post->post_status )
@@ -1793,19 +1715,12 @@ function wp_autosave( $post_data ) {
 		$post_data['post_category'] = explode( ',', $post_data['catslist'] );
 
 	if ( ! wp_check_post_lock( $post->ID ) && get_current_user_id() == $post->post_author && ( 'auto-draft' == $post->post_status || 'draft' == $post->post_status ) ) {
-		// Drafts and auto-drafts are just overwritten by autosave for the same user if the post is not locked
 		return edit_post( wp_slash( $post_data ) );
 	} else {
-		// Non drafts or other users drafts are not overwritten. The autosave is stored in a special post revision for each user.
 		return wp_create_post_autosave( wp_slash( $post_data ) );
 	}
 }
 
-/**
- * Redirect to previous page.
- *
- * @param int $post_id Optional. Post ID.
- */
 function redirect_post($post_id = '') {
 	if ( isset($_POST['save']) || isset($_POST['publish']) ) {
 		$status = get_post_status( $post_id );
@@ -1838,14 +1753,6 @@ function redirect_post($post_id = '') {
 		$location = add_query_arg( 'message', 4, get_edit_post_link( $post_id, 'url' ) );
 	}
 
-	/**
-	 * Filter the post redirect destination URL.
-	 *
-	 * @since 2.9.0
-	 *
-	 * @param string $location The destination URL.
-	 * @param int    $post_id  The post ID.
-	 */
 	wp_redirect( apply_filters( 'redirect_post_location', $location, $post_id ) );
 	exit;
 }

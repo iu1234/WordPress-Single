@@ -209,7 +209,7 @@ case 'trash':
 		wp_die( 'You are not allowed to move this item to the Trash.' );
 
 	if ( $user_id = wp_check_post_lock( $post_id ) ) {
-		$user = get_userdata( $user_id );
+		$user = get_user_by( 'id', $user_id );
 		wp_die( sprintf( 'You cannot move this item to the Trash. %s is currently editing.', $user->display_name ) );
 	}
 
