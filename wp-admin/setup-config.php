@@ -13,16 +13,8 @@
 
 define('WP_INSTALLING', true);
 
-/**
- * We are blissfully unaware of anything.
- */
 define('WP_SETUP_CONFIG', true);
 
-/**
- * Disable error reporting
- *
- * Set this to error_reporting( -1 ) for debugging
- */
 error_reporting(0);
 
 define( 'ABSPATH', dirname( __DIR__ ) . '/' );
@@ -36,9 +28,8 @@ if ( file_exists( ABSPATH . 'wp-config-sample.php' ) )
 elseif ( file_exists( dirname( ABSPATH ) . '/wp-config-sample.php' ) )
 	$config_file = file( dirname( ABSPATH ) . '/wp-config-sample.php' );
 else
-	wp_die( __( 'Sorry, I need a wp-config-sample.php file to work from. Please re-upload this file to your WordPress installation.' ) );
+	wp_die( 'Sorry, I need a wp-config-sample.php file to work from. Please re-upload this file to your WordPress installation.' );
 
-// Check if wp-config.php has been created
 if ( file_exists( ABSPATH . 'wp-config.php' ) )
 	wp_die( '<p>' . sprintf(
 			/* translators: %s: install.php */
@@ -59,17 +50,6 @@ if ( @file_exists( ABSPATH . '../wp-config.php' ) && ! @file_exists( ABSPATH . '
 
 $step = isset( $_GET['step'] ) ? (int) $_GET['step'] : -1;
 
-/**
- * Display setup wp-config.php file header.
- *
- * @ignore
- * @since 2.3.0
- *
- * @global string    $wp_local_package
- * @global WP_Locale $wp_locale
- *
- * @param string|array $body_classes
- */
 function setup_config_display_header( $body_classes = array() ) {
 	$body_classes = (array) $body_classes;
 	$body_classes[] = 'wp-core-ui';
@@ -175,15 +155,14 @@ switch($step) {
 			<td><?php _e( 'Your database username.' ); ?></td>
 		</tr>
 		<tr>
-			<th scope="row"><label for="pwd"><?php _e( 'Password' ); ?></label></th>
+			<th scope="row"><label for="pwd">Password</label></th>
 			<td><input name="pwd" id="pwd" type="text" size="25" value="<?php echo htmlspecialchars( _x( 'password', 'example password' ), ENT_QUOTES ); ?>" autocomplete="off" /></td>
 			<td><?php _e( 'Your database password.' ); ?></td>
 		</tr>
 		<tr>
-			<th scope="row"><label for="dbhost"><?php _e( 'Database Host' ); ?></label></th>
+			<th scope="row"><label for="dbhost">Database Host</label></th>
 			<td><input name="dbhost" id="dbhost" type="text" size="25" value="localhost" /></td>
 			<td><?php
-				/* translators: %s: localhost */
 				printf( 'You should be able to get this info from your web host, if %s doesn&#8217;t work.','<code>localhost</code>' );
 			?></td>
 		</tr>
@@ -195,7 +174,7 @@ switch($step) {
 	</table>
 	<?php if ( isset( $_GET['noapi'] ) ) { ?><input name="noapi" type="hidden" value="1" /><?php } ?>
 	<input type="hidden" name="language" value="<?php echo esc_attr( $language ); ?>" />
-	<p class="step"><input name="submit" type="submit" value="<?php echo htmlspecialchars( __( 'Submit' ), ENT_QUOTES ); ?>" class="button button-large" /></p>
+	<p class="step"><input name="submit" type="submit" value="<?php echo htmlspecialchars( 'Submit', ENT_QUOTES ); ?>" class="button button-large" /></p>
 </form>
 <?php
 	break;
@@ -221,14 +200,12 @@ switch($step) {
 		$install .= '?language=en_US';
 	}
 
-	$tryagain_link = '</p><p class="step"><a href="' . $step_1 . '" onclick="javascript:history.go(-1);return false;" class="button button-large">' . __( 'Try again' ) . '</a>';
+	$tryagain_link = '</p><p class="step"><a href="' . $step_1 . '" onclick="javascript:history.go(-1);return false;" class="button button-large">Try again</a>';
 
 	if ( empty( $prefix ) )
-		wp_die( __( '<strong>ERROR</strong>: "Table Prefix" must not be empty.' . $tryagain_link ) );
-
-	// Validate $prefix: it can only contain letters, numbers and underscores.
+		wp_die( '<strong>ERROR</strong>: "Table Prefix" must not be empty.' . $tryagain_link );
 	if ( preg_match( '|[^a-z0-9_]|i', $prefix ) )
-		wp_die( __( '<strong>ERROR</strong>: "Table Prefix" can only contain numbers, letters, and underscores.' . $tryagain_link ) );
+		wp_die( '<strong>ERROR</strong>: "Table Prefix" can only contain numbers, letters, and underscores.' . $tryagain_link );
 
 
 	define('DB_NAME', $dbname);
@@ -241,10 +218,6 @@ switch($step) {
 	unset( $wpdb );
 	require_wp_db();
 
-	/*
-	 * The wpdb constructor bails when WP_SETUP_CONFIG is set, so we must
-	 * fire this manually. We'll fail here if the values are no good.
-	 */
 	$wpdb->db_connect();
 
 	if ( ! empty( $wpdb->error ) )
@@ -324,20 +297,15 @@ switch($step) {
 	if ( ! is_writable(ABSPATH) ) :
 		setup_config_display_header();
 ?>
-<p><?php
-	/* translators: %s: wp-config.php */
-	printf( __( 'Sorry, but I can&#8217;t write the %s file.' ), '<code>wp-config.php</code>' );
-?></p>
-<p><?php
-	/* translators: %s: wp-config.php */
-	printf( __( 'You can create the %s manually and paste the following text into it.' ), '<code>wp-config.php</code>' );
-?></p>
+<p><?php printf( 'Sorry, but I can&#8217;t write the %s file.', '<code>wp-config.php</code>' ); ?></p>
+<p><?php printf( 'You can create the %s manually and paste the following text into it.', '<code>wp-config.php</code>' ); ?></p>
 <textarea id="wp-config" cols="98" rows="15" class="code" readonly="readonly"><?php
 		foreach ( $config_file as $line ) {
 			echo htmlentities($line, ENT_COMPAT, 'UTF-8');
 		}
-?></textarea>
-<p><?php _e( 'After you&#8217;ve done that, click &#8220;Run the install.&#8221;' ); ?></p>
+?>
+</textarea>
+<p>After you&#8217;ve done that, click &#8220;Run the install.&#8221;</p>
 <p class="step"><a href="<?php echo $install; ?>" class="button button-large"><?php _e( 'Run the install' ); ?></a></p>
 <script>
 (function(){

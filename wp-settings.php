@@ -20,17 +20,10 @@ wp_initial_constants();
 date_default_timezone_set( 'UTC' );
 
 wp_unregister_GLOBALS();
-
 wp_fix_server_vars();
-
 wp_favicon_request();
-
 wp_maintenance();
-
 timer_start();
-
-if ( WP_CACHE )
-	@include( WP_CONTENT_DIR . '/advanced-cache.php' );
 
 require( ABSPATH . WPINC . '/functions.php' );
 require( ABSPATH . WPINC . '/class-wp.php' );
@@ -38,10 +31,7 @@ require( ABSPATH . WPINC . '/class-wp-error.php' );
 require( ABSPATH . WPINC . '/plugin.php' );
 
 require_wp_db();
-
 wp_set_wpdb_vars();
-
-wp_start_object_cache();
 
 require( ABSPATH . WPINC . '/default-filters.php' );
 
@@ -140,9 +130,6 @@ unset( $plugin );
 require( ABSPATH . WPINC . '/pluggable.php' );
 
 wp_set_internal_encoding();
-
-if ( WP_CACHE && function_exists( 'wp_cache_postload' ) )
-	wp_cache_postload();
 
 do_action( 'plugins_loaded' );
 

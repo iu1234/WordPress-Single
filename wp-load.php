@@ -4,9 +4,9 @@ define( 'ABSPATH', __DIR__ . '/' );
 
 error_reporting( E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_ERROR | E_WARNING | E_PARSE | E_USER_ERROR | E_USER_WARNING | E_RECOVERABLE_ERROR );
 
-define('DB_NAME', 'dwmdb');
-define('DB_USER', 'root');
-define('DB_PASSWORD', 'diwami');
+define('DB_NAME', '*');
+define('DB_USER', '*');
+define('DB_PASSWORD', '*');
 define('DB_HOST', 'localhost');
 
 define('AUTH_KEY',         'put your unique phrase here');
