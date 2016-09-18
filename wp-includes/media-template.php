@@ -7,12 +7,6 @@
  * @since 3.5.0
  */
 
-/**
- * Output the markup for a audio tag to be used in an Underscore template
- * when data.model is passed.
- *
- * @since 3.9.0
- */
 function wp_underscore_audio_template() {
 	$audio_types = wp_get_audio_extensions();
 ?>
@@ -41,12 +35,6 @@ function wp_underscore_audio_template() {
 <?php
 }
 
-/**
- * Output the markup for a video tag to be used in an Underscore template
- * when data.model is passed.
- *
- * @since 3.9.0
- */
 function wp_underscore_video_template() {
 	$video_types = wp_get_video_extensions();
 ?>
@@ -129,13 +117,6 @@ function wp_underscore_video_template() {
 <?php
 }
 
-/**
- * Prints the templates used in the media manager.
- *
- * @since 3.5.0
- *
- * @global bool $is_IE
- */
 function wp_print_media_templates() {
 	global $is_IE;
 	$class = 'media-modal wp-core-ui';
@@ -559,8 +540,8 @@ function wp_print_media_templates() {
 		<?php endif; ?>
 		<# if ( 'audio' === data.type ) { #>
 		<?php foreach ( array(
-			'artist' => __( 'Artist' ),
-			'album' => __( 'Album' ),
+			'artist' => 'Artist',
+			'album' => 'Album',
 		) as $key => $label ) : ?>
 		<label class="setting" data-setting="<?php echo esc_attr( $key ) ?>">
 			<span class="name"><?php echo $label ?></span>
@@ -569,17 +550,17 @@ function wp_print_media_templates() {
 		<?php endforeach; ?>
 		<# } #>
 		<label class="setting" data-setting="caption">
-			<span class="name"><?php _e('Caption'); ?></span>
+			<span class="name">Caption</span>
 			<textarea {{ maybeReadOnly }}>{{ data.caption }}</textarea>
 		</label>
 		<# if ( 'image' === data.type ) { #>
 			<label class="setting" data-setting="alt">
-				<span class="name"><?php _e('Alt Text'); ?></span>
+				<span class="name">Alt Text</span>
 				<input type="text" value="{{ data.alt }}" {{ maybeReadOnly }} />
 			</label>
 		<# } #>
 		<label class="setting" data-setting="description">
-			<span class="name"><?php _e('Description'); ?></span>
+			<span class="name">Description</span>
 			<textarea {{ maybeReadOnly }}>{{ data.description }}</textarea>
 		</label>
 	</script>
@@ -598,7 +579,7 @@ function wp_print_media_templates() {
 	</script>
 
 	<script type="text/html" id="tmpl-attachment-display-settings">
-		<h2><?php _e( 'Attachment Display Settings' ); ?></h2>
+		<h2>Attachment Display Settings</h2>
 
 		<# if ( 'image' === data.type ) { #>
 			<label class="setting">
@@ -984,15 +965,15 @@ function wp_print_media_templates() {
 						<input type="text" class="link-to-custom" data-setting="linkUrl" />
 					</div>
 					<div class="advanced-section">
-						<h2><button type="button" class="button-link advanced-toggle"><?php _e( 'Advanced Options' ); ?></button></h2>
+						<h2><button type="button" class="button-link advanced-toggle">Advanced Options</button></h2>
 						<div class="advanced-settings hidden">
 							<div class="advanced-image">
 								<label class="setting title-text">
-									<span><?php _e('Image Title Attribute'); ?></span>
+									<span>Image Title Attribute</span>
 									<input type="text" data-setting="title" value="{{ data.model.title }}" />
 								</label>
 								<label class="setting extra-classes">
-									<span><?php _e('Image CSS Class'); ?></span>
+									<span>Image CSS Class</span>
 									<input type="text" data-setting="extraClasses" value="{{ data.model.extraClasses }}" />
 								</label>
 							</div>
@@ -1001,11 +982,11 @@ function wp_print_media_templates() {
 									<label><input type="checkbox" data-setting="linkTargetBlank" value="_blank" <# if ( data.model.linkTargetBlank ) { #>checked="checked"<# } #>><?php _e( 'Open link in a new tab' ); ?></label>
 								</div>
 								<label class="setting link-rel">
-									<span><?php _e('Link Rel'); ?></span>
+									<span>Link Rel</span>
 									<input type="text" data-setting="linkRel" value="{{ data.model.linkClassName }}" />
 								</label>
 								<label class="setting link-class-name">
-									<span><?php _e('Link CSS Class'); ?></span>
+									<span>Link CSS Class</span>
 									<input type="text" data-setting="linkClassName" value="{{ data.model.linkClassName }}" />
 								</label>
 							</div>
@@ -1072,22 +1053,22 @@ function wp_print_media_templates() {
 				<# } #>
 
 				<div class="setting preload">
-					<span><?php _e( 'Preload' ); ?></span>
+					<span>Preload</span>
 					<div class="button-group button-large" data-setting="preload">
 						<button class="button" value="auto"><?php _ex( 'Auto', 'auto preload' ); ?></button>
-						<button class="button" value="metadata"><?php _e( 'Metadata' ); ?></button>
-						<button class="button active" value="none"><?php _e( 'None' ); ?></button>
+						<button class="button" value="metadata">Metadata</button>
+						<button class="button active" value="none">None</button>
 					</div>
 				</div>
 
 				<label class="setting checkbox-setting">
 					<input type="checkbox" data-setting="autoplay" />
-					<span><?php _e( 'Autoplay' ); ?></span>
+					<span>Autoplay</span>
 				</label>
 
 				<label class="setting checkbox-setting">
 					<input type="checkbox" data-setting="loop" />
-					<span><?php _e( 'Loop' ); ?></span>
+					<span>Loop</span>
 				</label>
 			</div>
 		</div>
@@ -1124,7 +1105,7 @@ function wp_print_media_templates() {
 				<label class="setting">
 					<span>SRC</span>
 					<input type="text" disabled="disabled" data-setting="src" value="{{ data.model.src }}" />
-					<button type="button" class="button-link remove-setting"><?php _e( 'Remove video source' ); ?></button>
+					<button type="button" class="button-link remove-setting">Remove video source</button>
 				</label>
 				<# } #>
 				<?php foreach ( $video_types as $type ):
@@ -1136,7 +1117,7 @@ function wp_print_media_templates() {
 				<label class="setting">
 					<span><?php echo strtoupper( $type ) ?></span>
 					<input type="text" disabled="disabled" data-setting="<?php echo $type ?>" value="{{ data.model.<?php echo $type ?> }}" />
-					<button type="button" class="button-link remove-setting"><?php _e( 'Remove video source' ); ?></button>
+					<button type="button" class="button-link remove-setting">Remove video source</button>
 				</label>
 				<# } #>
 				<?php endforeach ?>
@@ -1155,32 +1136,32 @@ function wp_print_media_templates() {
 
 				<# if ( ! _.isEmpty( data.model.poster ) ) { #>
 				<label class="setting">
-					<span><?php _e( 'Poster Image' ); ?></span>
+					<span>Poster Image</span>
 					<input type="text" disabled="disabled" data-setting="poster" value="{{ data.model.poster }}" />
-					<button type="button" class="button-link remove-setting"><?php _e( 'Remove poster image' ); ?></button>
+					<button type="button" class="button-link remove-setting">Remove poster image</button>
 				</label>
 				<# } #>
 				<div class="setting preload">
 					<span><?php _e( 'Preload' ); ?></span>
 					<div class="button-group button-large" data-setting="preload">
 						<button class="button" value="auto"><?php _ex( 'Auto', 'auto preload' ); ?></button>
-						<button class="button" value="metadata"><?php _e( 'Metadata' ); ?></button>
-						<button class="button active" value="none"><?php _e( 'None' ); ?></button>
+						<button class="button" value="metadata">Metadata</button>
+						<button class="button active" value="none">None</button>
 					</div>
 				</div>
 
 				<label class="setting checkbox-setting">
 					<input type="checkbox" data-setting="autoplay" />
-					<span><?php _e( 'Autoplay' ); ?></span>
+					<span>Autoplay</span>
 				</label>
 
 				<label class="setting checkbox-setting">
 					<input type="checkbox" data-setting="loop" />
-					<span><?php _e( 'Loop' ); ?></span>
+					<span>Loop</span>
 				</label>
 
 				<label class="setting" data-setting="content">
-					<span><?php _e( 'Tracks (subtitles, captions, descriptions, chapters, or metadata)' ); ?></span>
+					<span>Tracks (subtitles, captions, descriptions, chapters, or metadata)</span>
 					<#
 					var content = '';
 					if ( ! _.isEmpty( data.model.content ) ) {
@@ -1193,7 +1174,7 @@ function wp_print_media_templates() {
 						</p>
 						<# } ); #>
 					<# } else { #>
-					<em><?php _e( 'There are no associated subtitles.' ); ?></em>
+					<em>There are no associated subtitles.</em>
 					<# } #>
 					<textarea class="hidden content-setting">{{ content }}</textarea>
 				</label>
@@ -1237,8 +1218,8 @@ function wp_print_media_templates() {
 	</script>
 
 	<script type="text/html" id="tmpl-site-icon-preview">
-		<h2><?php _e( 'Preview' ); ?></h2>
-		<strong><?php _e( 'As a browser icon' ); ?></strong>
+		<h2>Preview</h2>
+		<strong>As a browser icon</strong>
 		<div class="favicon-preview">
 			<img src="images/browser.png" class="browser-preview" width="182" height="" alt="" />
 
@@ -1248,18 +1229,11 @@ function wp_print_media_templates() {
 			<span class="browser-title"><?php bloginfo( 'name' ); ?></span>
 		</div>
 
-		<strong><?php _e( 'As an app icon' ); ?></strong>
+		<strong>As an app icon</strong>
 		<div class="app-icon-preview">
 			<img id="preview-app-icon" src="{{ data.url }}" alt="<?php esc_attr_e( 'Preview as an app icon' ); ?>"/>
 		</div>
 	</script>
-
 	<?php
-
-	/**
-	 * Fires when the custom Backbone media templates are printed.
-	 *
-	 * @since 3.5.0
-	 */
 	do_action( 'print_media_templates' );
 }

@@ -13,10 +13,7 @@ function _wp_admin_bar_init() {
 	if ( ! is_admin_bar_showing() )
 		return false;
 
-	/* Load the admin bar class code ready for instantiation */
 	require_once( ABSPATH . WPINC . '/class-wp-admin-bar.php' );
-
-	/* Instantiate the admin bar */
 
 	$admin_bar_class = apply_filters( 'wp_admin_bar_class', 'WP_Admin_Bar' );
 	if ( class_exists( $admin_bar_class ) )
@@ -64,8 +61,6 @@ function wp_admin_bar_my_account_item( $wp_admin_bar ) {
 
 	if ( current_user_can( 'read' ) ) {
 		$profile_url = get_edit_profile_url( $user_id );
-	} elseif ( is_multisite() ) {
-		$profile_url = get_dashboard_url( $user_id, 'profile.php' );
 	} else {
 		$profile_url = false;
 	}
@@ -94,8 +89,6 @@ function wp_admin_bar_my_account_menu( $wp_admin_bar ) {
 
 	if ( current_user_can( 'read' ) ) {
 		$profile_url = get_edit_profile_url( $user_id );
-	} elseif ( is_multisite() ) {
-		$profile_url = get_dashboard_url( $user_id, 'profile.php' );
 	} else {
 		$profile_url = false;
 	}

@@ -45,37 +45,8 @@ if ( empty($option_page) ) {
 
 if ( ! current_user_can( $capability ) ) {
 	wp_die(
-		'<h1>' . __( 'Cheatin&#8217; uh?' ) . '</h1>' .
-		'<p>' . __( 'You are not allowed to manage these items.' ) . '</p>',
-		403
-	);
-}
-
-// Handle admin email change requests
-if ( is_multisite() ) {
-	if ( ! empty($_GET[ 'adminhash' ] ) ) {
-		$new_admin_details = get_option( 'adminhash' );
-		$redirect = 'options-general.php?updated=false';
-		if ( is_array( $new_admin_details ) && $new_admin_details[ 'hash' ] == $_GET[ 'adminhash' ] && !empty($new_admin_details[ 'newemail' ]) ) {
-			update_option( 'admin_email', $new_admin_details[ 'newemail' ] );
-			delete_option( 'adminhash' );
-			delete_option( 'new_admin_email' );
-			$redirect = 'options-general.php?updated=true';
-		}
-		wp_redirect( admin_url( $redirect ) );
-		exit;
-	} elseif ( ! empty( $_GET['dismiss'] ) && 'new_admin_email' == $_GET['dismiss'] ) {
-		delete_option( 'adminhash' );
-		delete_option( 'new_admin_email' );
-		wp_redirect( admin_url( 'options-general.php?updated=true' ) );
-		exit;
-	}
-}
-
-if ( is_multisite() && ! is_super_admin() && 'update' != $action ) {
-	wp_die(
-		'<h1>' . __( 'Cheatin&#8217; uh?' ) . '</h1>' .
-		'<p>' . __( 'You are not allowed to delete these items.' ) . '</p>',
+		'<h1>Cheatin&#8217; uh?</h1>' .
+		'<p>You are not allowed to manage these items.</p>',
 		403
 	);
 }
@@ -118,13 +89,6 @@ if ( get_option( 'upload_url_path' ) || ( get_option('upload_path') != 'wp-conte
 	$whitelist_options['media'][] = 'upload_url_path';
 }
 
-/**
- * Filter the options white list.
- *
- * @since 2.7.0
- *
- * @param array White list options.
- */
 $whitelist_options = apply_filters( 'whitelist_options', $whitelist_options );
 
 /*
@@ -140,11 +104,9 @@ if ( 'update' == $action ) {
 	}
 
 	if ( !isset( $whitelist_options[ $option_page ] ) )
-		wp_die( __( '<strong>ERROR</strong>: options page not found.' ) );
+		wp_die( '<strong>ERROR</strong>: options page not found.' );
 
 	if ( 'options' == $option_page ) {
-		if ( is_multisite() && ! is_super_admin() )
-			wp_die( __( 'You do not have sufficient permissions to modify unregistered settings for this site.' ) );
 		$options = explode( ',', wp_unslash( $_POST[ 'page_options' ] ) );
 	} else {
 		$options = $whitelist_options[ $option_page ];
@@ -163,17 +125,6 @@ if ( 'update' == $action ) {
 			$_POST['timezone_string'] = '';
 		}
 
-		// Handle translation install.
-		if ( ! empty( $_POST['WPLANG'] ) && ( ! is_multisite() || is_super_admin() ) ) { // @todo: Skip if already installed
-			require_once( ABSPATH . 'wp-admin/includes/translation-install.php' );
-
-			if ( wp_can_install_language_pack() ) {
-				$language = wp_download_language_pack( $_POST['WPLANG'] );
-				if ( $language ) {
-					$_POST['WPLANG'] = $language;
-				}
-			}
-		}
 	}
 
 	if ( $options ) {

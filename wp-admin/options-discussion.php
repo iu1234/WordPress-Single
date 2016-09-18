@@ -5,13 +5,13 @@
  * @package WordPress
  * @subpackage Administration
  */
-/** WordPress Administration Bootstrap */
-require_once( dirname( __FILE__ ) . '/admin.php' );
+
+require_once( __DIR__ . '/admin.php' );
 
 if ( ! current_user_can( 'manage_options' ) )
-	wp_die( __( 'You do not have sufficient permissions to manage options for this site.' ) );
+	wp_die( 'You do not have sufficient permissions to manage options for this site.' );
 
-$title = __('Discussion Settings');
+$title = 'Discussion Settings';
 $parent_file = 'options-general.php';
 
 add_action( 'admin_print_footer_scripts', 'options_discussion_add_js' );
@@ -22,12 +22,6 @@ get_current_screen()->add_help_tab( array(
 	'content' => '<p>' . __('This screen provides many options for controlling the management and display of comments and links to your posts/pages. So many, in fact, they won&#8217;t all fit here! :) Use the documentation links to get information on what each discussion setting does.') . '</p>' .
 		'<p>' . __('You must click the Save Changes button at the bottom of the screen for new settings to take effect.') . '</p>',
 ) );
-
-get_current_screen()->set_help_sidebar(
-	'<p><strong>' . __('For more information:') . '</strong></p>' .
-	'<p>' . __('<a href="https://codex.wordpress.org/Settings_Discussion_Screen" target="_blank">Documentation on Discussion Settings</a>') . '</p>' .
-	'<p>' . __('<a href="https://wordpress.org/support/" target="_blank">Support Forums</a>') . '</p>'
-);
 
 include( ABSPATH . 'wp-admin/admin-header.php' );
 ?>
@@ -40,8 +34,8 @@ include( ABSPATH . 'wp-admin/admin-header.php' );
 
 <table class="form-table">
 <tr>
-<th scope="row"><?php _e('Default article settings'); ?></th>
-<td><fieldset><legend class="screen-reader-text"><span><?php _e('Default article settings'); ?></span></legend>
+<th scope="row">Default article settings</th>
+<td><fieldset><legend class="screen-reader-text"><span>Default article settings</span></legend>
 <label for="default_pingback_flag">
 <input name="default_pingback_flag" type="checkbox" id="default_pingback_flag" value="1" <?php checked('1', get_option('default_pingback_flag')); ?> />
 <?php _e('Attempt to notify any blogs linked to from the article'); ?></label>
@@ -65,7 +59,6 @@ include( ABSPATH . 'wp-admin/admin-header.php' );
 <label for="comment_registration">
 <input name="comment_registration" type="checkbox" id="comment_registration" value="1" <?php checked('1', get_option('comment_registration')); ?> />
 <?php _e('Users must be registered and logged in to comment'); ?>
-<?php if ( !get_option( 'users_can_register' ) && is_multisite() ) echo ' ' . __( '(Signup has been disabled. Only members of this site can comment.)' ); ?>
 </label>
 <br />
 
@@ -77,13 +70,7 @@ include( ABSPATH . 'wp-admin/admin-header.php' );
 <label for="thread_comments">
 <input name="thread_comments" type="checkbox" id="thread_comments" value="1" <?php checked('1', get_option('thread_comments')); ?> />
 <?php
-/**
- * Filter the maximum depth of threaded/nested comments.
- *
- * @since 2.7.0.
- *
- * @param int $max_depth The maximum depth of threaded comments. Default 10.
- */
+
 $maxdeep = (int) apply_filters( 'thread_comments_depth_max', 10 );
 
 $thread_comments_depth = '</label><label for="thread_comments_depth"><select name="thread_comments_depth" id="thread_comments_depth">';

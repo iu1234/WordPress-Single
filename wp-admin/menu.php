@@ -6,26 +6,11 @@
  * @subpackage Administration
  */
 
-/**
- * Constructs the admin menu.
- *
- * The elements in the array are :
- *     0: Menu item name
- *     1: Minimum level or capability required.
- *     2: The URL of the item's file
- *     3: Class
- *     4: ID
- *     5: Icon for top level menu
- *
- * @global array $menu
- */
-
 $menu[2] = array( 'Dashboard', 'read', 'index.php', '', 'menu-top menu-top-first menu-icon-dashboard', 'menu-dashboard', 'dashicons-dashboard' );
 
 $submenu[ 'index.php' ][0] = array( 'Home', 'read', 'index.php' );
 
-if ( ! is_multisite() || is_super_admin() )
-	$update_data = wp_get_update_data();
+$update_data = wp_get_update_data();
 
 if ( current_user_can( 'update_core' ) )
 	$cap = 'update_core';
@@ -215,8 +200,6 @@ $menu[75] = array( '工具', 'edit_posts', 'tools.php', '', 'menu-top menu-icon-
 	$submenu['tools.php'][5] = array( '可用工具', 'edit_posts', 'tools.php' );
 	$submenu['tools.php'][10] = array( '导入', 'import', 'import.php' );
 	$submenu['tools.php'][15] = array( '导出', 'export', 'export.php' );
-	if ( ! is_multisite() && defined('WP_ALLOW_MULTISITE') && WP_ALLOW_MULTISITE )
-		$submenu['tools.php'][50] = array(__('Network Setup'), 'manage_options', 'network.php');
 
 $menu[80] = array( '设置', 'manage_options', 'options-general.php', '', 'menu-top menu-icon-settings', 'menu-settings', 'dashicons-admin-settings' );
 	$submenu['options-general.php'][10] = array('常规', 'manage_options', 'options-general.php');

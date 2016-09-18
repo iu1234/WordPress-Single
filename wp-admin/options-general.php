@@ -6,16 +6,14 @@
  * @subpackage Administration
  */
 
-/** WordPress Administration Bootstrap */
-require_once( dirname( __FILE__ ) . '/admin.php' );
+require_once( __DIR__ . '/admin.php' );
 
-/** WordPress Translation Install API */
 require_once( ABSPATH . 'wp-admin/includes/translation-install.php' );
 
 if ( ! current_user_can( 'manage_options' ) )
-	wp_die( __( 'You do not have sufficient permissions to manage options for this site.' ) );
+	wp_die( 'You do not have sufficient permissions to manage options for this site.' );
 
-$title = __('General Settings');
+$title = 'General Settings';
 $parent_file = 'options-general.php';
 /* translators: date and time format for exact current time, mainly about timezones, see http://php.net/date */
 $timezone_format = _x('Y-m-d H:i:s', 'timezone date format');
@@ -25,10 +23,8 @@ add_action('admin_head', 'options_general_add_js');
 $options_help = '<p>' . __('The fields on this screen determine some of the basics of your site setup.') . '</p>' .
 	'<p>' . __('Most themes display the site title at the top of every page, in the title bar of the browser, and as the identifying name for syndicated feeds. The tagline is also displayed by many themes.') . '</p>';
 
-if ( ! is_multisite() ) {
-	$options_help .= '<p>' . __('The WordPress URL and the Site URL can be the same (example.com) or different; for example, having the WordPress core files (example.com/wordpress) in a subdirectory instead of the root directory.') . '</p>' .
+$options_help .= '<p>' . __('The WordPress URL and the Site URL can be the same (example.com) or different; for example, having the WordPress core files (example.com/wordpress) in a subdirectory instead of the root directory.') . '</p>' .
 		'<p>' . __('If you want site visitors to be able to register themselves, as opposed to by the site administrator, check the membership box. A default user role can be set for all new users, whether self-registered or registered by the site admin.') . '</p>';
-}
 
 $options_help .= '<p>' . __( 'You can set the language, and the translation files will be automatically downloaded and installed (available if your filesystem is writable).' ) . '</p>' .
 	'<p>' . __( 'UTC means Coordinated Universal Time.' ) . '</p>' .
@@ -36,15 +32,9 @@ $options_help .= '<p>' . __( 'You can set the language, and the translation file
 
 get_current_screen()->add_help_tab( array(
 	'id'      => 'overview',
-	'title'   => __('Overview'),
+	'title'   => 'Overview',
 	'content' => $options_help,
 ) );
-
-get_current_screen()->set_help_sidebar(
-	'<p><strong>' . __('For more information:') . '</strong></p>' .
-	'<p>' . __('<a href="https://codex.wordpress.org/Settings_General_Screen" target="_blank">Documentation on General Settings</a>') . '</p>' .
-	'<p>' . __('<a href="https://wordpress.org/support/" target="_blank">Support Forums</a>') . '</p>'
-);
 
 include( ABSPATH . 'wp-admin/admin-header.php' );
 ?>
@@ -65,7 +55,6 @@ include( ABSPATH . 'wp-admin/admin-header.php' );
 <td><input name="blogdescription" type="text" id="blogdescription" aria-describedby="tagline-description" value="<?php form_option('blogdescription'); ?>" class="regular-text" />
 <p class="description" id="tagline-description"><?php _e( 'In a few words, explain what this site is about.' ) ?></p></td>
 </tr>
-<?php if ( !is_multisite() ) { ?>
 <tr>
 <th scope="row"><label for="siteurl"><?php _e('WordPress Address (URL)') ?></label></th>
 <td><input name="siteurl" type="url" id="siteurl" value="<?php form_option( 'siteurl' ); ?>"<?php disabled( defined( 'WP_SITEURL' ) ); ?> class="regular-text code<?php if ( defined( 'WP_SITEURL' ) ) echo ' disabled' ?>" /></td>
@@ -95,32 +84,6 @@ include( ABSPATH . 'wp-admin/admin-header.php' );
 <select name="default_role" id="default_role"><?php wp_dropdown_roles( get_option('default_role') ); ?></select>
 </td>
 </tr>
-<?php } else { ?>
-<tr>
-<th scope="row"><label for="new_admin_email"><?php _e('Email Address') ?> </label></th>
-<td><input name="new_admin_email" type="email" id="new_admin_email" aria-describedby="new-admin-email-description" value="<?php form_option( 'admin_email' ); ?>" class="regular-text ltr" />
-<p class="description" id="new-admin-email-description"><?php _e( 'This address is used for admin purposes. If you change this we will send you an email at your new address to confirm it. <strong>The new address will not become active until confirmed.</strong>' ) ?></p>
-<?php
-$new_admin_email = get_option( 'new_admin_email' );
-if ( $new_admin_email && $new_admin_email != get_option('admin_email') ) : ?>
-<div class="updated inline">
-<p><?php
-	printf(
-		/* translators: %s: new admin email */
-		__( 'There is a pending change of the admin email to %s.' ),
-		'<code>' . esc_html( $new_admin_email ) . '</code>'
-	);
-	printf(
-		' <a href="%1$s">%2$s</a>',
-		esc_url( admin_url( 'options.php?dismiss=new_admin_email' ) ),
-		__( 'Cancel' )
-	);
-?></p>
-</div>
-<?php endif; ?>
-</td>
-</tr>
-<?php } ?>
 <tr>
 <?php
 $current_offset = get_option('gmt_offset');
@@ -317,50 +280,6 @@ endfor;
 </select></td>
 </tr>
 <?php do_settings_fields('general', 'default'); ?>
-
-<?php
-$languages = get_available_languages();
-$translations = wp_get_available_translations();
-if ( ! is_multisite() && defined( 'WPLANG' ) && '' !== WPLANG && 'en_US' !== WPLANG && ! in_array( WPLANG, $languages ) ) {
-	$languages[] = WPLANG;
-}
-if ( ! empty( $languages ) || ! empty( $translations ) ) {
-	?>
-	<tr>
-		<th width="33%" scope="row"><label for="WPLANG"><?php _e( 'Site Language' ); ?></label></th>
-		<td>
-			<?php
-			$locale = get_locale();
-			if ( ! in_array( $locale, $languages ) ) {
-				$locale = '';
-			}
-
-			wp_dropdown_languages( array(
-				'name'         => 'WPLANG',
-				'id'           => 'WPLANG',
-				'selected'     => $locale,
-				'languages'    => $languages,
-				'translations' => $translations,
-				'show_available_translations' => ( ! is_multisite() || is_super_admin() ) && wp_can_install_language_pack(),
-			) );
-
-			// Add note about deprecated WPLANG constant.
-			if ( defined( 'WPLANG' ) && ( '' !== WPLANG ) && $locale !== WPLANG ) {
-				if ( is_super_admin() ) {
-					?>
-					<p class="description">
-						<strong><?php _e( 'Note:' ); ?></strong> <?php printf( __( 'The %s constant in your %s file is no longer needed.' ), '<code>WPLANG</code>', '<code>wp-load.php</code>' ); ?>
-					</p>
-					<?php
-				}
-				_deprecated_argument( 'define()', '4.0', sprintf( __( 'The %s constant in your %s file is no longer needed.' ), 'WPLANG', 'wp-load.php' ) );
-			}
-			?>
-		</td>
-	</tr>
-	<?php
-}
-?>
 </table>
 
 <?php do_settings_sections('general'); ?>
