@@ -10,7 +10,6 @@
 define( 'REST_API_VERSION', '2.0' );
 
 function register_rest_route( $namespace, $route, $args = array(), $override = false ) {
-	/** @var WP_REST_Server $wp_rest_server */
 	global $wp_rest_server;
 
 	if ( empty( $namespace ) ) {
@@ -321,14 +320,11 @@ function rest_cookie_check_errors( $result ) {
 
 function rest_cookie_collect_status() {
 	global $wp_rest_auth_cookie;
-
 	$status_type = current_action();
-
 	if ( 'auth_cookie_valid' !== $status_type ) {
 		$wp_rest_auth_cookie = substr( $status_type, 12 );
 		return;
 	}
-
 	$wp_rest_auth_cookie = true;
 }
 

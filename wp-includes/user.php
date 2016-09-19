@@ -150,11 +150,9 @@ function wp_validate_logged_in_cookie( $user_id ) {
 	if ( $user_id ) {
 		return $user_id;
 	}
-
 	if ( is_blog_admin() || is_network_admin() || empty( $_COOKIE[LOGGED_IN_COOKIE] ) ) {
 		return false;
 	}
-
 	return wp_validate_auth_cookie( $_COOKIE[LOGGED_IN_COOKIE], 'logged_in' );
 }
 
@@ -1155,36 +1153,25 @@ function wp_get_users_with_no_role() {
 
 function _wp_get_current_user() {
 	global $current_user;
-
 	if ( ! empty( $current_user ) ) {
 		if ( $current_user instanceof WP_User ) {
 			return $current_user;
 		}
-
 		if ( is_object( $current_user ) && isset( $current_user->ID ) ) {
 			$cur_id = $current_user->ID;
 			$current_user = null;
 			wp_set_current_user( $cur_id );
 			return $current_user;
 		}
-
 		$current_user = null;
 		wp_set_current_user( 0 );
 		return $current_user;
 	}
-
-	if ( defined('XMLRPC_REQUEST') && XMLRPC_REQUEST ) {
-		wp_set_current_user( 0 );
-		return $current_user;
-	}
-
 	$user_id = apply_filters( 'determine_current_user', false );
 	if ( ! $user_id ) {
 		wp_set_current_user( 0 );
 		return $current_user;
 	}
-
 	wp_set_current_user( $user_id );
-
 	return $current_user;
 }

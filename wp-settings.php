@@ -14,7 +14,6 @@ define( 'WPINC', 'wp-includes' );
 
 require( ABSPATH . WPINC . '/load.php' );
 require( ABSPATH . WPINC . '/default-constants.php' );
-
 wp_initial_constants();
 
 date_default_timezone_set( 'UTC' );
@@ -130,9 +129,7 @@ unset( $plugin );
 require( ABSPATH . WPINC . '/pluggable.php' );
 
 wp_set_internal_encoding();
-
 do_action( 'plugins_loaded' );
-
 wp_functionality_constants();
 wp_magic_quotes();
 

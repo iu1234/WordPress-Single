@@ -343,24 +343,18 @@ function plugin_basename( $file ) {
 
 function wp_register_plugin_realpath( $file ) {
 	global $wp_plugin_paths;
-
 	static $wp_plugin_path = null, $wpmu_plugin_path = null;
 	if ( ! isset( $wp_plugin_path ) ) {
 		$wp_plugin_path   = wp_normalize_path( WP_PLUGIN_DIR   );
-		$wpmu_plugin_path = wp_normalize_path( WPMU_PLUGIN_DIR );
 	}
-
 	$plugin_path = wp_normalize_path( dirname( $file ) );
 	$plugin_realpath = wp_normalize_path( dirname( realpath( $file ) ) );
-
 	if ( $plugin_path === $wp_plugin_path || $plugin_path === $wpmu_plugin_path ) {
 		return false;
 	}
-
 	if ( $plugin_path !== $plugin_realpath ) {
 		$wp_plugin_paths[ $plugin_path ] = $plugin_realpath;
 	}
-
 	return true;
 }
 

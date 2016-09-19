@@ -100,14 +100,6 @@ function wp_not_installed() {
 	}
 }
 
-function wp_set_internal_encoding() {
-	if ( function_exists( 'mb_internal_encoding' ) ) {
-		$charset = get_option( 'blog_charset' );
-		if ( ! $charset || ! @mb_internal_encoding( $charset ) )
-			mb_internal_encoding( 'UTF-8' );
-	}
-}
-
 function wp_magic_quotes() {
 	if ( get_magic_quotes_gpc() ) {
 		$_GET    = stripslashes_deep( $_GET    );

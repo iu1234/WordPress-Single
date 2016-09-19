@@ -40,10 +40,8 @@ class WP {
 
 	public function parse_request($extra_query_vars = '') {
 		global $wp_rewrite;
-
 		if ( ! apply_filters( 'do_parse_request', true, $this, $extra_query_vars ) )
 			return;
-
 		$this->query_vars = array();
 		$post_type_query_vars = array();
 
@@ -370,7 +368,7 @@ class WP {
 	}
 
 	public function init() {
-		wp_get_current_user();
+		_wp_get_current_user();
 	}
 
 	public function query_posts() {

@@ -3452,10 +3452,6 @@ function _future_post_hook( $deprecated, $post ) {
 }
 
 function _publish_post_hook( $post_id ) {
-	if ( defined( 'XMLRPC_REQUEST' ) ) {
-		do_action( 'xmlrpc_publish_post', $post_id );
-	}
-
 	if ( defined('WP_IMPORTING') )
 		return;
 

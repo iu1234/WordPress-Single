@@ -6,65 +6,6 @@
  * @subpackage Administration
  */
 
-/**
- * Parses the plugin contents to retrieve plugin's metadata.
- *
- * The metadata of the plugin's data searches for the following in the plugin's
- * header. All plugin data must be on its own line. For plugin description, it
- * must not have any newlines or only parts of the description will be displayed
- * and the same goes for the plugin data. The below is formatted for printing.
- *
- *     /*
- *     Plugin Name: Name of Plugin
- *     Plugin URI: Link to plugin information
- *     Description: Plugin Description
- *     Author: Plugin author's name
- *     Author URI: Link to the author's web site
- *     Version: Must be set in the plugin for WordPress 2.3+
- *     Text Domain: Optional. Unique identifier, should be same as the one used in
- *    		load_plugin_textdomain()
- *     Domain Path: Optional. Only useful if the translations are located in a
- *    		folder above the plugin's base path. For example, if .mo files are
- *    		located in the locale folder then Domain Path will be "/locale/" and
- *    		must have the first slash. Defaults to the base folder the plugin is
- *    		located in.
- *     Network: Optional. Specify "Network: true" to require that a plugin is activated
- *    		across all sites in an installation. This will prevent a plugin from being
- *    		activated on a single site when Multisite is enabled.
- *      * / # Remove the space to close comment
- *
- * Some users have issues with opening large files and manipulating the contents
- * for want is usually the first 1kiB or 2kiB. This function stops pulling in
- * the plugin contents when it has all of the required plugin data.
- *
- * The first 8kiB of the file will be pulled in and if the plugin data is not
- * within that first 8kiB, then the plugin author should correct their plugin
- * and move the plugin data headers to the top.
- *
- * The plugin file is assumed to have permissions to allow for scripts to read
- * the file. This is not checked however and the file is only opened for
- * reading.
- *
- * @since 1.5.0
- *
- * @param string $plugin_file Path to the plugin file
- * @param bool   $markup      Optional. If the returned data should have HTML markup applied.
- *                            Default true.
- * @param bool   $translate   Optional. If the returned data should be translated. Default true.
- * @return array {
- *     Plugin data. Values will be empty if not supplied by the plugin.
- *
- *     @type string $Name        Name of the plugin. Should be unique.
- *     @type string $Title       Title of the plugin and link to the plugin's site (if set).
- *     @type string $Description Plugin description.
- *     @type string $Author      Author's name.
- *     @type string $AuthorURI   Author's website address (if set).
- *     @type string $Version     Plugin version.
- *     @type string $TextDomain  Plugin textdomain.
- *     @type string $DomainPath  Plugins relative directory path to .mo files.
- *     @type bool   $Network     Whether the plugin can only be activated network-wide.
- * }
- */
 function get_plugin_data( $plugin_file, $markup = true, $translate = true ) {
 
 	$default_headers = array(
@@ -77,16 +18,13 @@ function get_plugin_data( $plugin_file, $markup = true, $translate = true ) {
 		'TextDomain' => 'Text Domain',
 		'DomainPath' => 'Domain Path',
 		'Network' => 'Network',
-		// Site Wide Only is deprecated in favor of Network.
 		'_sitewide' => 'Site Wide Only',
 	);
 
 	$plugin_data = get_file_data( $plugin_file, $default_headers, 'plugin' );
 
-	// Site Wide Only is the old header for Network
 	if ( ! $plugin_data['Network'] && $plugin_data['_sitewide'] ) {
-		/* translators: 1: Site Wide Only: true, 2: Network: true */
-		_deprecated_argument( __FUNCTION__, '3.0', sprintf( __( 'The %1$s plugin header is deprecated. Use %2$s instead.' ), '<code>Site Wide Only: true</code>', '<code>Network: true</code>' ) );
+		_deprecated_argument( __FUNCTION__, '3.0', sprintf( 'The %1$s plugin header is deprecated. Use %2$s instead.', '<code>Site Wide Only: true</code>', '<code>Network: true</code>' ) );
 		$plugin_data['Network'] = $plugin_data['_sitewide'];
 	}
 	$plugin_data['Network'] = ( 'true' == strtolower( $plugin_data['Network'] ) );
@@ -102,13 +40,6 @@ function get_plugin_data( $plugin_file, $markup = true, $translate = true ) {
 	return $plugin_data;
 }
 
-/**
- * Sanitizes plugin data, optionally adds markup, optionally translates.
- *
- * @since 2.7.0
- * @access private
- * @see get_plugin_data()
- */
 function _get_plugin_data_markup_translate( $plugin_file, $plugin_data, $markup = true, $translate = true ) {
 
 	// Sanitize the plugin filename to a WP_PLUGIN_DIR relative path
@@ -143,8 +74,6 @@ function _get_plugin_data_markup_translate( $plugin_file, $plugin_data, $markup 
 	);
 	$allowed_tags['a'] = array( 'href' => true, 'title' => true );
 
-	// Name is marked up inside <a> tags. Don't allow these.
-	// Author is too, but some plugins have used <a> here (omitting Author URI).
 	$plugin_data['Name']        = wp_kses( $plugin_data['Name'],        $allowed_tags_in_links );
 	$plugin_data['Author']      = wp_kses( $plugin_data['Author'],      $allowed_tags );
 
@@ -168,20 +97,12 @@ function _get_plugin_data_markup_translate( $plugin_file, $plugin_data, $markup 
 		$plugin_data['Description'] = wptexturize( $plugin_data['Description'] );
 
 		if ( $plugin_data['Author'] )
-			$plugin_data['Description'] .= ' <cite>' . sprintf( __('By %s.'), $plugin_data['Author'] ) . '</cite>';
+			$plugin_data['Description'] .= ' <cite>' . sprintf( 'By %s.', $plugin_data['Author'] ) . '</cite>';
 	}
 
 	return $plugin_data;
 }
 
-/**
- * Get a list of a plugin's files.
- *
- * @since 2.8.0
- *
- * @param string $plugin Plugin ID
- * @return array List of files relative to the plugin root.
- */
 function get_plugin_files($plugin) {
 	$plugin_file = WP_PLUGIN_DIR . '/' . $plugin;
 	$dir = dirname($plugin_file);
@@ -356,16 +277,6 @@ function get_dropins() {
 	return $dropins;
 }
 
-/**
- * Returns drop-ins that WordPress uses.
- *
- * Includes Multisite drop-ins only when is_multisite()
- *
- * @since 3.0.0
- * @return array Key is file name. The value is an array, with the first value the
- *	purpose of the drop-in and the second value the name of the constant that must be
- *	true for the drop-in to be used, or true if no constant is required.
- */
 function _get_dropins() {
 	$dropins = array(
 		'advanced-cache.php' => array( __( 'Advanced caching plugin.'       ), 'WP_CACHE' ), // WP_CACHE
@@ -386,108 +297,10 @@ function _get_dropins() {
 	return $dropins;
 }
 
-/**
- * Check whether a plugin is active.
- *
- * Only plugins installed in the plugins/ folder can be active.
- *
- * Plugins in the mu-plugins/ folder can't be "activated," so this function will
- * return false for those plugins.
- *
- * @since 2.5.0
- *
- * @param string $plugin Base plugin path from plugins directory.
- * @return bool True, if in the active plugins list. False, not in the list.
- */
 function is_plugin_active( $plugin ) {
 	return in_array( $plugin, (array) get_option( 'active_plugins', array() ) ) || is_plugin_active_for_network( $plugin );
 }
 
-/**
- * Check whether the plugin is inactive.
- *
- * Reverse of is_plugin_active(). Used as a callback.
- *
- * @since 3.1.0
- * @see is_plugin_active()
- *
- * @param string $plugin Base plugin path from plugins directory.
- * @return bool True if inactive. False if active.
- */
-function is_plugin_inactive( $plugin ) {
-	return ! is_plugin_active( $plugin );
-}
-
-/**
- * Check whether the plugin is active for the entire network.
- *
- * Only plugins installed in the plugins/ folder can be active.
- *
- * Plugins in the mu-plugins/ folder can't be "activated," so this function will
- * return false for those plugins.
- *
- * @since 3.0.0
- *
- * @param string $plugin Base plugin path from plugins directory.
- * @return bool True, if active for the network, otherwise false.
- */
-function is_plugin_active_for_network( $plugin ) {
-	if ( !is_multisite() )
-		return false;
-
-	$plugins = get_site_option( 'active_sitewide_plugins');
-	if ( isset($plugins[$plugin]) )
-		return true;
-
-	return false;
-}
-
-/**
- * Checks for "Network: true" in the plugin header to see if this should
- * be activated only as a network wide plugin. The plugin would also work
- * when Multisite is not enabled.
- *
- * Checks for "Site Wide Only: true" for backwards compatibility.
- *
- * @since 3.0.0
- *
- * @param string $plugin Plugin to check
- * @return bool True if plugin is network only, false otherwise.
- */
-function is_network_only_plugin( $plugin ) {
-	$plugin_data = get_plugin_data( WP_PLUGIN_DIR . '/' . $plugin );
-	if ( $plugin_data )
-		return $plugin_data['Network'];
-	return false;
-}
-
-/**
- * Attempts activation of plugin in a "sandbox" and redirects on success.
- *
- * A plugin that is already activated will not attempt to be activated again.
- *
- * The way it works is by setting the redirection to the error before trying to
- * include the plugin file. If the plugin fails, then the redirection will not
- * be overwritten with the success message. Also, the options will not be
- * updated and the activation hook will not be called on plugin error.
- *
- * It should be noted that in no way the below code will actually prevent errors
- * within the file. The code should not be used elsewhere to replicate the
- * "sandbox", which uses redirection to work.
- * {@source 13 1}
- *
- * If any errors are found or text is outputted, then it will be captured to
- * ensure that the success redirection will update the error redirection.
- *
- * @since 2.5.0
- *
- * @param string $plugin       Plugin path to main plugin file with plugin data.
- * @param string $redirect     Optional. URL to redirect to.
- * @param bool   $network_wide Optional. Whether to enable the plugin for all sites in the network
- *                             or just the current site. Multisite only. Default false.
- * @param bool   $silent       Optional. Whether to prevent calling activation hooks. Default false.
- * @return WP_Error|null WP_Error on invalid file or null on success.
- */
 function activate_plugin( $plugin, $redirect = '', $network_wide = false, $silent = false ) {
 	$plugin = plugin_basename( trim( $plugin ) );
 
@@ -513,35 +326,8 @@ function activate_plugin( $plugin, $redirect = '', $network_wide = false, $silen
 		$plugin = $_wp_plugin_file; // Avoid stomping of the $plugin variable in a plugin.
 
 		if ( ! $silent ) {
-			/**
-			 * Fires before a plugin is activated.
-			 *
-			 * If a plugin is silently activated (such as during an update),
-			 * this hook does not fire.
-			 *
-			 * @since 2.9.0
-			 *
-			 * @param string $plugin       Plugin path to main plugin file with plugin data.
-			 * @param bool   $network_wide Whether to enable the plugin for all sites in the network
-			 *                             or just the current site. Multisite only. Default is false.
-			 */
 			do_action( 'activate_plugin', $plugin, $network_wide );
 
-			/**
-			 * Fires as a specific plugin is being activated.
-			 *
-			 * This hook is the "activation" hook used internally by
-			 * {@see register_activation_hook()}. The dynamic portion of the
-			 * hook name, `$plugin`, refers to the plugin basename.
-			 *
-			 * If a plugin is silently activated (such as during an update),
-			 * this hook does not fire.
-			 *
-			 * @since 2.0.0
-			 *
-			 * @param bool $network_wide Whether to enable the plugin for all sites in the network
-			 *                           or just the current site. Multisite only. Default is false.
-			 */
 			do_action( 'activate_' . $plugin, $network_wide );
 		}
 
@@ -557,24 +343,12 @@ function activate_plugin( $plugin, $redirect = '', $network_wide = false, $silen
 		}
 
 		if ( ! $silent ) {
-			/**
-			 * Fires after a plugin has been activated.
-			 *
-			 * If a plugin is silently activated (such as during an update),
-			 * this hook does not fire.
-			 *
-			 * @since 2.9.0
-			 *
-			 * @param string $plugin       Plugin path to main plugin file with plugin data.
-			 * @param bool   $network_wide Whether to enable the plugin for all sites in the network
-			 *                             or just the current site. Multisite only. Default is false.
-			 */
 			do_action( 'activated_plugin', $plugin, $network_wide );
 		}
 
 		if ( ob_get_length() > 0 ) {
 			$output = ob_get_clean();
-			return new WP_Error('unexpected_output', __('The plugin generated unexpected output.'), $output);
+			return new WP_Error('unexpected_output', 'The plugin generated unexpected output.', $output);
 		}
 		ob_end_clean();
 	}
@@ -687,15 +461,14 @@ function delete_plugins( $plugins, $deprecated = '' ) {
 	}
 
 	if ( ! is_object($wp_filesystem) )
-		return new WP_Error('fs_unavailable', __('Could not access filesystem.'));
+		return new WP_Error('fs_unavailable', 'Could not access filesystem.');
 
 	if ( is_wp_error($wp_filesystem->errors) && $wp_filesystem->errors->get_error_code() )
-		return new WP_Error('fs_error', __('Filesystem error.'), $wp_filesystem->errors);
+		return new WP_Error('fs_error', 'Filesystem error.', $wp_filesystem->errors);
 
-	// Get the base plugin folder.
 	$plugins_dir = $wp_filesystem->wp_plugins_dir();
 	if ( empty( $plugins_dir ) ) {
-		return new WP_Error( 'fs_no_plugins_dir', __( 'Unable to locate WordPress Plugin directory.' ) );
+		return new WP_Error( 'fs_no_plugins_dir', 'Unable to locate WordPress Plugin directory.' );
 	}
 
 	$plugins_dir = trailingslashit( $plugins_dir );
@@ -710,13 +483,6 @@ function delete_plugins( $plugins, $deprecated = '' ) {
 			uninstall_plugin($plugin_file);
 		}
 
-		/**
-		 * Fires immediately before a plugin deletion attempt.
-		 *
-		 * @since 4.4.0
-		 *
-		 * @param string $plugin_file Plugin file name.
-		 */
 		do_action( 'delete_plugin', $plugin_file );
 
 		$this_plugin_dir = trailingslashit( dirname( $plugins_dir . $plugin_file ) );
@@ -728,14 +494,6 @@ function delete_plugins( $plugins, $deprecated = '' ) {
 			$deleted = $wp_filesystem->delete( $plugins_dir . $plugin_file );
 		}
 
-		/**
-		 * Fires immediately after a plugin deletion attempt.
-		 *
-		 * @since 4.4.0
-		 *
-		 * @param string $plugin_file Plugin file name.
-		 * @param bool   $deleted     Whether the plugin deletion was successful.
-		 */
 		do_action( 'deleted_plugin', $plugin_file, $deleted );
 
 		if ( ! $deleted ) {
@@ -773,15 +531,6 @@ function delete_plugins( $plugins, $deprecated = '' ) {
 	return true;
 }
 
-/**
- * Validate active plugins
- *
- * Validate all active plugins, deactivates invalid and
- * returns an array of deactivated ones.
- *
- * @since 2.5.0
- * @return array invalid plugins, plugin as key, error as value
- */
 function validate_active_plugins() {
 	$plugins = get_option( 'active_plugins', array() );
 	// Validate vartype: array.
@@ -938,10 +687,6 @@ function add_submenu_page( $parent_slug, $page_title, $menu_title, $capability, 
 
 	$_registered_pages[$hookname] = true;
 
-	/*
-	 * Backward-compatibility for plugins using add_management page.
-	 * See wp-admin/admin.php for redirect from edit.php to tools.php
-	 */
 	if ( 'tools.php' == $parent_slug )
 		$_registered_pages[get_plugin_page_hookname( $menu_slug, 'edit.php')] = true;
 
@@ -1177,13 +922,6 @@ function get_admin_page_title() {
 	return $title;
 }
 
-/**
- * @since 2.3.0
- *
- * @param string $plugin_page
- * @param string $parent_page
- * @return string|null
- */
 function get_plugin_page_hook( $plugin_page, $parent_page ) {
 	$hook = get_plugin_page_hookname( $plugin_page, $parent_page );
 	if ( has_action($hook) )
@@ -1192,12 +930,6 @@ function get_plugin_page_hook( $plugin_page, $parent_page ) {
 		return null;
 }
 
-/**
- *
- * @global array $admin_page_hooks
- * @param string $plugin_page
- * @param string $parent_page
- */
 function get_plugin_page_hookname( $plugin_page, $parent_page ) {
 	global $admin_page_hooks;
 
@@ -1291,12 +1023,12 @@ function register_setting( $option_group, $option_name, $sanitize_callback = '' 
 	global $new_whitelist_options;
 
 	if ( 'misc' == $option_group ) {
-		_deprecated_argument( __FUNCTION__, '3.0', sprintf( __( 'The "%s" options group has been removed. Use another settings group.' ), 'misc' ) );
+		_deprecated_argument( __FUNCTION__, '3.0', sprintf( 'The "%s" options group has been removed. Use another settings group.', 'misc' ) );
 		$option_group = 'general';
 	}
 
 	if ( 'privacy' == $option_group ) {
-		_deprecated_argument( __FUNCTION__, '3.5', sprintf( __( 'The "%s" options group has been removed. Use another settings group.' ), 'privacy' ) );
+		_deprecated_argument( __FUNCTION__, '3.5', sprintf( 'The "%s" options group has been removed. Use another settings group.', 'privacy' ) );
 		$option_group = 'reading';
 	}
 
@@ -1356,17 +1088,6 @@ function add_option_whitelist( $new_options, $options = '' ) {
 	return $whitelist_options;
 }
 
-/**
- * Removes a list of options from the options whitelist.
- *
- * @since 2.7.0
- *
- * @global array $whitelist_options
- *
- * @param array        $del_options
- * @param string|array $options
- * @return array
- */
 function remove_option_whitelist( $del_options, $options = '' ) {
 	if ( $options == '' )
 		global $whitelist_options;
@@ -1386,35 +1107,18 @@ function remove_option_whitelist( $del_options, $options = '' ) {
 	return $whitelist_options;
 }
 
-/**
- * Output nonce, action, and option_page fields for a settings page.
- *
- * @since 2.7.0
- *
- * @param string $option_group A settings group name. This should match the group name used in register_setting().
- */
 function settings_fields($option_group) {
 	echo "<input type='hidden' name='option_page' value='" . esc_attr($option_group) . "' />";
 	echo '<input type="hidden" name="action" value="update" />';
 	wp_nonce_field("$option_group-options");
 }
 
-/**
- * Clears the Plugins cache used by get_plugins() and by default, the Plugin Update cache.
- *
- * @since 3.7.0
- *
- * @param bool $clear_update_cache Whether to clear the Plugin updates cache
- */
 function wp_clean_plugins_cache( $clear_update_cache = true ) {
 	if ( $clear_update_cache )
 		delete_site_transient( 'update_plugins' );
 	wp_cache_delete( 'plugins', 'plugins' );
 }
 
-/**
- * @param string $plugin
- */
 function plugin_sandbox_scrape( $plugin ) {
 	wp_register_plugin_realpath( WP_PLUGIN_DIR . '/' . $plugin );
 	include( WP_PLUGIN_DIR . '/' . $plugin );

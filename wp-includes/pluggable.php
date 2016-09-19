@@ -27,12 +27,6 @@ function wp_set_current_user($id, $name = '') {
 }
 endif;
 
-if ( !function_exists('wp_get_current_user') ) :
-function wp_get_current_user() {
-	return _wp_get_current_user();
-}
-endif;
-
 if ( !function_exists('get_user_by') ) :
 function get_user_by( $field, $value ) {
 	$userdata = WP_User::get_data_by( $field, $value );
@@ -335,52 +329,39 @@ function wp_validate_auth_cookie($cookie = '', $scheme = '') {
 		do_action( 'auth_cookie_malformed', $cookie, $scheme );
 		return false;
 	}
-
 	$scheme = $cookie_elements['scheme'];
 	$username = $cookie_elements['username'];
 	$hmac = $cookie_elements['hmac'];
 	$token = $cookie_elements['token'];
 	$expired = $expiration = $cookie_elements['expiration'];
-
 	if ( defined('DOING_AJAX') || 'POST' == $_SERVER['REQUEST_METHOD'] ) {
 		$expired += 3600;
 	}
-
 	if ( $expired < time() ) {
 		do_action( 'auth_cookie_expired', $cookie_elements );
 		return false;
 	}
-
 	$user = get_user_by('login', $username);
 	if ( ! $user ) {
 		do_action( 'auth_cookie_bad_username', $cookie_elements );
 		return false;
 	}
-
 	$pass_frag = substr($user->user_pass, 8, 4);
-
 	$key = wp_hash( $username . '|' . $pass_frag . '|' . $expiration . '|' . $token, $scheme );
-
-	$algo = function_exists( 'hash' ) ? 'sha256' : 'sha1';
-	$hash = hash_hmac( $algo, $username . '|' . $expiration . '|' . $token, $key );
-
+	$hash = hash_hmac( 'sha256', $username . '|' . $expiration . '|' . $token, $key );
 	if ( ! hash_equals( $hash, $hmac ) ) {
 		do_action( 'auth_cookie_bad_hash', $cookie_elements );
 		return false;
 	}
-
 	$manager = WP_Session_Tokens::get_instance( $user->ID );
 	if ( ! $manager->verify( $token ) ) {
 		do_action( 'auth_cookie_bad_session_token', $cookie_elements );
 		return false;
 	}
-
 	if ( $expiration < time() ) {
 		$GLOBALS['login_grace_period'] = 1;
 	}
-
 	do_action( 'auth_cookie_valid', $cookie_elements, $user );
-
 	return $user->ID;
 }
 endif;
@@ -407,9 +388,6 @@ function wp_parse_auth_cookie($cookie = '', $scheme = '') {
 		switch ($scheme){
 			case 'auth':
 				$cookie_name = AUTH_COOKIE;
-				break;
-			case 'secure_auth':
-				$cookie_name = SECURE_AUTH_COOKIE;
 				break;
 			case "logged_in":
 				$cookie_name = LOGGED_IN_COOKIE;

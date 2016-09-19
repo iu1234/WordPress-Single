@@ -1388,8 +1388,6 @@ function wp_die( $message = '', $title = '', $args = array() ) {
 
 	if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
 		$function = apply_filters( 'wp_die_ajax_handler', '_ajax_wp_die_handler' );
-	} elseif ( defined( 'XMLRPC_REQUEST' ) && XMLRPC_REQUEST ) {
-		$function = apply_filters( 'wp_die_xmlrpc_handler', '_xmlrpc_wp_die_handler' );
 	} else {
 		$function = apply_filters( 'wp_die_handler', '_default_wp_die_handler' );
 	}

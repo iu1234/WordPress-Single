@@ -159,19 +159,11 @@ function wp_set_wpdb_vars() {
 function wp_get_active_and_valid_plugins() {
 	$plugins = array();
 	$active_plugins = (array) get_option( 'active_plugins', array() );
-
 	if ( empty( $active_plugins ) )
 		return $plugins;
-
-	$network_plugins = is_multisite() ? wp_get_active_network_plugins() : false;
-
 	foreach ( $active_plugins as $plugin ) {
-		if ( ! validate_file( $plugin )
-			&& '.php' == substr( $plugin, -4 )
-			&& file_exists( WP_PLUGIN_DIR . '/' . $plugin )
-			&& ( ! $network_plugins || ! in_array( WP_PLUGIN_DIR . '/' . $plugin, $network_plugins ) )
-			)
-		$plugins[] = WP_PLUGIN_DIR . '/' . $plugin;
+		if ( ! validate_file( $plugin )	&& '.php' == substr( $plugin, -4 ) && file_exists( WP_PLUGIN_DIR . '/' . $plugin ) )
+			$plugins[] = WP_PLUGIN_DIR . '/' . $plugin;
 	}
 	return $plugins;
 }
