@@ -652,7 +652,6 @@ function wp_get_nocache_headers() {
 		'Cache-Control' => 'no-cache, must-revalidate, max-age=0',
 		'Pragma' => 'no-cache',
 	);
-
 	if ( function_exists('apply_filters') ) {
 		$headers = (array) apply_filters( 'nocache_headers', $headers );
 	}
@@ -662,26 +661,14 @@ function wp_get_nocache_headers() {
 
 function nocache_headers() {
 	$headers = wp_get_nocache_headers();
-
 	unset( $headers['Last-Modified'] );
-
-	if ( function_exists( 'header_remove' ) ) {
-		@header_remove( 'Last-Modified' );
-	} else {
-		foreach ( headers_list() as $header ) {
-			if ( 0 === stripos( $header, 'Last-Modified' ) ) {
-				$headers['Last-Modified'] = '';
-				break;
-			}
-		}
-	}
-
+	@header_remove( 'Last-Modified' );
 	foreach ( $headers as $name => $field_value )
 		@header("{$name}: {$field_value}");
 }
 
 function cache_javascript_headers() {
-	$expiresOffset = 10 * DAY_IN_SECONDS;
+	$expiresOffset = 10 * 86400;
 
 	header( "Content-Type: text/javascript; charset=" . get_bloginfo( 'charset' ) );
 	header( "Vary: Accept-Encoding" ); // Handle proxies
@@ -706,57 +693,6 @@ function do_robots() {
 	$output .= "Disallow: $path/wp-admin/\n";
 	$output .= "Allow: $path/wp-admin/admin-ajax.php\n";
 	echo apply_filters( 'robots_txt', $output, $public );
-}
-
-function is_blog_installed() {
-	global $wpdb;
-
-	if ( wp_cache_get( 'is_blog_installed' ) )
-		return true;
-
-	$suppress = $wpdb->suppress_errors();
-	if ( ! wp_installing() ) {
-		$alloptions = wp_load_alloptions();
-	}
-	// If siteurl is not set to autoload, check it specifically
-	if ( !isset( $alloptions['siteurl'] ) )
-		$installed = $wpdb->get_var( "SELECT option_value FROM $wpdb->options WHERE option_name = 'siteurl'" );
-	else
-		$installed = $alloptions['siteurl'];
-	$wpdb->suppress_errors( $suppress );
-
-	$installed = !empty( $installed );
-	wp_cache_set( 'is_blog_installed', $installed );
-
-	if ( $installed )
-		return true;
-
-	// If visiting repair.php, return true and let it take over.
-	if ( defined( 'WP_REPAIRING' ) )
-		return true;
-
-	$suppress = $wpdb->suppress_errors();
-
-	$wp_tables = $wpdb->tables();
-	foreach ( $wp_tables as $table ) {
-		// The existence of custom user tables shouldn't suggest an insane state or prevent a clean install.
-		if ( defined( 'CUSTOM_USER_TABLE' ) && CUSTOM_USER_TABLE == $table )
-			continue;
-		if ( defined( 'CUSTOM_USER_META_TABLE' ) && CUSTOM_USER_META_TABLE == $table )
-			continue;
-
-		if ( ! $wpdb->get_results( "DESCRIBE $table;" ) )
-			continue;
-
-		$wpdb->error = sprintf( 'One or more database tables are unavailable. The database may need to be <a href="%s">repaired</a>.', 'maint/repair.php?referrer=is_blog_installed' );
-		dead_db();
-	}
-
-	$wpdb->suppress_errors( $suppress );
-
-	wp_cache_set( 'is_blog_installed', false );
-
-	return false;
 }
 
 function wp_nonce_url( $actionurl, $action = -1, $name = '_wpnonce' ) {

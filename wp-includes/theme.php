@@ -433,9 +433,9 @@ function validate_current_theme() {
 		return true;
 	}
 
-	$default = wp_get_theme( 'twentysixteen' );
+	$default = wp_get_theme( WP_DEFAULT_THEME );
 	if ( $default->exists() ) {
-		switch_theme( 'twentysixteen' );
+		switch_theme( WP_DEFAULT_THEME );
 		return false;
 	}
 

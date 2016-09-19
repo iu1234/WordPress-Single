@@ -24,6 +24,9 @@ define('SECURE_AUTH_SALT', 'put your unique phrase here');
 define('LOGGED_IN_SALT',   'put your unique phrase here');
 define('NONCE_SALT',       'put your unique phrase here');
 
+require( __DIR__ '/db.php' );
+nocache_headers();
+
 require_wp_db();
 wp_set_wpdb_vars();
 
@@ -44,16 +47,12 @@ function display_header( $body_classes = '' ) {
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<meta name="robots" content="noindex,nofollow" />
 	<title>WordPress &rsaquo; 安装</title>
-	<?php
-		wp_admin_css( 'install', true );
-		wp_admin_css( 'dashicons', true );
-	?>
+	<link rel="stylesheet" href="install.css" type="text/css" />
+	<link rel="stylesheet" href="dashicons.css" type="text/css" />
 </head>
 <body class="wp-core-ui<?php echo $body_classes ?>">
-<p id="logo"><a href="#" tabindex="-1">WordPress</a></p>
 <?php
 }
-
 function display_setup_form( $error = null ) {
 	global $wpdb;
 	$sql = $wpdb->prepare( "SHOW TABLES LIKE %s", $wpdb->esc_like( $wpdb->users ) );
@@ -68,7 +67,7 @@ function display_setup_form( $error = null ) {
 
 	if ( ! is_null( $error ) ) {
 ?>
-<h1>Welcome</h1>
+<h1>欢迎</h1>
 <p class="message"><?php echo $error; ?></p>
 <?php } ?>
 <form id="setup" method="post" action="install.php?step=2" novalidate="novalidate">
@@ -131,24 +130,12 @@ function display_setup_form( $error = null ) {
 			<p>请仔细检查电子邮件地址后再继续。</p></td>
 		</tr>
 		<tr>
-			<th scope="row"><?php has_action( 'blog_privacy_selector' ) ? (echo 'Site Visibility';) : ( echo 'Search Engine Visibility'; ) ?></th>
+			<th scope="row">Search Engine Visibility</th>
 			<td>
 				<fieldset>
-					<legend class="screen-reader-text"><span><?php has_action( 'blog_privacy_selector' ) ? _e( 'Site Visibility' ) : _e( 'Search Engine Visibility' ); ?> </span></legend>
-					<?php
-					if ( has_action( 'blog_privacy_selector' ) ) { ?>
-						<input id="blog-public" type="radio" name="blog_public" value="1" <?php checked( 1, $blog_public ); ?> />
-						<label for="blog-public">Allow search engines to index this site</label><br/>
-						<input id="blog-norobots" type="radio" name="blog_public" value="0" <?php checked( 0, $blog_public ); ?> />
-						<label for="blog-norobots">Discourage search engines from indexing this site</label>
-						<p class="description">Note: Neither of these options blocks access to your site &mdash; it is up to search engines to honor your request.</p>
-						<?php
-						do_action( 'blog_privacy_selector' );
-					 } else { ?>
-						<label for="blog_public"><input name="blog_public" type="checkbox" id="blog_public" value="0" <?php checked( 0, $blog_public ); ?> />
-						<?php _e( 'Discourage search engines from indexing this site' ); ?></label>
-						<p class="description">It is up to search engines to honor this request.</p>
-					<?php } ?>
+					<legend class="screen-reader-text"><span>Search Engine Visibility </span></legend>
+					<label for="blog_public"><input name="blog_public" type="checkbox" id="blog_public" value="0" <?php checked( 0, $blog_public ); ?> />Discourage search engines from indexing this site</label>
+					<p class="description">It is up to search engines to honor this request.</p>
 				</fieldset>
 			</td>
 		</tr>
@@ -169,40 +156,15 @@ if ( is_blog_installed() ) {
 	);
 }
 
-if ( ! is_string( $wpdb->base_prefix ) || '' === $wpdb->base_prefix ) {
-	display_header();
-	die(
-		'<h1>Configuration Error</h1>' .
-		'<p>' . sprintf(
-			'Your %s file has an empty database table prefix, which is not supported.',
-			'<code>wp-load.php</code>'
-		) . '</p></body></html>'
-	);
-}
-
-if ( defined( 'DO_NOT_UPGRADE_GLOBAL_TABLES' ) ) {
-	display_header();
-	die(
-		'<h1>Configuration Error</h1>' .
-		'<p>' . sprintf(
-			'The constant %s cannot be defined when installing WordPress.',
-			'<code>DO_NOT_UPGRADE_GLOBAL_TABLES</code>'
-		) . '</p></body></html>'
-	);
-}
-
 $scripts_to_print = array( 'jquery' );
 
 switch($step) {
 	case 1:
-
 		$scripts_to_print[] = 'user-profile';
-
 		display_header();
 ?>
 <h1>需要信息</h1>
 <p>您需要填写一些基本信息。无需担心填错，这些信息以后可以再次修改。</p>
-
 <?php
 		display_setup_form();
 		break;
@@ -216,9 +178,7 @@ switch($step) {
 		$admin_password = isset($_POST['admin_password']) ? wp_unslash( $_POST['admin_password'] ) : '';
 		$admin_password_check = isset($_POST['admin_password2']) ? wp_unslash( $_POST['admin_password2'] ) : '';
 		$admin_email  = isset( $_POST['admin_email'] ) ?trim( wp_unslash( $_POST['admin_email'] ) ) : '';
-		$public       = isset( $_POST['blog_public'] ) ? (int) $_POST['blog_public'] : 1;
 
-		// Check email address.
 		$error = false;
 		if ( empty( $user_name ) ) {
 			display_setup_form( 'Please provide a valid username.' );
@@ -239,7 +199,7 @@ switch($step) {
 
 		if ( $error === false ) {
 			$wpdb->show_errors();
-			$result = wp_install( $weblog_title, $user_name, $admin_email, $public, '', wp_slash( $admin_password ), $loaded_language );
+			$result = wp_install( $weblog_title, $user_name, $admin_email, wp_slash( $admin_password ), $loaded_language );
 ?>
 
 <h1>Success!</h1>

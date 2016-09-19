@@ -1121,7 +1121,6 @@ function get_calendar( $initial = true, $echo = true ) {
 		echo apply_filters( 'get_calendar', $calendar_output );
 		return;
 	}
-	/** This filter is documented in wp-includes/general-template.php */
 	return apply_filters( 'get_calendar', $calendar_output );
 }
 
@@ -1573,13 +1572,6 @@ function paginate_links( $args = '' ) {
 			$link = add_query_arg( $add_args, $link );
 		$link .= $args['add_fragment'];
 
-		/**
-		 * Filter the paginated links for the given archive pages.
-		 *
-		 * @since 3.0.0
-		 *
-		 * @param string $link The paginated link URL.
-		 */
 		$page_links[] = '<a class="prev page-numbers" href="' . esc_url( apply_filters( 'paginate_links', $link ) ) . '">' . $args['prev_text'] . '</a>';
 	endif;
 	for ( $n = 1; $n <= $total; $n++ ) :
@@ -1645,9 +1637,7 @@ function wp_admin_css_color( $key, $name, $url, $colors = array(), $icons = arra
 }
 
 function register_admin_color_schemes() {
-	$suffix .= SCRIPT_DEBUG ? '' : '.min';
-
-	wp_admin_css_color( 'fresh', _x( 'Default', 'admin color scheme' ),
+	wp_admin_css_color( 'fresh', 'Default',
 		false,
 		array( '#222', '#333', '#0073aa', '#00a0d2' ),
 		array( 'base' => '#82878c', 'focus' => '#00a0d2', 'current' => '#fff' )
@@ -1658,43 +1648,43 @@ function register_admin_color_schemes() {
 		return;
 
 	wp_admin_css_color( 'light', _x( 'Light', 'admin color scheme' ),
-		admin_url( "css/colors/light/colors$suffix.css" ),
+		admin_url( "css/colors/light/colors.css" ),
 		array( '#e5e5e5', '#999', '#d64e07', '#04a4cc' ),
 		array( 'base' => '#999', 'focus' => '#ccc', 'current' => '#ccc' )
 	);
 
 	wp_admin_css_color( 'blue', _x( 'Blue', 'admin color scheme' ),
-		admin_url( "css/colors/blue/colors$suffix.css" ),
+		admin_url( "css/colors/blue/colors.css" ),
 		array( '#096484', '#4796b3', '#52accc', '#74B6CE' ),
 		array( 'base' => '#e5f8ff', 'focus' => '#fff', 'current' => '#fff' )
 	);
 
 	wp_admin_css_color( 'midnight', _x( 'Midnight', 'admin color scheme' ),
-		admin_url( "css/colors/midnight/colors$suffix.css" ),
+		admin_url( "css/colors/midnight/colors.css" ),
 		array( '#25282b', '#363b3f', '#69a8bb', '#e14d43' ),
 		array( 'base' => '#f1f2f3', 'focus' => '#fff', 'current' => '#fff' )
 	);
 
 	wp_admin_css_color( 'sunrise', _x( 'Sunrise', 'admin color scheme' ),
-		admin_url( "css/colors/sunrise/colors$suffix.css" ),
+		admin_url( "css/colors/sunrise/colors.css" ),
 		array( '#b43c38', '#cf4944', '#dd823b', '#ccaf0b' ),
 		array( 'base' => '#f3f1f1', 'focus' => '#fff', 'current' => '#fff' )
 	);
 
 	wp_admin_css_color( 'ectoplasm', _x( 'Ectoplasm', 'admin color scheme' ),
-		admin_url( "css/colors/ectoplasm/colors$suffix.css" ),
+		admin_url( "css/colors/ectoplasm/colors.css" ),
 		array( '#413256', '#523f6d', '#a3b745', '#d46f15' ),
 		array( 'base' => '#ece6f6', 'focus' => '#fff', 'current' => '#fff' )
 	);
 
 	wp_admin_css_color( 'ocean', _x( 'Ocean', 'admin color scheme' ),
-		admin_url( "css/colors/ocean/colors$suffix.css" ),
+		admin_url( "css/colors/ocean/colors.css" ),
 		array( '#627c83', '#738e96', '#9ebaa0', '#aa9d88' ),
 		array( 'base' => '#f2fcff', 'focus' => '#fff', 'current' => '#fff' )
 	);
 
 	wp_admin_css_color( 'coffee', _x( 'Coffee', 'admin color scheme' ),
-		admin_url( "css/colors/coffee/colors$suffix.css" ),
+		admin_url( "css/colors/coffee/colors.css" ),
 		array( '#46403c', '#59524c', '#c7a589', '#9ea476' ),
 		array( 'base' => '#f3f2f1', 'focus' => '#fff', 'current' => '#fff' )
 	);
@@ -1708,93 +1698,24 @@ function wp_admin_css_uri( $file = 'wp-admin' ) {
 		$_file = admin_url("$file.css");
 	}
 	$_file = add_query_arg( 'version', get_bloginfo( 'version' ),  $_file );
-
 	return apply_filters( 'wp_admin_css_uri', $_file, $file );
 }
 
 function wp_admin_css( $file = 'wp-admin', $force_echo = false ) {
-	// For backward compatibility
 	$handle = 0 === strpos( $file, 'css/' ) ? substr( $file, 4 ) : $file;
-
 	if ( wp_styles()->query( $handle ) ) {
-		if ( $force_echo || did_action( 'wp_print_styles' ) ) // we already printed the style queue. Print this one immediately
+		if ( $force_echo || did_action( 'wp_print_styles' ) )
 			wp_print_styles( $handle );
-		else // Add to style queue
+		else
 			wp_enqueue_style( $handle );
 		return;
 	}
-
 	echo apply_filters( 'wp_admin_css', "<link rel='stylesheet' href='" . esc_url( wp_admin_css_uri( $file ) ) . "' type='text/css' />\n", $file );
 }
 
 function add_thickbox() {
 	wp_enqueue_script( 'thickbox' );
 	wp_enqueue_style( 'thickbox' );
-
-	if ( is_network_admin() )
-		add_action( 'admin_head', '_thickbox_path_admin_subfolder' );
-}
-
-function wp_generator() {
-	the_generator( apply_filters( 'wp_generator_type', 'xhtml' ) );
-}
-
-function the_generator( $type ) {
-	echo apply_filters( 'the_generator', get_the_generator($type), $type ) . "\n";
-}
-
-function get_the_generator( $type = '' ) {
-	if ( empty( $type ) ) {
-
-		$current_filter = current_filter();
-		if ( empty( $current_filter ) )
-			return;
-
-		switch ( $current_filter ) {
-			case 'rss2_head' :
-			case 'commentsrss2_head' :
-				$type = 'rss2';
-				break;
-			case 'rss_head' :
-			case 'opml_head' :
-				$type = 'comment';
-				break;
-			case 'rdf_header' :
-				$type = 'rdf';
-				break;
-			case 'atom_head' :
-			case 'comments_atom_head' :
-			case 'app_head' :
-				$type = 'atom';
-				break;
-		}
-	}
-
-	switch ( $type ) {
-		case 'html':
-			$gen = '<meta name="generator" content="WordPress ' . get_bloginfo( 'version' ) . '">';
-			break;
-		case 'xhtml':
-			$gen = '<meta name="generator" content="WordPress ' . get_bloginfo( 'version' ) . '" />';
-			break;
-		case 'atom':
-			$gen = '<generator uri="https://wordpress.org/" version="' . get_bloginfo_rss( 'version' ) . '">WordPress</generator>';
-			break;
-		case 'rss2':
-			$gen = '<generator>https://wordpress.org/?v=' . get_bloginfo_rss( 'version' ) . '</generator>';
-			break;
-		case 'rdf':
-			$gen = '<admin:generatorAgent rdf:resource="https://wordpress.org/?v=' . get_bloginfo_rss( 'version' ) . '" />';
-			break;
-		case 'comment':
-			$gen = '<!-- generator="WordPress/' . get_bloginfo( 'version' ) . '" -->';
-			break;
-		case 'export':
-			$gen = '<!-- generator="WordPress/' . get_bloginfo_rss('version') . '" created="'. date('Y-m-d H:i') . '" -->';
-			break;
-	}
-
-	return apply_filters( "get_the_generator_{$type}", $gen, $type );
 }
 
 function checked( $checked, $current = true, $echo = true ) {

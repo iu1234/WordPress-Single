@@ -51,10 +51,6 @@ class wpdb {
 
 	protected $reconnect_retries = 5;
 
-	public $prefix = '';
-
-	public $base_prefix;
-
 	var $ready = false;
 
 	public $blogid = 0;
@@ -66,29 +62,18 @@ class wpdb {
 
 	var $global_tables = array( 'users', 'usermeta' );
 
-	public $comments;
-
-	public $commentmeta;
-
-	public $links;
-
-	public $options;
-
-	public $postmeta;
-
 	public $posts;
-
+	public $comments;
+	public $links;
+	public $options;
+	public $postmeta;
 	public $terms;
-
-	public $term_relationships;
-
 	public $term_taxonomy;
-
+	public $term_relationships;
 	public $termmeta;
-
-	public $usermeta;
-
+	public $commentmeta;
 	public $users;
+	public $usermeta;
 
 	public $field_types = array();
 
@@ -237,10 +222,6 @@ class wpdb {
 		return $old_blog_id;
 	}
 
-	public function get_blog_prefix( $blog_id = null ) {
-		return $this->base_prefix;
-	}
-
 	public function tables( $scope = 'all', $prefix = true, $blog_id = 0 ) {
 		switch ( $scope ) {
 			case 'all' :
@@ -255,27 +236,21 @@ class wpdb {
 			default :
 				return array();
 		}
-
 		if ( $prefix ) {
 			if ( ! $blog_id )
 				$blog_id = $this->blogid;
-			$blog_prefix = $this->get_blog_prefix( $blog_id );
-			$base_prefix = $this->base_prefix;
 			foreach ( $tables as $k => $table ) {
 				if ( in_array( $table, $this->global_tables ) )
-					$tables[ $table ] = $base_prefix . $table;
+					$tables[ $table ] = $table;
 				else
-					$tables[ $table ] = $blog_prefix . $table;
+					$tables[ $table ] = $table;
 				unset( $tables[ $k ] );
 			}
-
 			if ( isset( $tables['users'] ) && defined( 'CUSTOM_USER_TABLE' ) )
 				$tables['users'] = CUSTOM_USER_TABLE;
-
 			if ( isset( $tables['usermeta'] ) && defined( 'CUSTOM_USER_META_TABLE' ) )
 				$tables['usermeta'] = CUSTOM_USER_META_TABLE;
 		}
-
 		return $tables;
 	}
 
@@ -372,20 +347,17 @@ class wpdb {
 	public function prepare( $query, $args ) {
 		if ( is_null( $query ) )
 			return;
-
-		// This is not meant to be foolproof -- but it will catch obviously incorrect usage.
 		if ( strpos( $query, '%' ) === false ) {
 			_doing_it_wrong( 'wpdb::prepare', sprintf( 'The query argument of %s must have a placeholder.', 'wpdb::prepare()' ), '3.9' );
 		}
-
 		$args = func_get_args();
 		array_shift( $args );
 		if ( isset( $args[0] ) && is_array($args[0]) )
 			$args = $args[0];
-		$query = str_replace( "'%s'", '%s', $query ); // in case someone mistakenly already singlequoted it
-		$query = str_replace( '"%s"', '%s', $query ); // doublequote unquoting
-		$query = preg_replace( '|(?<!%)%f|' , '%F', $query ); // Force floats to be locale unaware
-		$query = preg_replace( '|(?<!%)%s|', "'%s'", $query ); // quote the strings, avoiding escaped strings like %%s
+		$query = str_replace( "'%s'", '%s', $query );
+		$query = str_replace( '"%s"', '%s', $query );
+		$query = preg_replace( '|(?<!%)%f|' , '%F', $query );
+		$query = preg_replace( '|(?<!%)%s|', "'%s'", $query );
 		array_walk( $args, array( $this, 'escape_by_ref' ) );
 		return @vsprintf( $query, $args );
 	}
@@ -848,21 +820,15 @@ class wpdb {
 
 	public function get_var( $query = null, $x = 0, $y = 0 ) {
 		$this->func_call = "\$db->get_var(\"$query\", $x, $y)";
-
 		if ( $this->check_current_query && $this->check_safe_collation( $query ) ) {
 			$this->check_current_query = false;
 		}
-
 		if ( $query ) {
 			$this->query( $query );
 		}
-
-		// Extract var out of cached results based x,y vals
 		if ( !empty( $this->last_result[$y] ) ) {
 			$values = array_values( get_object_vars( $this->last_result[$y] ) );
 		}
-
-		// If there is a value return it else return null
 		return ( isset( $values[$x] ) && $values[$x] !== '' ) ? $values[$x] : null;
 	}
 

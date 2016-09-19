@@ -31,7 +31,6 @@ function wp_cache_delete( $key, $group = '' ) {
 
 function wp_cache_flush() {
 	global $wp_object_cache;
-
 	return $wp_object_cache->flush();
 }
 
@@ -180,7 +179,6 @@ class WP_Object_Cache {
 
 	public function flush() {
 		$this->cache = array();
-
 		return true;
 	}
 
