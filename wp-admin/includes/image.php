@@ -6,30 +6,11 @@
  * @subpackage Administration
  */
 
-/**
- * Crop an Image to a given size.
- *
- * @since 2.1.0
- *
- * @param string|int $src The source file or Attachment ID.
- * @param int $src_x The start x position to crop from.
- * @param int $src_y The start y position to crop from.
- * @param int $src_w The width to crop.
- * @param int $src_h The height to crop.
- * @param int $dst_w The destination width.
- * @param int $dst_h The destination height.
- * @param int $src_abs Optional. If the source crop points are absolute.
- * @param string $dst_file Optional. The destination file to write to.
- * @return string|WP_Error New filepath on success, WP_Error on failure.
- */
 function wp_crop_image( $src, $src_x, $src_y, $src_w, $src_h, $dst_w, $dst_h, $src_abs = false, $dst_file = false ) {
 	$src_file = $src;
-	if ( is_numeric( $src ) ) { // Handle int as attachment ID
+	if ( is_numeric( $src ) ) {
 		$src_file = get_attached_file( $src );
-
 		if ( ! file_exists( $src_file ) ) {
-			// If the file doesn't exist, attempt a URL fopen on the src link.
-			// This can occur with certain file replication plugins.
 			$src = _load_image_to_edit_path( $src, 'full' );
 		} else {
 			$src = $src_file;
@@ -47,10 +28,6 @@ function wp_crop_image( $src, $src_x, $src_y, $src_w, $src_h, $dst_w, $dst_h, $s
 	if ( ! $dst_file )
 		$dst_file = str_replace( basename( $src_file ), 'cropped-' . basename( $src_file ), $src_file );
 
-	/*
-	 * The directory containing the original file may no longer exist when
-	 * using a replication plugin.
-	 */
 	wp_mkdir_p( dirname( $dst_file ) );
 
 	$dst_file = dirname( $dst_file ) . '/' . wp_unique_filename( dirname( $dst_file ), basename( $dst_file ) );
@@ -62,17 +39,6 @@ function wp_crop_image( $src, $src_x, $src_y, $src_w, $src_h, $dst_w, $dst_h, $s
 	return $dst_file;
 }
 
-/**
- * Generate post thumbnail attachment meta data.
- *
- * @since 2.1.0
- *
- * @global array $_wp_additional_image_sizes
- *
- * @param int $attachment_id Attachment Id to process.
- * @param string $file Filepath of the Attached image.
- * @return mixed Metadata for attachment.
- */
 function wp_generate_attachment_metadata( $attachment_id, $file ) {
 	$attachment = get_post( $attachment_id );
 
@@ -106,15 +72,6 @@ function wp_generate_attachment_metadata( $attachment_id, $file ) {
 				$sizes[$s]['crop'] = get_option( "{$s}_crop" ); // For default sizes set in options
 		}
 
-		/**
-		 * Filter the image sizes automatically generated when uploading an image.
-		 *
-		 * @since 2.9.0
-		 * @since 4.4.0 Added the `$metadata` argument.
-		 *
-		 * @param array $sizes    An associative array of image sizes.
-		 * @param array $metadata An associative array of image metadata: width, height, file.
-		 */
 		$sizes = apply_filters( 'intermediate_image_sizes_advanced', $sizes, $metadata );
 
 		if ( $sizes ) {
@@ -173,15 +130,7 @@ function wp_generate_attachment_metadata( $attachment_id, $file ) {
 					'post_type' => 'attachment',
 					'post_content' => '',
 				);
-				/**
-				 * Filter the parameters for the attachment thumbnail creation.
-				 *
-				 * @since 3.9.0
-				 *
-				 * @param array $image_attachment An array of parameters to create the thumbnail.
-				 * @param array $metadata         Current attachment metadata.
-				 * @param array $uploaded         An array containing the thumbnail path and url.
-				 */
+
 				$image_attachment = apply_filters( 'attachment_thumbnail_args', $image_attachment, $metadata, $uploaded );
 
 				$sub_attachment_id = wp_insert_attachment( $image_attachment, $uploaded['file'] );
@@ -198,25 +147,9 @@ function wp_generate_attachment_metadata( $attachment_id, $file ) {
 		unset( $metadata['image']['data'] );
 	}
 
-	/**
-	 * Filter the generated attachment meta data.
-	 *
-	 * @since 2.1.0
-	 *
-	 * @param array $metadata      An array of attachment meta data.
-	 * @param int   $attachment_id Current attachment ID.
-	 */
 	return apply_filters( 'wp_generate_attachment_metadata', $metadata, $attachment_id );
 }
 
-/**
- * Convert a fraction string to a decimal.
- *
- * @since 2.5.0
- *
- * @param string $str
- * @return int|float
- */
 function wp_exif_frac2dec($str) {
 	@list( $n, $d ) = explode( '/', $str );
 	if ( !empty($d) )
@@ -224,14 +157,6 @@ function wp_exif_frac2dec($str) {
 	return $str;
 }
 
-/**
- * Convert the exif date format to a unix timestamp.
- *
- * @since 2.5.0
- *
- * @param string $str
- * @return int
- */
 function wp_exif_date2ts($str) {
 	@list( $date, $time ) = explode( ' ', trim($str) );
 	@list( $y, $m, $d ) = explode( ':', $date );
@@ -239,34 +164,12 @@ function wp_exif_date2ts($str) {
 	return strtotime( "{$y}-{$m}-{$d} {$time}" );
 }
 
-/**
- * Get extended image metadata, exif or iptc as available.
- *
- * Retrieves the EXIF metadata aperture, credit, camera, caption, copyright, iso
- * created_timestamp, focal_length, shutter_speed, and title.
- *
- * The IPTC metadata that is retrieved is APP13, credit, byline, created date
- * and time, caption, copyright, and title. Also includes FNumber, Model,
- * DateTimeDigitized, FocalLength, ISOSpeedRatings, and ExposureTime.
- *
- * @todo Try other exif libraries if available.
- * @since 2.5.0
- *
- * @param string $file
- * @return bool|array False on failure. Image metadata array on success.
- */
 function wp_read_image_metadata( $file ) {
 	if ( ! file_exists( $file ) )
 		return false;
 
 	list( , , $sourceImageType ) = getimagesize( $file );
 
-	/*
-	 * EXIF contains a bunch of data we'll probably never need formatted in ways
-	 * that are difficult to use. We'll normalize it and just extract the fields
-	 * that are likely to be useful. Fractions and numbers are converted to
-	 * floats, dates to unix timestamps, and everything else to strings.
-	 */
 	$meta = array(
 		'aperture' => 0,
 		'credit' => '',
@@ -283,10 +186,7 @@ function wp_read_image_metadata( $file ) {
 	);
 
 	$iptc = array();
-	/*
-	 * Read IPTC first, since it might contain data not available in exif such
-	 * as caption, description etc.
-	 */
+
 	if ( is_callable( 'iptcparse' ) ) {
 		getimagesize( $file, $info );
 
@@ -336,13 +236,6 @@ function wp_read_image_metadata( $file ) {
 		 }
 	}
 
-	/**
-	 * Filter the image types to check for exif data.
-	 *
-	 * @since 2.5.0
-	 *
-	 * @param array $image_types Image types to check for exif data.
-	 */
 	if ( is_callable( 'exif_read_data' ) && in_array( $sourceImageType, apply_filters( 'wp_read_image_metadata_types', array( IMAGETYPE_JPEG, IMAGETYPE_TIFF_II, IMAGETYPE_TIFF_MM ) ) ) ) {
 		$exif = @exif_read_data( $file );
 
@@ -416,42 +309,15 @@ function wp_read_image_metadata( $file ) {
 
 	$meta = wp_kses_post_deep( $meta );
 
-	/**
-	 * Filter the array of meta data read from an image's exif data.
-	 *
-	 * @since 2.5.0
-	 * @since 4.4.0 The `$iptc` parameter was added.
-	 *
-	 * @param array  $meta            Image meta data.
-	 * @param string $file            Path to image file.
-	 * @param int    $sourceImageType Type of image.
-	 * @param array  $iptc            IPTC data.
-	 */
 	return apply_filters( 'wp_read_image_metadata', $meta, $file, $sourceImageType, $iptc );
 
 }
 
-/**
- * Validate that file is an image.
- *
- * @since 2.5.0
- *
- * @param string $path File path to test if valid image.
- * @return bool True if valid image, false if not valid image.
- */
 function file_is_valid_image($path) {
 	$size = @getimagesize($path);
 	return !empty($size);
 }
 
-/**
- * Validate that file is suitable for displaying within a web page.
- *
- * @since 2.5.0
- *
- * @param string $path File path to test.
- * @return bool True if suitable, false if not suitable.
- */
 function file_is_displayable_image($path) {
 	$displayable_image_types = array( IMAGETYPE_GIF, IMAGETYPE_JPEG, IMAGETYPE_PNG, IMAGETYPE_BMP );
 
@@ -464,27 +330,9 @@ function file_is_displayable_image($path) {
 		$result = true;
 	}
 
-	/**
-	 * Filter whether the current image is displayable in the browser.
-	 *
-	 * @since 2.5.0
-	 *
-	 * @param bool   $result Whether the image can be displayed. Default true.
-	 * @param string $path   Path to the image.
-	 */
 	return apply_filters( 'file_is_displayable_image', $result, $path );
 }
 
-/**
- * Load an image resource for editing.
- *
- * @since 2.9.0
- *
- * @param string $attachment_id Attachment ID.
- * @param string $mime_type Image mime type.
- * @param string $size Optional. Image size, defaults to 'full'.
- * @return resource|false The resulting image resource on success, false on failure.
- */
 function load_image_to_edit( $attachment_id, $mime_type, $size = 'full' ) {
 	$filepath = _load_image_to_edit_path( $attachment_id, $size );
 	if ( empty( $filepath ) )
@@ -505,15 +353,6 @@ function load_image_to_edit( $attachment_id, $mime_type, $size = 'full' ) {
 			break;
 	}
 	if ( is_resource($image) ) {
-		/**
-		 * Filter the current image being loaded for editing.
-		 *
-		 * @since 2.9.0
-		 *
-		 * @param resource $image         Current image.
-		 * @param string   $attachment_id Attachment ID.
-		 * @param string   $size          Image size.
-		 */
 		$image = apply_filters( 'load_image_to_edit', $image, $attachment_id, $size );
 		if ( function_exists('imagealphablending') && function_exists('imagesavealpha') ) {
 			imagealphablending($image, false);
@@ -523,93 +362,31 @@ function load_image_to_edit( $attachment_id, $mime_type, $size = 'full' ) {
 	return $image;
 }
 
-/**
- * Retrieve the path or url of an attachment's attached file.
- *
- * If the attached file is not present on the local filesystem (usually due to replication plugins),
- * then the url of the file is returned if url fopen is supported.
- *
- * @since 3.4.0
- * @access private
- *
- * @param string $attachment_id Attachment ID.
- * @param string $size Optional. Image size, defaults to 'full'.
- * @return string|false File path or url on success, false on failure.
- */
 function _load_image_to_edit_path( $attachment_id, $size = 'full' ) {
 	$filepath = get_attached_file( $attachment_id );
 
 	if ( $filepath && file_exists( $filepath ) ) {
 		if ( 'full' != $size && ( $data = image_get_intermediate_size( $attachment_id, $size ) ) ) {
-			/**
-			 * Filter the path to the current image.
-			 *
-			 * The filter is evaluated for all image sizes except 'full'.
-			 *
-			 * @since 3.1.0
-			 *
-			 * @param string $path          Path to the current image.
-			 * @param string $attachment_id Attachment ID.
-			 * @param string $size          Size of the image.
-			 */
 			$filepath = apply_filters( 'load_image_to_edit_filesystempath', path_join( dirname( $filepath ), $data['file'] ), $attachment_id, $size );
 		}
 	} elseif ( function_exists( 'fopen' ) && function_exists( 'ini_get' ) && true == ini_get( 'allow_url_fopen' ) ) {
-		/**
-		 * Filter the image URL if not in the local filesystem.
-		 *
-		 * The filter is only evaluated if fopen is enabled on the server.
-		 *
-		 * @since 3.1.0
-		 *
-		 * @param string $image_url     Current image URL.
-		 * @param string $attachment_id Attachment ID.
-		 * @param string $size          Size of the image.
-		 */
 		$filepath = apply_filters( 'load_image_to_edit_attachmenturl', wp_get_attachment_url( $attachment_id ), $attachment_id, $size );
 	}
-
-	/**
-	 * Filter the returned path or URL of the current image.
-	 *
-	 * @since 2.9.0
-	 *
-	 * @param string|bool $filepath      File path or URL to current image, or false.
-	 * @param string      $attachment_id Attachment ID.
-	 * @param string      $size          Size of the image.
-	 */
 	return apply_filters( 'load_image_to_edit_path', $filepath, $attachment_id, $size );
 }
 
-/**
- * Copy an existing image file.
- *
- * @since 3.4.0
- * @access private
- *
- * @param string $attachment_id Attachment ID.
- * @return string|false New file path on success, false on failure.
- */
 function _copy_image_file( $attachment_id ) {
 	$dst_file = $src_file = get_attached_file( $attachment_id );
 	if ( ! file_exists( $src_file ) )
 		$src_file = _load_image_to_edit_path( $attachment_id );
-
 	if ( $src_file ) {
 		$dst_file = str_replace( basename( $dst_file ), 'copy-' . basename( $dst_file ), $dst_file );
 		$dst_file = dirname( $dst_file ) . '/' . wp_unique_filename( dirname( $dst_file ), basename( $dst_file ) );
-
-		/*
-		 * The directory containing the original file may no longer
-		 * exist when using a replication plugin.
-		 */
 		wp_mkdir_p( dirname( $dst_file ) );
-
 		if ( ! @copy( $src_file, $dst_file ) )
 			$dst_file = false;
 	} else {
 		$dst_file = false;
 	}
-
 	return $dst_file;
 }

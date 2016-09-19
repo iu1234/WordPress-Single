@@ -7,14 +7,8 @@
  * @since 4.2.0
  */
 
-/**
- * Press This class.
- *
- * @since 4.2.0
- */
 class WP_Press_This {
 
-	// Used to trigger the bookmarklet update notice.
 	public $version = 8;
 
 	private $images = array();
@@ -23,45 +17,14 @@ class WP_Press_This {
 
 	private $domain = '';
 
-	/**
-	 * Constructor.
-	 *
-	 * @since 4.2.0
-	 * @access public
-	 */
 	public function __construct() {}
 
-	/**
-	 * App and site settings data, including i18n strings for the client-side.
-	 *
-	 * @since 4.2.0
-	 * @access public
-	 *
-	 * @return array Site settings.
-	 */
 	public function site_settings() {
 		return array(
-			/**
-			 * Filter whether or not Press This should redirect the user in the parent window upon save.
-			 *
-			 * @since 4.2.0
-			 *
-			 * @param bool $redirect Whether to redirect in parent window or not. Default false.
-			 */
 			'redirInParent' => apply_filters( 'press_this_redirect_in_parent', false ),
 		);
 	}
 
-	/**
-	 * Get the source's images and save them locally, for posterity, unless we can't.
-	 *
-	 * @since 4.2.0
-	 * @access public
-	 *
-	 * @param int    $post_id Post ID.
-	 * @param string $content Optional. Current expected markup for Press This. Expects slashed. Default empty.
-	 * @return string New markup with old image URLs replaced with the local attachment ones if swapped.
-	 */
 	public function side_load_images( $post_id, $content = '' ) {
 		$content = wp_unslash( $content );
 
@@ -95,12 +58,6 @@ class WP_Press_This {
 		return wp_slash( $content );
 	}
 
-	/**
-	 * AJAX handler for saving the post as draft or published.
-	 *
-	 * @since 4.2.0
-	 * @access public
-	 */
 	public function save_post() {
 		if ( empty( $_POST['post_ID'] ) || ! $post_id = (int) $_POST['post_ID'] ) {
 			wp_send_json_error( array( 'errorMessage' => __( 'Missing post ID.' ) ) );
@@ -133,14 +90,6 @@ class WP_Press_This {
 
 		$post_data['post_content'] = $this->side_load_images( $post_id, $post_data['post_content'] );
 
-		/**
-		 * Filter the post data of a Press This post before saving/updating, after
-		 * side_load_images action had run.
-		 *
-		 * @since 4.5.0
-		 *
-		 * @param array $post_data The post data.
-		 */
 		$post_data = apply_filters( 'press_this_save_post', $post_data );
 
 		$updated = wp_update_post( $post_data, true );
@@ -167,16 +116,6 @@ class WP_Press_This {
 				$redirect = false;
 			}
 
-			/**
-			 * Filter the URL to redirect to when Press This saves.
-			 *
-			 * @since 4.2.0
-			 *
-			 * @param string $url     Redirect URL. If `$status` is 'publish', this will be the post permalink.
-			 *                        Otherwise, the default is false resulting in no redirect.
-			 * @param int    $post_id Post ID.
-			 * @param string $status  Post status.
-			 */
 			$redirect = apply_filters( 'press_this_save_redirect', $redirect, $post_id, $post_data['post_status'] );
 
 			if ( $redirect ) {
@@ -187,12 +126,6 @@ class WP_Press_This {
 		}
 	}
 
-	/**
-	 * AJAX handler for adding a new category.
-	 *
-	 * @since 4.2.0
-	 * @access public
-	 */
 	public function add_category() {
 		if ( false === wp_verify_nonce( $_POST['new_cat_nonce'], 'add-category' ) ) {
 			wp_send_json_error();
@@ -774,30 +707,15 @@ class WP_Press_This {
 		return apply_filters( 'press_this_data', $data );
 	}
 
-	/**
-	 * Adds another stylesheet inside TinyMCE.
-	 *
-	 * @since 4.2.0
-	 * @access public
-	 *
-	 * @param string $styles URL to editor stylesheet.
-	 * @return string Possibly modified stylesheets list.
-	 */
 	public function add_editor_style( $styles ) {
 		if ( ! empty( $styles ) ) {
 			$styles .= ',';
 		}
 
 		$press_this = admin_url( 'css/press-this-editor.css' );
-		if ( is_rtl() ) {
-			$press_this = str_replace( '.css', '-rtl.css', $press_this );
-		}
 
 		$open_sans_font_url = '';
 
-		/* translators: If there are characters in your language that are not supported
-		 * by Open Sans, translate this to 'off'. Do not translate into your own language.
-		 */
 		if ( 'off' !== _x( 'on', 'Open Sans font: on or off' ) ) {
 			$subsets = 'latin,latin-ext';
 
@@ -1284,8 +1202,7 @@ class WP_Press_This {
 			typenow = 'post',
 			adminpage = 'press-this-php',
 			thousandsSeparator = '<?php echo addslashes( $wp_locale->number_format['thousands_sep'] ); ?>',
-			decimalPoint = '<?php echo addslashes( $wp_locale->number_format['decimal_point'] ); ?>',
-			isRtl = <?php echo (int) is_rtl(); ?>;
+			decimalPoint = '<?php echo addslashes( $wp_locale->number_format['decimal_point'] ); ?>';
 	</script>
 
 	<?php
@@ -1338,7 +1255,6 @@ class WP_Press_This {
 <?php
 
 	$admin_body_class  = 'press-this';
-	$admin_body_class .= ( is_rtl() ) ? ' rtl' : '';
 	$admin_body_class .= ' branch-' . str_replace( array( '.', ',' ), '-', floatval( $wp_version ) );
 	$admin_body_class .= ' version-' . str_replace( '.', '-', preg_replace( '/^([.0-9]+).*/', '$1', $wp_version ) );
 	$admin_body_class .= ' admin-color-' . sanitize_html_class( get_user_option( 'admin_color' ), 'fresh' );
@@ -1366,7 +1282,7 @@ class WP_Press_This {
 
 	<div id="scanbar" class="scan">
 		<form method="GET">
-			<label for="url-scan" class="screen-reader-text"><?php _e( 'Scan site for content' ); ?></label>
+			<label for="url-scan" class="screen-reader-text">Scan site for content</label>
 			<input type="url" name="u" id="url-scan" class="scan-url" value="" placeholder="<?php esc_attr_e( 'Enter a URL to scan' ) ?>" />
 			<input type="submit" name="url-scan-submit" id="url-scan-submit" class="scan-submit" value="<?php esc_attr_e( 'Scan' ) ?>" />
 		</form>
@@ -1394,7 +1310,7 @@ class WP_Press_This {
 				if ( isset( $data['v'] ) && $this->version > $data['v'] ) {
 					?>
 					<p class="alert is-notice">
-						<?php printf( __( 'You should upgrade <a href="%s" target="_blank">your bookmarklet</a> to the latest version!' ), admin_url( 'tools.php' ) ); ?>
+						<?php printf( 'You should upgrade <a href="%s" target="_blank">your bookmarklet</a> to the latest version!', admin_url( 'tools.php' ) ); ?>
 					</p>
 					<?php
 				}
@@ -1403,12 +1319,12 @@ class WP_Press_This {
 			</div>
 
 			<div id="app-container" class="editor">
-				<span id="title-container-label" class="post-title-placeholder" aria-hidden="true"><?php _e( 'Post title' ); ?></span>
+				<span id="title-container-label" class="post-title-placeholder" aria-hidden="true">Post title</span>
 				<h2 id="title-container" class="post-title" contenteditable="true" spellcheck="true" aria-label="<?php esc_attr_e( 'Post title' ); ?>" tabindex="0"><?php echo esc_html( $post_title ); ?></h2>
 
 				<div class="media-list-container">
 					<div class="media-list-inner-container">
-						<h2 class="screen-reader-text"><?php _e( 'Suggested media' ); ?></h2>
+						<h2 class="screen-reader-text">Suggested media</h2>
 						<ul class="media-list"></ul>
 					</div>
 				</div>

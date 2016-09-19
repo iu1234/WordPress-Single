@@ -12,53 +12,39 @@
  */
 
 $wp_file_descriptions = array(
-	'functions.php'         => __( 'Theme Functions' ),
-	'header.php'            => __( 'Theme Header' ),
-	'footer.php'            => __( 'Theme Footer' ),
-	'sidebar.php'           => __( 'Sidebar' ),
-	'comments.php'          => __( 'Comments' ),
-	'searchform.php'        => __( 'Search Form' ),
-	'404.php'               => __( '404 Template' ),
-	'link.php'              => __( 'Links Template' ),
-	// Archives
-	'index.php'             => __( 'Main Index Template' ),
-	'archive.php'           => __( 'Archives' ),
-	'author.php'            => __( 'Author Template' ),
-	'taxonomy.php'          => __( 'Taxonomy Template' ),
-	'category.php'          => __( 'Category Template' ),
-	'tag.php'               => __( 'Tag Template' ),
-	'home.php'              => __( 'Posts Page' ),
-	'search.php'            => __( 'Search Results' ),
-	'date.php'              => __( 'Date Template' ),
-	// Content
-	'singular.php'          => __( 'Singular Template' ),
-	'single.php'            => __( 'Single Post' ),
-	'page.php'              => __( 'Single Page' ),
-	'front-page.php'        => __( 'Static Front Page' ),
-	// Attachments
-	'attachment.php'        => __( 'Attachment Template' ),
-	'image.php'             => __( 'Image Attachment Template' ),
-	'video.php'             => __( 'Video Attachment Template' ),
-	'audio.php'             => __( 'Audio Attachment Template' ),
-	'application.php'       => __( 'Application Attachment Template' ),
-	// Stylesheets
-	'style.css'             => __( 'Stylesheet' ),
-	'editor-style.css'      => __( 'Visual Editor Stylesheet' ),
-	'editor-style-rtl.css'  => __( 'Visual Editor RTL Stylesheet' ),
-	'rtl.css'               => __( 'RTL Stylesheet' ),
-	// Other
-	'my-hacks.php'          => __( 'my-hacks.php (legacy hacks support)' ),
-	'.htaccess'             => __( '.htaccess (for rewrite rules )' ),
-	// Deprecated files
-	'wp-layout.css'         => __( 'Stylesheet' ),
-	'wp-comments.php'       => __( 'Comments Template' ),
-	'wp-comments-popup.php' => __( 'Popup Comments Template' ),
-	'comments-popup.php'    => __( 'Popup Comments' ),
+	'functions.php'         => 'Theme Functions',
+	'header.php'            => 'Theme Header',
+	'footer.php'            => 'Theme Footer',
+	'sidebar.php'           => 'Sidebar',
+	'comments.php'          => 'Comments',
+	'searchform.php'        => 'Search Form',
+	'404.php'               => '404 Template',
+	'link.php'              => 'Links Template',
+	'index.php'             => 'Main Index Template',
+	'archive.php'           => 'Archives',
+	'author.php'            => 'Author Template',
+	'taxonomy.php'          => 'Taxonomy Template',
+	'category.php'          => 'Category Template',
+	'tag.php'               => 'Tag Template',
+	'home.php'              => 'Posts Page',
+	'search.php'            => 'Search Results',
+	'date.php'              => 'Date Template',
+	'singular.php'          => 'Singular Template',
+	'single.php'            => 'Single Post',
+	'page.php'              => 'Single Page',
+	'front-page.php'        => 'Static Front Page',
+	'attachment.php'        => 'Attachment Template',
+	'image.php'             => 'Image Attachment Template',
+	'video.php'             => 'Video Attachment Template',
+	'audio.php'             => 'Audio Attachment Template',
+	'application.php'       => 'Application Attachment Template',
+	'style.css'             => 'Stylesheet',
+	'editor-style.css'      => 'Visual Editor Stylesheet',
+	'.htaccess'             => '.htaccess (for rewrite rules )',
 );
 
 function get_file_description( $file ) {
 	global $wp_file_descriptions, $allowed_files;
-
 	$relative_pathinfo = pathinfo( $file );
 	$file_path = $allowed_files[ $file ];
 	if ( isset( $wp_file_descriptions[ basename( $file ) ] ) && '.' === $relative_pathinfo['dirname'] ) {
@@ -66,32 +52,23 @@ function get_file_description( $file ) {
 	} elseif ( file_exists( $file_path ) && is_file( $file_path ) ) {
 		$template_data = implode( '', file( $file_path ) );
 		if ( preg_match( '|Template Name:(.*)$|mi', $template_data, $name ) ) {
-			return sprintf( __( '%s Page Template' ), _cleanup_header_comment( $name[1] ) );
+			return sprintf( '%s Page Template', _cleanup_header_comment( $name[1] ) );
 		}
 	}
-
 	return trim( basename( $file ) );
 }
 
-/**
- * Get the absolute filesystem path to the root of the WordPress installation
- *
- * @since 1.5.0
- *
- * @return string Full filesystem path to the root of the WordPress installation
- */
 function get_home_path() {
 	$home    = set_url_scheme( get_option( 'home' ), 'http' );
 	$siteurl = set_url_scheme( get_option( 'siteurl' ), 'http' );
 	if ( ! empty( $home ) && 0 !== strcasecmp( $home, $siteurl ) ) {
-		$wp_path_rel_to_home = str_ireplace( $home, '', $siteurl ); /* $siteurl - $home */
+		$wp_path_rel_to_home = str_ireplace( $home, '', $siteurl );
 		$pos = strripos( str_replace( '\\', '/', $_SERVER['SCRIPT_FILENAME'] ), trailingslashit( $wp_path_rel_to_home ) );
 		$home_path = substr( $_SERVER['SCRIPT_FILENAME'], 0, $pos );
 		$home_path = trailingslashit( $home_path );
 	} else {
 		$home_path = ABSPATH;
 	}
-
 	return str_replace( '\\', '/', $home_path );
 }
 
@@ -948,9 +925,9 @@ echo "<$heading_tag id='request-filesystem-credentials-title'>" . __( 'Connectio
 </div>
 <?php if ( isset($types['ssh']) ) : ?>
 <fieldset>
-<legend><?php _e( 'Authentication Keys' ); ?></legend>
+<legend>Authentication Keys</legend>
 <label for="public_key">
-	<span class="field-title"><?php _e('Public Key:') ?></span>
+	<span class="field-title">Public Key:</span>
 	<input name="public_key" type="text" id="public_key" aria-describedby="auth-keys-desc" value="<?php echo esc_attr($public_key) ?>"<?php disabled( defined('FTP_PUBKEY') ); ?> />
 </label>
 <label for="private_key">
@@ -979,7 +956,7 @@ foreach ( (array) $extra_fields as $field ) {
 ?>
 	<p class="request-filesystem-credentials-action-buttons">
 		<button class="button cancel-button" data-js-action="close" type="button"><?php _e( 'Cancel' ); ?></button>
-		<?php submit_button( __( 'Proceed' ), 'button', 'upgrade', false ); ?>
+		<?php submit_button( 'Proceed', 'button', 'upgrade', false ); ?>
 	</p>
 </div>
 </form>
@@ -987,11 +964,6 @@ foreach ( (array) $extra_fields as $field ) {
 	return false;
 }
 
-/**
- * Print the filesystem credentials modal when needed.
- *
- * @since 4.2.0
- */
 function wp_print_request_filesystem_credentials_modal() {
 	$filesystem_method = get_filesystem_method();
 	ob_start();

@@ -40,13 +40,11 @@ $menu[10] = array( 'Media', 'upload_files', 'upload.php', '', 'menu-top menu-ico
 
 $menu[15] = array( 'Links', 'manage_links', 'link-manager.php', '', 'menu-top menu-icon-links', 'menu-links', 'dashicons-admin-links' );
 	$submenu['link-manager.php'][5] = array( 'All Links', 'manage_links', 'link-manager.php' );
-	/* translators: add new links */
 	$submenu['link-manager.php'][10] = array( 'Add New', 'manage_links', 'link-add.php' );
 	$submenu['link-manager.php'][15] = array( 'Link Categories', 'manage_categories', 'edit-tags.php?taxonomy=link_category' );
 
 // $menu[20] = Pages
 
-// Avoid the comment count query for users who cannot edit_posts.
 if ( current_user_can( 'edit_posts' ) ) {
 	$awaiting_mod = wp_count_comments();
 	$awaiting_mod = $awaiting_mod->moderated;
@@ -64,7 +62,7 @@ if ( current_user_can( 'edit_posts' ) ) {
 
 $submenu[ 'edit-comments.php' ][0] = array( 'All Comments', 'edit_posts', 'edit-comments.php' );
 
-$_wp_last_object_menu = 25; // The index of the last top-level menu in the object menu group
+$_wp_last_object_menu = 25;
 
 $types = (array) get_post_types( array('show_ui' => true, '_builtin' => false, 'show_in_menu' => true ) );
 $builtin = array( 'post', 'page' );
@@ -106,10 +104,6 @@ foreach ( array_merge( $builtin, $types ) as $ptype ) {
 	} else {
 		$ptype_menu_id = 'menu-posts-' . $ptype_for_id;
 	}
-	/*
-	 * If $ptype_menu_position is already populated or will be populated
-	 * by a hard-coded value below, increment the position.
-	 */
 	$core_menu_positions = array(59, 60, 65, 70, 75, 80, 85, 99);
 	while ( isset($menu[$ptype_menu_position]) || in_array($ptype_menu_position, $core_menu_positions) )
 		$ptype_menu_position++;

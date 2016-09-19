@@ -1502,18 +1502,14 @@ function _default_wp_die_handler( $message, $title = '', $args = array() ) {
 		}
 
 		if ( empty($title) )
-			$title = $have_gettext ? __('WordPress &rsaquo; Error') : 'WordPress &rsaquo; Error';
+			$title = $have_gettext ? 'WordPress &rsaquo; Error' : 'WordPress &rsaquo; Error';
 
 		$text_direction = 'ltr';
-		if ( isset($r['text_direction']) && 'rtl' == $r['text_direction'] )
-			$text_direction = 'rtl';
-		elseif ( function_exists( 'is_rtl' ) && is_rtl() )
-			$text_direction = 'rtl';
 ?>
 <!DOCTYPE html>
 <!-- Ticket #11289, IE bug fix: always pad the error page with enough characters such that it is greater than 512 bytes, even after gzip compression abcdefghijklmnopqrstuvwxyz1234567890aabbccddeeffgghhiijjkkllmmnnooppqqrrssttuuvvwwxxyyzz11223344556677889900abacbcbdcdcededfefegfgfhghgihihjijikjkjlklkmlmlnmnmononpopoqpqprqrqsrsrtstsubcbcdcdedefefgfabcadefbghicjkldmnoepqrfstugvwxhyz1i234j567k890laabmbccnddeoeffpgghqhiirjjksklltmmnunoovppqwqrrxsstytuuzvvw0wxx1yyz2z113223434455666777889890091abc2def3ghi4jkl5mno6pqr7stu8vwx9yz11aab2bcc3dd4ee5ff6gg7hh8ii9j0jk1kl2lmm3nnoo4p5pq6qrr7ss8tt9uuvv0wwx1x2yyzz13aba4cbcb5dcdc6dedfef8egf9gfh0ghg1ihi2hji3jik4jkj5lkl6kml7mln8mnm9ono
 -->
-<html xmlns="http://www.w3.org/1999/xhtml" <?php if ( function_exists( 'language_attributes' ) && function_exists( 'is_rtl' ) ) language_attributes(); else echo "dir='$text_direction'"; ?>>
+<html xmlns="http://www.w3.org/1999/xhtml" <?php if ( function_exists( 'language_attributes' ) ) language_attributes(); else echo "dir='$text_direction'"; ?>>
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<meta name="viewport" content="width=device-width">
@@ -1854,18 +1850,6 @@ function _config_wp_siteurl( $url = '' ) {
 }
 
 function _mce_set_direction( $input ) {
-	if ( is_rtl() ) {
-		$input['directionality'] = 'rtl';
-
-		if ( ! empty( $input['plugins'] ) && strpos( $input['plugins'], 'directionality' ) === false ) {
-			$input['plugins'] .= ',directionality';
-		}
-
-		if ( ! empty( $input['toolbar1'] ) && ! preg_match( '/\bltr\b/', $input['toolbar1'] ) ) {
-			$input['toolbar1'] .= ',ltr';
-		}
-	}
-
 	return $input;
 }
 

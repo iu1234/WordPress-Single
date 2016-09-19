@@ -1109,11 +1109,6 @@ final class _WP_Editors {
 			}
 		}
 
-		// Set direction
-		if ( is_rtl() ) {
-			$mce_translation['_dir'] = 'rtl';
-		}
-
 		if ( $json_only ) {
 			return wp_json_encode( $mce_translation );
 		}

@@ -8,15 +8,10 @@
 
 function wp_get_themes( $args = array() ) {
 	global $wp_theme_directories;
-
 	$defaults = array( 'errors' => false, 'allowed' => null, 'blog_id' => 0 );
 	$args = wp_parse_args( $args, $defaults );
-
 	$theme_directories = search_theme_directories();
-
 	if ( count( $wp_theme_directories ) > 1 ) {
-		// Make sure the current theme wins out, in case search_theme_directories() picks the wrong
-		// one in the case of a conflict. (Normally, last registered theme root wins.)
 		$current_theme = get_stylesheet();
 		if ( isset( $theme_directories[ $current_theme ] ) ) {
 			$root_of_current_theme = get_raw_theme_root( $current_theme );
@@ -136,7 +131,6 @@ function get_template_directory_uri() {
 	$template = str_replace( '%2F', '/', rawurlencode( get_template() ) );
 	$theme_root_uri = get_theme_root_uri( $template );
 	$template_dir_uri = "$theme_root_uri/$template";
-
 	return apply_filters( 'template_directory_uri', $template_dir_uri, $template, $theme_root_uri );
 }
 
@@ -892,13 +886,6 @@ function get_editor_stylesheets() {
 		}
 	}
 
-	/**
-	 * Filter the array of stylesheets applied to the editor.
-	 *
-	 * @since 4.3.0
-	 *
-	 * @param array $stylesheets Array of stylesheets to be applied to the editor.
-	 */
 	return apply_filters( 'editor_stylesheets', $stylesheets );
 }
 
@@ -979,23 +966,10 @@ function add_theme_support( $feature ) {
 
 			$jit = isset( $args[0]['__jit'] );
 			unset( $args[0]['__jit'] );
-
-			// Merge in data from previous add_theme_support() calls.
-			// The first value registered wins. (A child theme is set up first.)
 			if ( isset( $_wp_theme_features['custom-header'] ) )
 				$args[0] = wp_parse_args( $_wp_theme_features['custom-header'][0], $args[0] );
-
-			// Load in the defaults at the end, as we need to insure first one wins.
-			// This will cause all constants to be defined, as each arg will then be set to the default.
 			if ( $jit )
 				$args[0] = wp_parse_args( $args[0], $defaults );
-
-			// If a constant was defined, use that value. Otherwise, define the constant to ensure
-			// the constant is always accurate (and is not defined later,  overriding our value).
-			// As stated above, the first value wins.
-			// Once we get to wp_loaded (just-in-time), define any constants we haven't already.
-			// Constants are lame. Don't reference them. This is just for backwards compatibility.
-
 			if ( defined( 'NO_HEADER_TEXT' ) )
 				$args[0]['header-text'] = ! NO_HEADER_TEXT;
 			elseif ( isset( $args[0]['header-text'] ) )
@@ -1024,8 +998,6 @@ function add_theme_support( $feature ) {
 			if ( $jit && ! empty( $args[0]['default-image'] ) )
 				$args[0]['random-default'] = false;
 
-			// If headers are supported, and we still don't have a defined width or height,
-			// we have implicit flex sizes.
 			if ( $jit ) {
 				if ( empty( $args[0]['width'] ) && empty( $args[0]['flex-width'] ) )
 					$args[0]['flex-width'] = true;
@@ -1072,12 +1044,9 @@ function add_theme_support( $feature ) {
 
 			break;
 
-		// Ensure that 'title-tag' is accessible in the admin.
 		case 'title-tag' :
-			// Can be called in functions.php but must happen before wp_loaded, i.e. not in header.php.
 			if ( did_action( 'wp_loaded' ) ) {
-				/* translators: 1: Theme support 2: hook name */
-				_doing_it_wrong( "add_theme_support( 'title-tag' )", sprintf( __( 'Theme support for %1$s should be registered before the %2$s hook.' ),
+				_doing_it_wrong( "add_theme_support( 'title-tag' )", sprintf( 'Theme support for %1$s should be registered before the %2$s hook.',
 					'<code>title-tag</code>', '<code>wp_loaded</code>' ), '4.1' );
 
 				return false;
@@ -1089,9 +1058,7 @@ function add_theme_support( $feature ) {
 
 function _custom_header_background_just_in_time() {
 	global $custom_image_header, $custom_background;
-
 	if ( current_theme_supports( 'custom-header' ) ) {
-		// In case any constants were defined after an add_custom_image_header() call, re-run.
 		add_theme_support( 'custom-header', array( '__jit' => true ) );
 
 		$args = get_theme_support( 'custom-header' );
@@ -1105,7 +1072,6 @@ function _custom_header_background_just_in_time() {
 	}
 
 	if ( current_theme_supports( 'custom-background' ) ) {
-		// In case any constants were defined after an add_custom_background() call, re-run.
 		add_theme_support( 'custom-background', array( '__jit' => true ) );
 
 		$args = get_theme_support( 'custom-background' );
@@ -1161,7 +1127,6 @@ function get_theme_support( $feature ) {
 function remove_theme_support( $feature ) {
 	if ( in_array( $feature, array( 'editor-style', 'widgets', 'menus' ) ) )
 		return false;
-
 	return _remove_theme_support( $feature );
 }
 
@@ -1206,43 +1171,28 @@ function _remove_theme_support( $feature ) {
 
 function current_theme_supports( $feature ) {
 	global $_wp_theme_features;
-
 	if ( 'custom-header-uploads' == $feature )
 		return current_theme_supports( 'custom-header', 'uploads' );
-
 	if ( !isset( $_wp_theme_features[$feature] ) )
 		return false;
-
-	// If no args passed then no extra checks need be performed
 	if ( func_num_args() <= 1 )
 		return true;
-
 	$args = array_slice( func_get_args(), 1 );
-
 	switch ( $feature ) {
 		case 'post-thumbnails':
-			// post-thumbnails can be registered for only certain content/post types by passing
-			// an array of types to add_theme_support(). If no array was passed, then
-			// any type is accepted
-			if ( true === $_wp_theme_features[$feature] )  // Registered for all types
+			if ( true === $_wp_theme_features[$feature] )
 				return true;
 			$content_type = $args[0];
 			return in_array( $content_type, $_wp_theme_features[$feature][0] );
 
 		case 'html5':
 		case 'post-formats':
-			// specific post formats can be registered by passing an array of types to
-			// add_theme_support()
-
-			// Specific areas of HTML5 support *must* be passed via an array to add_theme_support()
-
 			$type = $args[0];
 			return in_array( $type, $_wp_theme_features[$feature][0] );
 
 		case 'custom-logo':
 		case 'custom-header':
 		case 'custom-background':
-			// Specific capabilities can be registered by passing an array to add_theme_support().
 			return ( isset( $_wp_theme_features[ $feature ][0][ $args[0] ] ) && $_wp_theme_features[ $feature ][0][ $args[0] ] );
 	}
 
@@ -1284,7 +1234,6 @@ function _wp_customize_include() {
 	) ) {
 		return;
 	}
-
 	require_once ABSPATH . WPINC . '/class-wp-customize-manager.php';
 	$GLOBALS['wp_customize'] = new WP_Customize_Manager();
 }
@@ -1304,8 +1253,8 @@ function _wp_customize_loader_settings() {
 		'isCrossDomain' => $cross_domain,
 		'browser'       => $browser,
 		'l10n'          => array(
-			'saveAlert'       => __( 'The changes you made will be lost if you navigate away from this page.' ),
-			'mainIframeTitle' => __( 'Customizer' ),
+			'saveAlert'       => 'The changes you made will be lost if you navigate away from this page.',
+			'mainIframeTitle' => 'Customizer',
 		),
 	);
 
@@ -1351,6 +1300,5 @@ function wp_customize_support_script() {
 
 function is_customize_preview() {
 	global $wp_customize;
-
 	return ( $wp_customize instanceof WP_Customize_Manager ) && $wp_customize->is_preview();
 }

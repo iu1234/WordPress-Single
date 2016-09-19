@@ -6,15 +6,8 @@
  * @subpackage Administration
  */
 
-/**
- * We are installing WordPress.
- *
- * @since 1.5.1
- * @var bool
- */
 define( 'WP_INSTALLING', true );
 
-define( 'ABSPATH', __DIR__ . '/' );
 error_reporting( E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_ERROR | E_WARNING | E_PARSE | E_USER_ERROR | E_USER_WARNING | E_RECOVERABLE_ERROR );
 
 define('DB_NAME', 'dwmdb');
@@ -31,38 +24,8 @@ define('SECURE_AUTH_SALT', 'put your unique phrase here');
 define('LOGGED_IN_SALT',   'put your unique phrase here');
 define('NONCE_SALT',       'put your unique phrase here');
 
-require( ABSPATH . 'wp-includes/load.php' );
-require( ABSPATH . 'wp-includes/default-constants.php' );
-
-wp_initial_constants();
-
-
-date_default_timezone_set( 'UTC' );
-
-wp_unregister_GLOBALS();
-
-wp_fix_server_vars();
-
-wp_favicon_request();
-
-timer_start();
-
-require( ABSPATH . WPINC . '/functions.php' );
-require( ABSPATH . WPINC . '/class-wp.php' );
-require( ABSPATH . WPINC . '/class-wp-error.php' );
-require( ABSPATH . WPINC . '/plugin.php' );
-
 require_wp_db();
 wp_set_wpdb_vars();
-wp_start_object_cache();
-
-require( ABSPATH . WPINC . '/default-filters.php' );
-
-register_shutdown_function( 'shutdown_action_hook' );
-
-require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-require_once( ABSPATH . 'wp-admin/includes/translation-install.php' );
-require_once( ABSPATH . 'includes/wp-db.php' );
 
 nocache_headers();
 
@@ -93,16 +56,12 @@ function display_header( $body_classes = '' ) {
 
 function display_setup_form( $error = null ) {
 	global $wpdb;
-
 	$sql = $wpdb->prepare( "SHOW TABLES LIKE %s", $wpdb->esc_like( $wpdb->users ) );
 	$user_table = ( $wpdb->get_var( $sql ) != null );
-
-	// Ensure that Blogs appear in search engines by default.
 	$blog_public = 1;
 	if ( isset( $_POST['weblog_title'] ) ) {
 		$blog_public = isset( $_POST['blog_public'] );
 	}
-
 	$weblog_title = isset( $_POST['weblog_title'] ) ? trim( wp_unslash( $_POST['weblog_title'] ) ) : '';
 	$user_name = isset($_POST['user_name']) ? trim( wp_unslash( $_POST['user_name'] ) ) : '';
 	$admin_email  = isset( $_POST['admin_email']  ) ? trim( wp_unslash( $_POST['admin_email'] ) ) : '';
@@ -179,10 +138,10 @@ function display_setup_form( $error = null ) {
 					<?php
 					if ( has_action( 'blog_privacy_selector' ) ) { ?>
 						<input id="blog-public" type="radio" name="blog_public" value="1" <?php checked( 1, $blog_public ); ?> />
-						<label for="blog-public"><?php _e( 'Allow search engines to index this site' );?></label><br/>
+						<label for="blog-public">Allow search engines to index this site</label><br/>
 						<input id="blog-norobots" type="radio" name="blog_public" value="0" <?php checked( 0, $blog_public ); ?> />
-						<label for="blog-norobots"><?php _e( 'Discourage search engines from indexing this site' ); ?></label>
-						<p class="description"><?php _e( 'Note: Neither of these options blocks access to your site &mdash; it is up to search engines to honor your request.' ); ?></p>
+						<label for="blog-norobots">Discourage search engines from indexing this site</label>
+						<p class="description">Note: Neither of these options blocks access to your site &mdash; it is up to search engines to honor your request.</p>
 						<?php
 						do_action( 'blog_privacy_selector' );
 					 } else { ?>
@@ -213,9 +172,9 @@ if ( is_blog_installed() ) {
 if ( ! is_string( $wpdb->base_prefix ) || '' === $wpdb->base_prefix ) {
 	display_header();
 	die(
-		'<h1>' . __( 'Configuration Error' ) . '</h1>' .
+		'<h1>Configuration Error</h1>' .
 		'<p>' . sprintf(
-			__( 'Your %s file has an empty database table prefix, which is not supported.' ),
+			'Your %s file has an empty database table prefix, which is not supported.',
 			'<code>wp-load.php</code>'
 		) . '</p></body></html>'
 	);
@@ -224,34 +183,17 @@ if ( ! is_string( $wpdb->base_prefix ) || '' === $wpdb->base_prefix ) {
 if ( defined( 'DO_NOT_UPGRADE_GLOBAL_TABLES' ) ) {
 	display_header();
 	die(
-		'<h1>' . __( 'Configuration Error' ) . '</h1>' .
+		'<h1>Configuration Error</h1>' .
 		'<p>' . sprintf(
-			/* translators: %s: DO_NOT_UPGRADE_GLOBAL_TABLES */
-			__( 'The constant %s cannot be defined when installing WordPress.' ),
+			'The constant %s cannot be defined when installing WordPress.',
 			'<code>DO_NOT_UPGRADE_GLOBAL_TABLES</code>'
 		) . '</p></body></html>'
 	);
 }
 
-$language = '';
-if ( ! empty( $_REQUEST['language'] ) ) {
-	$language = preg_replace( '/[^a-zA-Z_]/', '', $_REQUEST['language'] );
-} elseif ( isset( $GLOBALS['wp_local_package'] ) ) {
-	$language = $GLOBALS['wp_local_package'];
-}
-
 $scripts_to_print = array( 'jquery' );
 
 switch($step) {
-	case 0:
-		if ( wp_can_install_language_pack() && empty( $language ) && ( $languages = wp_get_available_translations() ) ) {
-			$scripts_to_print[] = 'language-chooser';
-			display_header( 'language-chooser' );
-			echo '<form id="setup" method="post" action="?step=1">';
-			wp_install_language_form( $languages );
-			echo '</form>';
-			break;
-		}
 	case 1:
 
 		$scripts_to_print[] = 'user-profile';
@@ -267,11 +209,8 @@ switch($step) {
 	case 2:
 		if ( ! empty( $wpdb->error ) )
 			wp_die( $wpdb->error->get_error_message() );
-
 		$scripts_to_print[] = 'user-profile';
-
 		display_header();
-		// Fill in the data we gathered
 		$weblog_title = isset( $_POST['weblog_title'] ) ? trim( wp_unslash( $_POST['weblog_title'] ) ) : '';
 		$user_name = isset($_POST['user_name']) ? trim( wp_unslash( $_POST['user_name'] ) ) : '';
 		$admin_password = isset($_POST['admin_password']) ? wp_unslash( $_POST['admin_password'] ) : '';
@@ -282,23 +221,19 @@ switch($step) {
 		// Check email address.
 		$error = false;
 		if ( empty( $user_name ) ) {
-			// TODO: poka-yoke
-			display_setup_form( __( 'Please provide a valid username.' ) );
+			display_setup_form( 'Please provide a valid username.' );
 			$error = true;
 		} elseif ( $user_name != sanitize_user( $user_name, true ) ) {
-			display_setup_form( __( 'The username you provided has invalid characters.' ) );
+			display_setup_form( 'The username you provided has invalid characters.' );
 			$error = true;
 		} elseif ( $admin_password != $admin_password_check ) {
-			// TODO: poka-yoke
-			display_setup_form( __( 'Your passwords do not match. Please try again.' ) );
+			display_setup_form( 'Your passwords do not match. Please try again.' );
 			$error = true;
 		} elseif ( empty( $admin_email ) ) {
-			// TODO: poka-yoke
-			display_setup_form( __( 'You must provide an email address.' ) );
+			display_setup_form( 'You must provide an email address.' );
 			$error = true;
 		} elseif ( ! is_email( $admin_email ) ) {
-			// TODO: poka-yoke
-			display_setup_form( __( 'Sorry, that isn&#8217;t a valid email address. Email addresses look like <code>username@example.com</code>.' ) );
+			display_setup_form( 'Sorry, that isn&#8217;t a valid email address. Email addresses look like <code>username@example.com</code>.' );
 			$error = true;
 		}
 
@@ -307,17 +242,17 @@ switch($step) {
 			$result = wp_install( $weblog_title, $user_name, $admin_email, $public, '', wp_slash( $admin_password ), $loaded_language );
 ?>
 
-<h1><?php _e( 'Success!' ); ?></h1>
+<h1>Success!</h1>
 
-<p><?php _e( 'WordPress has been installed. Thank you, and enjoy!' ); ?></p>
+<p>WordPress has been installed. Thank you, and enjoy!</p>
 
 <table class="form-table install-success">
 	<tr>
-		<th><?php _e( 'Username' ); ?></th>
+		<th>用户名</th>
 		<td><?php echo esc_html( sanitize_user( $user_name, true ) ); ?></td>
 	</tr>
 	<tr>
-		<th><?php _e( 'Password' ); ?></th>
+		<th>密码</th>
 		<td><?php
 		if ( ! empty( $result['password'] ) && empty( $admin_password_check ) ): ?>
 			<code><?php echo esc_html( $result['password'] ) ?></code><br />
@@ -327,7 +262,7 @@ switch($step) {
 	</tr>
 </table>
 
-<p class="step"><a href="<?php echo esc_url( wp_login_url() ); ?>" class="button button-large"><?php _e( 'Log In' ); ?></a></p>
+<p class="step"><a href="<?php echo esc_url( wp_login_url() ); ?>" class="button button-large">登录</a></p>
 
 <?php
 		}

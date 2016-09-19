@@ -10,15 +10,10 @@
  */
 
 define( 'EZSQL_VERSION', 'WP1.25' );
-
 define( 'OBJECT', 'OBJECT' );
-
 define( 'OBJECT_K', 'OBJECT_K' );
-
 define( 'ARRAY_A', 'ARRAY_A' );
-
 define( 'ARRAY_N', 'ARRAY_N' );
-
 
 class wpdb {
 
@@ -471,7 +466,6 @@ class wpdb {
 	}
 
 	public function db_connect( $allow_bail = true ) {
-		$this->is_mysql = true;
 		$client_flags = defined( 'MYSQL_CLIENT_FLAGS' ) ? MYSQL_CLIENT_FLAGS : 0;
 		$this->dbh = mysqli_init();
 		$port = null;
@@ -497,14 +491,11 @@ class wpdb {
 			$attempt_fallback = true;
 			if ( $this->has_connected ) {
 				$attempt_fallback = false;
-			} elseif ( ! function_exists( 'mysql_connect' ) ) {
-				$attempt_fallback = false;
 			}
 			if ( $attempt_fallback ) {
 				return $this->db_connect( $allow_bail );
 			}
 		}
-
 		if ( ! $this->dbh && $allow_bail ) {
 			$message = "<h1>Error establishing a database connection</h1>\n";
 			$message .= '<p>' . sprintf(
@@ -512,32 +503,24 @@ class wpdb {
 				'<code>wp-load.php</code>',
 				'<code>' . htmlspecialchars( $this->dbhost, ENT_QUOTES ) . '</code>'
 			) . "</p>\n";
-
 			$message .= "<ul>\n";
 			$message .= "<li>Are you sure you have the correct username and password?</li>\n";
 			$message .= "<li>Are you sure that you have typed the correct hostname?</li>\n";
 			$message .= "<li>Are you sure that the database server is running?</li>\n";
 			$message .= "</ul>\n";
-
 			$this->bail( $message, 'db_connect_fail' );
-
 			return false;
 		} elseif ( $this->dbh ) {
 			if ( ! $this->has_connected ) {
 				$this->init_charset();
 			}
-
 			$this->has_connected = true;
-
 			$this->set_charset( $this->dbh );
-
 			$this->ready = true;
 			$this->set_sql_mode();
 			$this->select( $this->dbname, $this->dbh );
-
 			return true;
 		}
-
 		return false;
 	}
 
@@ -564,24 +547,15 @@ class wpdb {
 			return false;
 		}
 		$message = "<h1>Error reconnecting to the database</h1>\n";
-
 		$message .= '<p>' . sprintf(
 			'This means that we lost contact with the database server at %s. This could mean your host&#8217;s database server is down.',
 			'<code>' . htmlspecialchars( $this->dbhost, ENT_QUOTES ) . '</code>'
 		) . "</p>\n";
-
 		$message .= "<ul>\n";
 		$message .= "<li>Are you sure that the database server is running?</li>\n";
 		$message .= "<li>Are you sure that the database server is not under particularly heavy load?</li>\n";
 		$message .= "</ul>\n";
-
-		$message .= '<p>' . sprintf(
-			'If you&#8217;re unsure what these terms mean you should probably contact your host. If you still need help you can always visit the <a href="%s">WordPress Support Forums</a>.',
-			'https://wordpress.org/support/'
-		) . "</p>\n";
-
 		$this->bail( $message, 'db_connect_fail' );
-
 		dead_db();
 	}
 

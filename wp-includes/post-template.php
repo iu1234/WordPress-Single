@@ -288,28 +288,10 @@ function get_the_content( $more_link_text = null, $strip_teaser = false ) {
 	return $output;
 }
 
-/**
- * Preview fix for JavaScript bug with foreign languages.
- *
- * @since 3.1.0
- * @access private
- *
- * @param array $match Match array from preg_replace_callback.
- * @return string
- */
 function _convert_urlencoded_to_entities( $match ) {
 	return '&#' . base_convert( $match[1], 16, 10 ) . ';';
 }
 
-/**
- * Retrieves the post excerpt.
- *
- * @since 0.71
- * @since 4.5.0 Introduced the `$post` parameter.
- *
- * @param int|WP_Post $post Optional. Post ID or WP_Post object. Default is global $post.
- * @return string Post excerpt.
- */
 function get_the_excerpt( $post = null ) {
 	if ( is_bool( $post ) ) {
 		_deprecated_argument( __FUNCTION__, '2.3' );
@@ -324,63 +306,19 @@ function get_the_excerpt( $post = null ) {
 		return __( 'There is no excerpt because this is a protected post.' );
 	}
 
-	/**
-	 * Filter the retrieved post excerpt.
-	 *
-	 * @since 1.2.0
-	 * @since 4.5.0 Introduced the `$post` parameter.
-	 *
-	 * @param string $post_excerpt The post excerpt.
-	 * @param WP_Post $post Post object.
-	 */
 	return apply_filters( 'get_the_excerpt', $post->post_excerpt, $post );
 }
 
-/**
- * Whether post has excerpt.
- *
- * @since 2.3.0
- *
- * @param int|WP_Post $id Optional. Post ID or post object.
- * @return bool
- */
 function has_excerpt( $id = 0 ) {
 	$post = get_post( $id );
 	return ( !empty( $post->post_excerpt ) );
 }
 
-/**
- * Display the classes for the post div.
- *
- * @since 2.7.0
- *
- * @param string|array $class   One or more classes to add to the class list.
- * @param int|WP_Post  $post_id Optional. Post ID or post object. Defaults to the global `$post`.
- */
 function post_class( $class = '', $post_id = null ) {
 	// Separates classes with a single space, collates classes for post DIV
 	echo 'class="' . join( ' ', get_post_class( $class, $post_id ) ) . '"';
 }
 
-/**
- * Retrieve the classes for the post div as an array.
- *
- * The class names are many. If the post is a sticky, then the 'sticky'
- * class name. The class 'hentry' is always added to each post. If the post has a
- * post thumbnail, 'has-post-thumbnail' is added as a class. For each taxonomy that
- * the post belongs to, a class will be added of the format '{$taxonomy}-{$slug}' -
- * eg 'category-foo' or 'my_custom_taxonomy-bar'. The 'post_tag' taxonomy is a special
- * case; the class has the 'tag-' prefix instead of 'post_tag-'. All classes are
- * passed through the filter, 'post_class' with the list of classes, followed by
- * $class parameter value, with the post ID as the last parameter.
- *
- * @since 2.7.0
- * @since 4.2.0 Custom taxonomy classes were added.
- *
- * @param string|array $class   One or more classes to add to the class list.
- * @param int|WP_Post  $post_id Optional. Post ID or post object.
- * @return array Array of classes.
- */
 function get_post_class( $class = '', $post_id = null ) {
 	$post = get_post( $post_id );
 
@@ -468,50 +406,19 @@ function get_post_class( $class = '', $post_id = null ) {
 
 	$classes = array_map( 'esc_attr', $classes );
 
-	/**
-	 * Filter the list of CSS classes for the current post.
-	 *
-	 * @since 2.7.0
-	 *
-	 * @param array $classes An array of post classes.
-	 * @param array $class   An array of additional classes added to the post.
-	 * @param int   $post_id The post ID.
-	 */
 	$classes = apply_filters( 'post_class', $classes, $class, $post->ID );
 
 	return array_unique( $classes );
 }
 
-/**
- * Display the classes for the body element.
- *
- * @since 2.8.0
- *
- * @param string|array $class One or more classes to add to the class list.
- */
 function body_class( $class = '' ) {
-	// Separates classes with a single space, collates classes for body element
 	echo 'class="' . join( ' ', get_body_class( $class ) ) . '"';
 }
 
-/**
- * Retrieve the classes for the body element as an array.
- *
- * @since 2.8.0
- *
- * @global WP_Query $wp_query
- *
- * @param string|array $class One or more classes to add to the class list.
- * @return array Array of classes.
- */
 function get_body_class( $class = '' ) {
 	global $wp_query;
 
 	$classes = array();
-
-	if ( is_rtl() )
-		$classes[] = 'rtl';
-
 	if ( is_front_page() )
 		$classes[] = 'home';
 	if ( is_home() )

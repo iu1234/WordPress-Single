@@ -156,38 +156,19 @@ function wp_set_wpdb_vars() {
 	);
 }
 
-function wp_not_installed() {
-	if ( ! is_blog_installed() && ! wp_installing() ) {
-		nocache_headers();
-		require( ABSPATH . WPINC . '/kses.php' );
-		require( ABSPATH . WPINC . '/pluggable.php' );
-		require( ABSPATH . WPINC . '/formatting.php' );
-		$link = wp_guess_url() . '/wp-admin/install.php';
-		wp_redirect( $link );
-		die();
-	}
-}
-
 function wp_get_active_and_valid_plugins() {
 	$plugins = array();
 	$active_plugins = (array) get_option( 'active_plugins', array() );
 
-	// Check for hacks file if the option is enabled
-	if ( get_option( 'hack_file' ) && file_exists( ABSPATH . 'my-hacks.php' ) ) {
-		_deprecated_file( 'my-hacks.php', '1.5' );
-		array_unshift( $plugins, ABSPATH . 'my-hacks.php' );
-	}
-
-	if ( empty( $active_plugins ) || wp_installing() )
+	if ( empty( $active_plugins ) )
 		return $plugins;
 
 	$network_plugins = is_multisite() ? wp_get_active_network_plugins() : false;
 
 	foreach ( $active_plugins as $plugin ) {
-		if ( ! validate_file( $plugin ) // $plugin must validate as file
-			&& '.php' == substr( $plugin, -4 ) // $plugin must end with '.php'
-			&& file_exists( WP_PLUGIN_DIR . '/' . $plugin ) // $plugin must exist
-			// not already included as a network plugin
+		if ( ! validate_file( $plugin )
+			&& '.php' == substr( $plugin, -4 )
+			&& file_exists( WP_PLUGIN_DIR . '/' . $plugin )
 			&& ( ! $network_plugins || ! in_array( WP_PLUGIN_DIR . '/' . $plugin, $network_plugins ) )
 			)
 		$plugins[] = WP_PLUGIN_DIR . '/' . $plugin;
@@ -261,20 +242,4 @@ function is_user_admin() {
 function get_current_blog_id() {
 	global $blog_id;
 	return absint($blog_id);
-}
-
-function wp_installing( $is_installing = null ) {
-	static $installing = null;
-
-	if ( is_null( $installing ) ) {
-		$installing = defined( 'WP_INSTALLING' ) && WP_INSTALLING;
-	}
-
-	if ( ! is_null( $is_installing ) ) {
-		$old_installing = $installing;
-		$installing = $is_installing;
-		return (bool) $old_installing;
-	}
-
-	return (bool) $installing;
 }

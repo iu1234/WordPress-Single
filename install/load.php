@@ -15,22 +15,6 @@ function wp_get_server_protocol() {
 	return $protocol;
 }
 
-function wp_unregister_GLOBALS() {
-	if ( !ini_get( 'register_globals' ) )
-		return;
-
-	if ( isset( $_REQUEST['GLOBALS'] ) )
-		die( 'GLOBALS overwrite attempt detected' );
-
-	$no_unset = array( 'GLOBALS', '_GET', '_POST', '_COOKIE', '_REQUEST', '_SERVER', '_ENV', '_FILES', 'table_prefix' );
-
-	$input = array_merge( $_GET, $_POST, $_COOKIE, $_SERVER, $_ENV, $_FILES, isset( $_SESSION ) && is_array( $_SESSION ) ? $_SESSION : array() );
-	foreach ( $input as $k => $v )
-		if ( !in_array( $k, $no_unset ) && isset( $GLOBALS[$k] ) ) {
-			unset( $GLOBALS[$k] );
-		}
-}
-
 function wp_fix_server_vars() {
 	global $PHP_SELF;
 
@@ -85,58 +69,6 @@ function wp_favicon_request() {
 	}
 }
 
-function wp_maintenance() {
-	if ( ! file_exists( ABSPATH . '.maintenance' ) || wp_installing() )
-		return;
-
-	global $upgrading;
-
-	include( ABSPATH . '.maintenance' );
-	// If the $upgrading timestamp is older than 10 minutes, don't die.
-	if ( ( time() - $upgrading ) >= 600 )
-		return;
-
-	if ( file_exists( WP_CONTENT_DIR . '/maintenance.php' ) ) {
-		require_once( WP_CONTENT_DIR . '/maintenance.php' );
-		die();
-	}
-
-	$protocol = wp_get_server_protocol();
-	header( "$protocol 503 Service Unavailable", true, 503 );
-	header( 'Content-Type: text/html; charset=utf-8' );
-	header( 'Retry-After: 600' );
-?>
-	<!DOCTYPE html>
-	<html xmlns="http://www.w3.org/1999/xhtml">
-	<head>
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-		<title>Maintenance</title>
-
-	</head>
-	<body>
-		<h1>Briefly unavailable for scheduled maintenance. Check back in a minute.</h1>
-	</body>
-	</html>
-<?php
-	die();
-}
-
-function timer_start() {
-	global $timestart;
-	$timestart = microtime( true );
-	return true;
-}
-
-function timer_stop( $display = 0, $precision = 3 ) {
-	global $timestart, $timeend;
-	$timeend = microtime( true );
-	$timetotal = $timeend - $timestart;
-	$r = ( function_exists( 'number_format_i18n' ) ) ? number_format_i18n( $timetotal, $precision ) : number_format( $timetotal, $precision );
-	if ( $display )
-		echo $r;
-	return $r;
-}
-
 function require_wp_db() {
 	global $wpdb;
 	require_once( ABSPATH . WPINC . '/wp-db.php' );
@@ -168,33 +100,6 @@ function wp_not_installed() {
 	}
 }
 
-function wp_get_active_and_valid_plugins() {
-	$plugins = array();
-	$active_plugins = (array) get_option( 'active_plugins', array() );
-
-	// Check for hacks file if the option is enabled
-	if ( get_option( 'hack_file' ) && file_exists( ABSPATH . 'my-hacks.php' ) ) {
-		_deprecated_file( 'my-hacks.php', '1.5' );
-		array_unshift( $plugins, ABSPATH . 'my-hacks.php' );
-	}
-
-	if ( empty( $active_plugins ) || wp_installing() )
-		return $plugins;
-
-	$network_plugins = is_multisite() ? wp_get_active_network_plugins() : false;
-
-	foreach ( $active_plugins as $plugin ) {
-		if ( ! validate_file( $plugin ) // $plugin must validate as file
-			&& '.php' == substr( $plugin, -4 ) // $plugin must end with '.php'
-			&& file_exists( WP_PLUGIN_DIR . '/' . $plugin ) // $plugin must exist
-			// not already included as a network plugin
-			&& ( ! $network_plugins || ! in_array( WP_PLUGIN_DIR . '/' . $plugin, $network_plugins ) )
-			)
-		$plugins[] = WP_PLUGIN_DIR . '/' . $plugin;
-	}
-	return $plugins;
-}
-
 function wp_set_internal_encoding() {
 	if ( function_exists( 'mb_internal_encoding' ) ) {
 		$charset = get_option( 'blog_charset' );
@@ -216,46 +121,6 @@ function wp_magic_quotes() {
 	$_SERVER = add_magic_quotes( $_SERVER );
 
 	$_REQUEST = array_merge( $_GET, $_POST );
-}
-
-function shutdown_action_hook() {
-	do_action( 'shutdown' );
-	wp_cache_close();
-}
-
-function is_admin() {
-	if ( isset( $GLOBALS['current_screen'] ) )
-		return $GLOBALS['current_screen']->in_admin();
-	elseif ( defined( 'WP_ADMIN' ) )
-		return WP_ADMIN;
-
-	return false;
-}
-
-function is_blog_admin() {
-	if ( isset( $GLOBALS['current_screen'] ) )
-		return $GLOBALS['current_screen']->in_admin( 'site' );
-	elseif ( defined( 'WP_BLOG_ADMIN' ) )
-		return WP_BLOG_ADMIN;
-
-	return false;
-}
-
-function is_network_admin() {
-	if ( isset( $GLOBALS['current_screen'] ) )
-		return $GLOBALS['current_screen']->in_admin( 'network' );
-	elseif ( defined( 'WP_NETWORK_ADMIN' ) )
-		return WP_NETWORK_ADMIN;
-	return false;
-}
-
-function is_user_admin() {
-	if ( isset( $GLOBALS['current_screen'] ) )
-		return $GLOBALS['current_screen']->in_admin( 'user' );
-	elseif ( defined( 'WP_USER_ADMIN' ) )
-		return WP_USER_ADMIN;
-
-	return false;
 }
 
 function get_current_blog_id() {

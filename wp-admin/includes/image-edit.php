@@ -6,13 +6,6 @@
  * @subpackage Administration
  */
 
-/**
- * Loads the WP image-editing interface.
- *
- * @param int         $post_id Post ID.
- * @param bool|object $msg     Optional. Message to display for image editor updates or errors.
- *                             Default false.
- */
 function wp_image_editor($post_id, $msg = false) {
 	$nonce = wp_create_nonce("image_editor-$post_id");
 	$meta = wp_get_attachment_metadata($post_id);
@@ -23,7 +16,7 @@ function wp_image_editor($post_id, $msg = false) {
 	if ( isset( $meta['width'], $meta['height'] ) )
 		$big = max( $meta['width'], $meta['height'] );
 	else
-		die( __('Image data does not exist. Please re-upload the image.') );
+		die( 'Image data does not exist. Please re-upload the image.' );
 
 	$sizer = $big > 400 ? 400 / $big : 1;
 
@@ -46,7 +39,7 @@ function wp_image_editor($post_id, $msg = false) {
 	<div class="imgedit-settings">
 	<div class="imgedit-group">
 	<div class="imgedit-group-top">
-		<h2><?php _e( 'Scale Image' ); ?></h2>
+		<h2>Scale Image</h2>
 		<button type="button" class="dashicons dashicons-editor-help imgedit-help-toggle" onclick="imageEdit.toggleHelp(this);return false;" aria-expanded="false"><span class="screen-reader-text"><?php esc_html_e( 'Scale Image Help' ); ?></span></button>
 		<div class="imgedit-help">
 		<p><?php _e('You can proportionally scale the original image. For best results, scaling should be done before you crop, flip, or rotate. Images can only be scaled down, not up.'); ?></p>
@@ -81,10 +74,10 @@ function wp_image_editor($post_id, $msg = false) {
 	<div class="imgedit-group-top">
 		<h2><button type="button" onclick="imageEdit.toggleHelp(this);" class="button-link"><?php _e( 'Restore Original Image' ); ?> <span class="dashicons dashicons-arrow-down imgedit-help-toggle"></span></button></h2>
 		<div class="imgedit-help">
-		<p><?php _e('Discard any changes and restore the original image.');
+		<p>Discard any changes and restore the original image.<?php
 
 		if ( !defined('IMAGE_EDIT_OVERWRITE') || !IMAGE_EDIT_OVERWRITE )
-			echo ' '.__('Previously edited copies of the image will not be deleted.');
+			echo ' Previously edited copies of the image will not be deleted.';
 
 		?></p>
 		<div class="imgedit-submit">
@@ -98,13 +91,13 @@ function wp_image_editor($post_id, $msg = false) {
 
 	<div class="imgedit-group">
 	<div class="imgedit-group-top">
-		<h2><?php _e( 'Image Crop' ); ?></h2>
+		<h2>Image Crop</h2>
 		<button type="button" class="dashicons dashicons-editor-help imgedit-help-toggle" onclick="imageEdit.toggleHelp(this);return false;" aria-expanded="false"><span class="screen-reader-text"><?php esc_html_e( 'Image Crop Help' ); ?></span></button>
 
 		<div class="imgedit-help">
-		<p><?php _e('To crop the image, click on it and drag to make your selection.'); ?></p>
+		<p>To crop the image, click on it and drag to make your selection.</p>
 
-		<p><strong><?php _e('Crop Aspect Ratio'); ?></strong><br />
+		<p><strong>Crop Aspect Ratio</strong><br />
 		<?php _e('The aspect ratio is the relationship between the width and height. You can preserve the aspect ratio by holding down the shift key while resizing your selection. Use the input box to specify the aspect ratio, e.g. 1:1 (square), 4:3, 16:9, etc.'); ?></p>
 
 		<p><strong><?php _e('Crop Selection'); ?></strong><br />
@@ -113,26 +106,26 @@ function wp_image_editor($post_id, $msg = false) {
 	</div>
 
 	<fieldset class="imgedit-crop-ratio">
-		<legend><?php _e( 'Aspect ratio:' ); ?></legend>
+		<legend>Aspect ratio:</legend>
 		<div class="nowrap">
-		<label><span class="screen-reader-text"><?php _e( 'crop ratio width' ); ?></span>
+		<label><span class="screen-reader-text">crop ratio width</span>
 		<input type="text" id="imgedit-crop-width-<?php echo $post_id; ?>" onkeyup="imageEdit.setRatioSelection(<?php echo $post_id; ?>, 0, this)" />
 		</label>
 		<span class="imgedit-separator">:</span>
-		<label><span class="screen-reader-text"><?php _e( 'crop ratio height' ); ?></span>
+		<label><span class="screen-reader-text">crop ratio height</span>
 		<input type="text" id="imgedit-crop-height-<?php echo $post_id; ?>" onkeyup="imageEdit.setRatioSelection(<?php echo $post_id; ?>, 1, this)" />
 		</label>
 		</div>
 	</fieldset>
 
 	<fieldset id="imgedit-crop-sel-<?php echo $post_id; ?>" class="imgedit-crop-sel">
-		<legend><?php _e( 'Selection:' ); ?></legend>
+		<legend>Selection:</legend>
 		<div class="nowrap">
-		<label><span class="screen-reader-text"><?php _e( 'selection width' ); ?></span>
+		<label><span class="screen-reader-text">selection width</span>
 		<input type="text" id="imgedit-sel-width-<?php echo $post_id; ?>" onkeyup="imageEdit.setNumSelection(<?php echo $post_id; ?>)" />
 		</label>
 		<span class="imgedit-separator">&times;</span>
-		<label><span class="screen-reader-text"><?php _e( 'selection height' ); ?></span>
+		<label><span class="screen-reader-text">selection height</span>
 		<input type="text" id="imgedit-sel-height-<?php echo $post_id; ?>" onkeyup="imageEdit.setNumSelection(<?php echo $post_id; ?>)" />
 		</label>
 		</div>

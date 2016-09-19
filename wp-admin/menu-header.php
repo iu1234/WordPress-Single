@@ -6,45 +6,14 @@
  * @subpackage Administration
  */
 
-/**
- * The current page.
- *
- * @global string $self
- */
 $self = preg_replace('|^.*/wp-admin/network/|i', '', $_SERVER['PHP_SELF']);
 $self = preg_replace('|^.*/wp-admin/|i', '', $self);
 $self = preg_replace('|^.*/plugins/|i', '', $self);
 $self = preg_replace('|^.*/mu-plugins/|i', '', $self);
 
-/**
- * For when admin-header is included from within a function.
- *
- * @global array  $menu
- * @global array  $submenu
- * @global string $parent_file
- * @global string $submenu_file
- */
 global $menu, $submenu, $parent_file, $submenu_file;
 
-/**
- * Filter the parent file of an admin menu sub-menu item.
- *
- * Allows plugins to move sub-menu items around.
- *
- * @since MU
- *
- * @param string $parent_file The parent file.
- */
 $parent_file = apply_filters( 'parent_file', $parent_file );
-
-/**
- * Filter the file of an admin menu sub-menu item.
- *
- * @since 4.4.0
- *
- * @param string $submenu_file The submenu file.
- * @param string $parent_file  The submenu item's parent file.
- */
 $submenu_file = apply_filters( 'submenu_file', $submenu_file, $parent_file );
 
 get_admin_page_parent();
@@ -171,15 +140,11 @@ function _wp_menu_output( $menu, $submenu, $submenu_as_parent = true ) {
 
 				if ( false !== ( $pos = strpos( $menu_file, '?' ) ) )
 					$menu_file = substr( $menu_file, 0, $pos );
-
-				// Handle current for post_type=post|page|foo pages, which won't match $self.
 				$self_type = ! empty( $typenow ) ? $self . '?post_type=' . $typenow : 'nothing';
 
 				if ( isset( $submenu_file ) ) {
 					if ( $submenu_file == $sub_item[2] )
 						$class[] = 'current';
-				// If plugin_page is set the parent must either match the current page or not physically exist.
-				// This allows plugin pages with the same hook to exist under different parents.
 				} elseif (
 					( ! isset( $plugin_page ) && $self == $sub_item[2] ) ||
 					( isset( $plugin_page ) && $plugin_page == $sub_item[2] && ( $item[2] == $self_type || $item[2] == $self || file_exists($menu_file) === false ) )
@@ -233,13 +198,7 @@ function _wp_menu_output( $menu, $submenu, $submenu_as_parent = true ) {
 <ul id="adminmenu">
 <?php
 _wp_menu_output( $menu, $submenu );
-/**
- * Fires after the admin menu has been output.
- *
- * @since 2.5.0
- */
 do_action( 'adminmenu' );
-
 ?>
 </ul>
 </div>

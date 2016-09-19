@@ -12,7 +12,6 @@ define( 'WPINC', 'wp-includes' );
 
 require( ABSPATH . 'wp-admin/includes/noop.php' );
 require( ABSPATH . WPINC . '/script-loader.php' );
-require( ABSPATH . WPINC . '/version.php' );
 
 $load = $_GET['load'];
 if ( is_array( $load ) ) {
