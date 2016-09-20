@@ -30,9 +30,8 @@ function post_submit_meta_box( $post, $args = array() ) {
 
 <div id="minor-publishing">
 
-<?php // Hidden submit button early on so that the browser chooses the right button when form is submitted with Return key ?>
 <div style="display:none;">
-<?php submit_button( __( 'Save' ), 'button', 'save' ); ?>
+<?php submit_button( 'Save', 'button', 'save' ); ?>
 </div>
 
 <div id="minor-publishing-actions">
@@ -50,49 +49,42 @@ function post_submit_meta_box( $post, $args = array() ) {
 <?php
 $preview_link = esc_url( get_preview_post_link( $post ) );
 if ( 'publish' == $post->post_status ) {
-	$preview_button = __( 'Preview Changes' );
+	$preview_button = 'Preview Changes';
 } else {
-	$preview_button = __( 'Preview' );
+	$preview_button = 'Preview';
 }
 ?>
 <a class="preview button" href="<?php echo $preview_link; ?>" target="wp-preview-<?php echo (int) $post->ID; ?>" id="post-preview"><?php echo $preview_button; ?></a>
 <input type="hidden" name="wp-preview" id="wp-preview" value="" />
 </div>
-<?php endif; // public post type ?>
+<?php endif; ?>
 <?php
-/**
- * Fires before the post time/date setting in the Publish meta box.
- *
- * @since 4.4.0
- *
- * @param WP_Post $post WP_Post object for the current post.
- */
 do_action( 'post_submitbox_minor_actions', $post );
 ?>
 <div class="clear"></div>
-</div><!-- #minor-publishing-actions -->
+</div>
 
 <div id="misc-publishing-actions">
 
-<div class="misc-pub-section misc-pub-post-status"><label for="post_status"><?php _e('Status:') ?></label>
+<div class="misc-pub-section misc-pub-post-status"><label for="post_status">Status:</label>
 <span id="post-status-display">
 <?php
 switch ( $post->post_status ) {
 	case 'private':
-		_e('Privately Published');
+		echo 'Privately Published';
 		break;
 	case 'publish':
-		_e('Published');
+		echo 'Published';
 		break;
 	case 'future':
-		_e('Scheduled');
+		echo 'Scheduled';
 		break;
 	case 'pending':
-		_e('Pending Review');
+		echo 'Pending Review';
 		break;
 	case 'draft':
 	case 'auto-draft':
-		_e('Draft');
+		echo 'Draft';
 		break;
 }
 ?>
@@ -104,21 +96,21 @@ switch ( $post->post_status ) {
 <input type="hidden" name="hidden_post_status" id="hidden_post_status" value="<?php echo esc_attr( ('auto-draft' == $post->post_status ) ? 'draft' : $post->post_status); ?>" />
 <select name='post_status' id='post_status'>
 <?php if ( 'publish' == $post->post_status ) : ?>
-<option<?php selected( $post->post_status, 'publish' ); ?> value='publish'><?php _e('Published') ?></option>
+<option<?php selected( $post->post_status, 'publish' ); ?> value='publish'>Published</option>
 <?php elseif ( 'private' == $post->post_status ) : ?>
-<option<?php selected( $post->post_status, 'private' ); ?> value='publish'><?php _e('Privately Published') ?></option>
+<option<?php selected( $post->post_status, 'private' ); ?> value='publish'>Privately Published</option>
 <?php elseif ( 'future' == $post->post_status ) : ?>
-<option<?php selected( $post->post_status, 'future' ); ?> value='future'><?php _e('Scheduled') ?></option>
+<option<?php selected( $post->post_status, 'future' ); ?> value='future'>Scheduled</option>
 <?php endif; ?>
-<option<?php selected( $post->post_status, 'pending' ); ?> value='pending'><?php _e('Pending Review') ?></option>
+<option<?php selected( $post->post_status, 'pending' ); ?> value='pending'>Pending Review</option>
 <?php if ( 'auto-draft' == $post->post_status ) : ?>
-<option<?php selected( $post->post_status, 'auto-draft' ); ?> value='draft'><?php _e('Draft') ?></option>
+<option<?php selected( $post->post_status, 'auto-draft' ); ?> value='draft'>Draft</option>
 <?php else : ?>
-<option<?php selected( $post->post_status, 'draft' ); ?> value='draft'><?php _e('Draft') ?></option>
+<option<?php selected( $post->post_status, 'draft' ); ?> value='draft'>Draft</option>
 <?php endif; ?>
 </select>
- <a href="#post_status" class="save-post-status hide-if-no-js button"><?php _e('OK'); ?></a>
- <a href="#post_status" class="cancel-post-status hide-if-no-js button-cancel"><?php _e('Cancel'); ?></a>
+ <a href="#post_status" class="save-post-status hide-if-no-js button">OK</a>
+ <a href="#post_status" class="cancel-post-status hide-if-no-js button-cancel">Cancel</a>
 </div>
 
 <?php } ?>
@@ -275,30 +267,17 @@ if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0
 <?php
 }
 
-/**
- * Display attachment submit form fields.
- *
- * @since 3.5.0
- *
- * @param object $post
- */
 function attachment_submit_meta_box( $post ) {
 ?>
 <div class="submitbox" id="submitpost">
-
 <div id="minor-publishing">
-
-<?php // Hidden submit button early on so that the browser chooses the right button when form is submitted with Return key ?>
 <div style="display:none;">
-<?php submit_button( __( 'Save' ), 'button', 'save' ); ?>
+<?php submit_button( 'Save', 'button', 'save' ); ?>
 </div>
-
-
 <div id="misc-publishing-actions">
 	<?php
-	/* translators: Publish box date format, see http://php.net/date */
-	$datef = __( 'M j, Y @ H:i' );
-	$stamp = __('Uploaded on: <b>%1$s</b>');
+	$datef = 'M j, Y @ H:i';
+	$stamp = 'Uploaded on: <b>%1$s</b>';
 	$date = date_i18n( $datef, strtotime( $post->post_date ) );
 	?>
 	<div class="misc-pub-section curtime misc-pub-curtime">
@@ -306,12 +285,6 @@ function attachment_submit_meta_box( $post ) {
 	</div><!-- .misc-pub-section -->
 
 	<?php
-	/**
-	 * Fires after the 'Uploaded on' section of the Save meta box
-	 * in the attachment editing screen.
-	 *
-	 * @since 3.5.0
-	 */
 	do_action( 'attachment_submitbox_misc_actions' );
 	?>
 </div><!-- #misc-publishing-actions -->
@@ -344,21 +317,6 @@ function attachment_submit_meta_box( $post ) {
 <?php
 }
 
-/**
- * Display post format form elements.
- *
- * @since 3.1.0
- *
- * @param WP_Post $post Post object.
- * @param array   $box {
- *     Post formats meta box arguments.
- *
- *     @type string   $id       Meta box ID.
- *     @type string   $title    Meta box title.
- *     @type callable $callback Meta box display callback.
- *     @type array    $args     Extra meta box arguments.
- * }
- */
 function post_format_meta_box( $post, $box ) {
 	if ( current_theme_supports( 'post-formats' ) && post_type_supports( $post->post_type, 'post-formats' ) ) :
 	$post_formats = get_theme_support( 'post-formats' );
@@ -383,27 +341,6 @@ function post_format_meta_box( $post, $box ) {
 	<?php endif; endif;
 }
 
-/**
- * Display post tags form fields.
- *
- * @since 2.6.0
- *
- * @todo Create taxonomy-agnostic wrapper for this.
- *
- * @param WP_Post $post Post object.
- * @param array   $box {
- *     Tags meta box arguments.
- *
- *     @type string   $id       Meta box ID.
- *     @type string   $title    Meta box title.
- *     @type callable $callback Meta box display callback.
- *     @type array    $args {
- *         Extra meta box arguments.
- *
- *         @type string $taxonomy Taxonomy. Default 'post_tag'.
- *     }
- * }
- */
 function post_tags_meta_box( $post, $box ) {
 	$defaults = array( 'taxonomy' => 'post_tag' );
 	if ( ! isset( $box['args'] ) || ! is_array( $box['args'] ) ) {
@@ -444,27 +381,6 @@ function post_tags_meta_box( $post, $box ) {
 <?php
 }
 
-/**
- * Display post categories form fields.
- *
- * @since 2.6.0
- *
- * @todo Create taxonomy-agnostic wrapper for this.
- *
- * @param WP_Post $post Post object.
- * @param array   $box {
- *     Categories meta box arguments.
- *
- *     @type string   $id       Meta box ID.
- *     @type string   $title    Meta box title.
- *     @type callable $callback Meta box display callback.
- *     @type array    $args {
- *         Extra meta box arguments.
- *
- *         @type string $taxonomy Taxonomy. Default 'category'.
- *     }
- * }
- */
 function post_categories_meta_box( $post, $box ) {
 	$defaults = array( 'taxonomy' => 'category' );
 	if ( ! isset( $box['args'] ) || ! is_array( $box['args'] ) ) {
@@ -521,30 +437,6 @@ function post_categories_meta_box( $post, $box ) {
 						'show_option_none' => '&mdash; ' . $taxonomy->labels->parent_item . ' &mdash;',
 					);
 
-					/**
-					 * Filter the arguments for the taxonomy parent dropdown on the Post Edit page.
-					 *
-					 * @since 4.4.0
-					 *
-					 * @param array $parent_dropdown_args {
-					 *     Optional. Array of arguments to generate parent dropdown.
-					 *
-					 *     @type string   $taxonomy         Name of the taxonomy to retrieve.
-					 *     @type bool     $hide_if_empty    True to skip generating markup if no
-					 *                                      categories are found. Default 0.
-					 *     @type string   $name             Value for the 'name' attribute
-					 *                                      of the select element.
-					 *                                      Default "new{$tax_name}_parent".
-					 *     @type string   $orderby          Which column to use for ordering
-					 *                                      terms. Default 'name'.
-					 *     @type bool|int $hierarchical     Whether to traverse the taxonomy
-					 *                                      hierarchy. Default 1.
-					 *     @type string   $show_option_none Text to display for the "none" option.
-					 *                                      Default "&mdash; {$parent} &mdash;",
-					 *                                      where `$parent` is 'parent_item'
-					 *                                      taxonomy label.
-					 * }
-					 */
 					$parent_dropdown_args = apply_filters( 'post_edit_category_parent_dropdown_args', $parent_dropdown_args );
 
 					wp_dropdown_categories( $parent_dropdown_args );
@@ -559,19 +451,11 @@ function post_categories_meta_box( $post, $box ) {
 	<?php
 }
 
-/**
- * Display post excerpt form fields.
- *
- * @since 2.6.0
- *
- * @param object $post
- */
 function post_excerpt_meta_box($post) {
 ?>
-<label class="screen-reader-text" for="excerpt"><?php _e('Excerpt') ?></label><textarea rows="1" cols="40" name="excerpt" id="excerpt"><?php echo $post->post_excerpt; // textarea_escaped ?></textarea>
+<label class="screen-reader-text" for="excerpt">Excerpt</label><textarea rows="1" cols="40" name="excerpt" id="excerpt"><?php echo $post->post_excerpt; // textarea_escaped ?></textarea>
 <p><?php
 	printf(
-		/* translators: %s: Codex URL */
 		__( 'Excerpts are optional hand-crafted summaries of your content that can be used in your theme. <a href="%s">Learn more about manual excerpts</a>.' ),
 		__( 'https://codex.wordpress.org/Excerpt' )
 	);
@@ -579,18 +463,11 @@ function post_excerpt_meta_box($post) {
 <?php
 }
 
-/**
- * Display trackback links form fields.
- *
- * @since 2.6.0
- *
- * @param object $post
- */
 function post_trackback_meta_box($post) {
 	$form_trackback = '<input type="text" name="trackback_url" id="trackback_url" class="code" value="' .
 		esc_attr( str_replace( "\n", ' ', $post->to_ping ) ) . '" aria-describedby="trackback-url-desc" />';
 	if ('' != $post->pinged) {
-		$pings = '<p>'. __('Already pinged:') . '</p><ul>';
+		$pings = '<p>Already pinged:</p><ul>';
 		$already_pinged = explode("\n", trim($post->pinged));
 		foreach ($already_pinged as $pinged_url) {
 			$pings .= "\n\t<li>" . esc_html($pinged_url) . "</li>";
@@ -600,13 +477,12 @@ function post_trackback_meta_box($post) {
 
 ?>
 <p>
-	<label for="trackback_url"><?php _e( 'Send trackbacks to:' ); ?></label>
+	<label for="trackback_url">Send trackbacks to:</label>
 	<?php echo $form_trackback; ?>
 </p>
-<p id="trackback-url-desc" class="howto"><?php _e( 'Separate multiple URLs with spaces' ); ?></p>
+<p id="trackback-url-desc" class="howto">Separate multiple URLs with spaces</p>
 <p><?php
 	printf(
-		/* translators: %s: Codex URL */
 		__( 'Trackbacks are a way to notify legacy blog systems that you&#8217;ve linked to them. If you link other WordPress sites, they&#8217;ll be notified automatically using <a href="%s">pingbacks</a>, no other action necessary.' ),
 		__( 'https://codex.wordpress.org/Introduction_to_Blogging#Managing_Comments' )
 	);
@@ -616,13 +492,6 @@ if ( ! empty($pings) )
 	echo $pings;
 }
 
-/**
- * Display custom fields form fields.
- *
- * @since 2.6.0
- *
- * @param object $post
- */
 function post_custom_meta_box($post) {
 ?>
 <div id="postcustomstuff">
@@ -638,7 +507,6 @@ meta_form( $post ); ?>
 </div>
 <p><?php
 	printf(
-		/* translators: %s: Codex URL */
 		__( 'Custom fields can be used to add extra metadata to a post that you can <a href="%s">use in your theme</a>.' ),
 		__( 'https://codex.wordpress.org/Using_Custom_Fields' )
 	);
@@ -646,13 +514,6 @@ meta_form( $post ); ?>
 <?php
 }
 
-/**
- * Display comments status form fields.
- *
- * @since 2.6.0
- *
- * @param object $post
- */
 function post_comment_status_meta_box($post) {
 ?>
 <input name="advanced_view" type="hidden" value="1" />
@@ -660,44 +521,21 @@ function post_comment_status_meta_box($post) {
 	<label for="comment_status" class="selectit"><input name="comment_status" type="checkbox" id="comment_status" value="open" <?php checked($post->comment_status, 'open'); ?> /> <?php _e( 'Allow comments.' ) ?></label><br />
 	<label for="ping_status" class="selectit"><input name="ping_status" type="checkbox" id="ping_status" value="open" <?php checked($post->ping_status, 'open'); ?> /> <?php
 		printf(
-			/* translators: %s: Codex URL */
-			__( 'Allow <a href="%s">trackbacks and pingbacks</a> on this page.' ),
-			__( 'https://codex.wordpress.org/Introduction_to_Blogging#Managing_Comments' ) );
+			'Allow <a href="%s">trackbacks and pingbacks</a> on this page.',
+			'https://codex.wordpress.org/Introduction_to_Blogging#Managing_Comments' );
 		?></label>
 	<?php
-	/**
-	 * Fires at the end of the Discussion meta box on the post editing screen.
-	 *
-	 * @since 3.1.0
-	 *
-	 * @param WP_Post $post WP_Post object of the current post.
-	 */
 	do_action( 'post_comment_status_meta_box-options', $post );
 	?>
 </p>
 <?php
 }
 
-/**
- * Display comments for post table header
- *
- * @since 3.0.0
- *
- * @param array $result table header rows
- * @return array
- */
 function post_comment_meta_box_thead($result) {
 	unset($result['cb'], $result['response']);
 	return $result;
 }
 
-/**
- * Display comments for post.
- *
- * @since 2.8.0
- *
- * @param object $post
- */
 function post_comment_meta_box( $post ) {
 	wp_nonce_field( 'get-comments', 'add_comment_nonce', false );
 	?>
@@ -726,13 +564,6 @@ function post_comment_meta_box( $post ) {
 	wp_comment_trashnotice();
 }
 
-/**
- * Display slug form fields.
- *
- * @since 2.6.0
- *
- * @param object $post
- */
 function post_slug_meta_box($post) {
 /** This filter is documented in wp-admin/edit-tag-form.php */
 $editable_slug = apply_filters( 'editable_slug', $post->post_name, $post );
@@ -741,15 +572,6 @@ $editable_slug = apply_filters( 'editable_slug', $post->post_name, $post );
 <?php
 }
 
-/**
- * Display form field with list of authors.
- *
- * @since 2.6.0
- *
- * @global int $user_ID
- *
- * @param object $post
- */
 function post_author_meta_box($post) {
 	global $user_ID;
 ?>
@@ -764,26 +586,10 @@ function post_author_meta_box($post) {
 	) );
 }
 
-/**
- * Display list of revisions.
- *
- * @since 2.6.0
- *
- * @param object $post
- */
 function post_revisions_meta_box( $post ) {
 	wp_list_post_revisions( $post );
 }
 
-// -- Page related Meta Boxes
-
-/**
- * Display page attributes form fields.
- *
- * @since 2.7.0
- *
- * @param object $post
- */
 function page_attributes_meta_box($post) {
 	$post_type_object = get_post_type_object($post->post_type);
 	if ( $post_type_object->hierarchical ) {
@@ -792,21 +598,11 @@ function page_attributes_meta_box($post) {
 			'exclude_tree'     => $post->ID,
 			'selected'         => $post->post_parent,
 			'name'             => 'parent_id',
-			'show_option_none' => __('(no parent)'),
+			'show_option_none' => '(no parent)',
 			'sort_column'      => 'menu_order, post_title',
 			'echo'             => 0,
 		);
 
-		/**
-		 * Filter the arguments used to generate a Pages drop-down element.
-		 *
-		 * @since 3.3.0
-		 *
-		 * @see wp_dropdown_pages()
-		 *
-		 * @param array   $dropdown_args Array of arguments used to generate the pages drop-down.
-		 * @param WP_Post $post          The current WP_Post object.
-		 */
 		$dropdown_args = apply_filters( 'page_attributes_dropdown_pages_args', $dropdown_args, $post );
 		$pages = wp_dropdown_pages( $dropdown_args );
 		if ( ! empty($pages) ) {
@@ -821,29 +617,11 @@ function page_attributes_meta_box($post) {
 		$template = !empty($post->page_template) ? $post->page_template : false;
 		?>
 <p><strong><?php _e('Template') ?></strong><?php
-	/**
-	 * Fires immediately after the heading inside the 'Template' section
-	 * of the 'Page Attributes' meta box.
-	 *
-	 * @since 4.4.0
-	 *
-	 * @param string  $template The template used for the current post.
-	 * @param WP_Post $post     The current post.
-	 */
 	do_action( 'page_attributes_meta_box_template', $template, $post );
 ?></p>
-<label class="screen-reader-text" for="page_template"><?php _e('Page Template') ?></label><select name="page_template" id="page_template">
+<label class="screen-reader-text" for="page_template">Page Template</label><select name="page_template" id="page_template">
 <?php
-/**
- * Filter the title of the default page template displayed in the drop-down.
- *
- * @since 4.1.0
- *
- * @param string $label   The display value for the default page template title.
- * @param string $context Where the option label is displayed. Possible values
- *                        include 'meta-box' or 'quick-edit'.
- */
-$default_title = apply_filters( 'default_page_template_title',  __( 'Default Template' ), 'meta-box' );
+$default_title = apply_filters( 'default_page_template_title',  'Default Template', 'meta-box' );
 ?>
 <option value="default"><?php echo esc_html( $default_title ); ?></option>
 <?php page_template_dropdown($template); ?>
@@ -858,24 +636,14 @@ $default_title = apply_filters( 'default_page_template_title',  __( 'Default Tem
 	}
 }
 
-// -- Link related Meta Boxes
-
-/**
- * Display link create form fields.
- *
- * @since 2.7.0
- *
- * @param object $link
- */
 function link_submit_meta_box($link) {
 ?>
 <div class="submitbox" id="submitlink">
 
 <div id="minor-publishing">
 
-<?php // Hidden submit button early on so that the browser chooses the right button when form is submitted with Return key ?>
 <div style="display:none;">
-<?php submit_button( __( 'Save' ), 'button', 'save', false ); ?>
+<?php submit_button( 'Save', 'button', 'save', false ); ?>
 </div>
 
 <div id="minor-publishing-actions">
@@ -897,7 +665,6 @@ function link_submit_meta_box($link) {
 
 <div id="major-publishing-actions">
 <?php
-/** This action is documented in wp-admin/includes/meta-boxes.php */
 do_action( 'post_submitbox_start' );
 ?>
 <div id="delete-action">
@@ -917,11 +684,6 @@ if ( !empty($_GET['action']) && 'edit' == $_GET['action'] && current_user_can('m
 <div class="clear"></div>
 </div>
 <?php
-/**
- * Fires at the end of the Publish box in the Link editing screen.
- *
- * @since 2.5.0
- */
 do_action( 'submitlink_box' );
 ?>
 <div class="clear"></div>
@@ -929,19 +691,12 @@ do_action( 'submitlink_box' );
 <?php
 }
 
-/**
- * Display link categories form fields.
- *
- * @since 2.6.0
- *
- * @param object $link
- */
 function link_categories_meta_box($link) {
 ?>
 <div id="taxonomy-linkcategory" class="categorydiv">
 	<ul id="category-tabs" class="category-tabs">
-		<li class="tabs"><a href="#categories-all"><?php _e( 'All Categories' ); ?></a></li>
-		<li class="hide-if-no-js"><a href="#categories-pop"><?php _e( 'Most Used' ); ?></a></li>
+		<li class="tabs"><a href="#categories-all">All Categories</a></li>
+		<li class="hide-if-no-js"><a href="#categories-pop">Most Used</a></li>
 	</ul>
 
 	<div id="categories-all" class="tabs-panel">
@@ -975,13 +730,6 @@ function link_categories_meta_box($link) {
 <?php
 }
 
-/**
- * Display form fields for changing link target.
- *
- * @since 2.6.0
- *
- * @param object $link
- */
 function link_target_meta_box($link) { ?>
 <fieldset><legend class="screen-reader-text"><span><?php _e('Target') ?></span></legend>
 <p><label for="link_target_blank" class="selectit">
@@ -998,17 +746,6 @@ function link_target_meta_box($link) { ?>
 <?php
 }
 
-/**
- * Display checked checkboxes attribute for xfn microformat options.
- *
- * @since 1.0.1
- *
- * @global object $link
- *
- * @param string $class
- * @param string $value
- * @param mixed $deprecated Never used.
- */
 function xfn_check( $class, $value = '', $deprecated = '' ) {
 	global $link;
 
@@ -1030,23 +767,16 @@ function xfn_check( $class, $value = '', $deprecated = '' ) {
 	}
 }
 
-/**
- * Display xfn form fields.
- *
- * @since 2.6.0
- *
- * @param object $link
- */
 function link_xfn_meta_box($link) {
 ?>
 <table class="links-table">
 	<tr>
-		<th scope="row"><label for="link_rel"><?php /* translators: xfn: http://gmpg.org/xfn/ */ _e('rel:') ?></label></th>
+		<th scope="row"><label for="link_rel"><?php _e('rel:') ?></label></th>
 		<td><input type="text" name="link_rel" id="link_rel" value="<?php echo ( isset( $link->link_rel ) ? esc_attr($link->link_rel) : ''); ?>" /></td>
 	</tr>
 	<tr>
-		<th scope="row"><?php /* translators: xfn: http://gmpg.org/xfn/ */ _e('identity') ?></th>
-		<td><fieldset><legend class="screen-reader-text"><span><?php /* translators: xfn: http://gmpg.org/xfn/ */ _e('identity') ?></span></legend>
+		<th scope="row"><?php _e('identity') ?></th>
+		<td><fieldset><legend class="screen-reader-text"><span><?php _e('identity') ?></span></legend>
 			<label for="me">
 			<input type="checkbox" name="identity" value="me" id="me" <?php xfn_check('identity', 'me'); ?> />
 			<?php _e('another web address of mine') ?></label>
@@ -1148,13 +878,6 @@ function link_xfn_meta_box($link) {
 <?php
 }
 
-/**
- * Display advanced link options form fields.
- *
- * @since 2.6.0
- *
- * @param object $link
- */
 function link_advanced_meta_box($link) {
 ?>
 <table class="links-table" cellpadding="0">
@@ -1187,25 +910,11 @@ function link_advanced_meta_box($link) {
 <?php
 }
 
-/**
- * Display post thumbnail meta box.
- *
- * @since 2.9.0
- *
- * @param WP_Post $post A post object.
- */
 function post_thumbnail_meta_box( $post ) {
 	$thumbnail_id = get_post_meta( $post->ID, '_thumbnail_id', true );
 	echo _wp_post_thumbnail_html( $thumbnail_id, $post->ID );
 }
 
-/**
- * Display fields for ID3 data
- *
- * @since 3.9.0
- *
- * @param WP_Post $post A post object.
- */
 function attachment_id3_data_meta_box( $post ) {
 	$meta = array();
 	if ( ! empty( $post->ID ) ) {

@@ -2044,7 +2044,7 @@ function _doing_it_wrong( $function, $message, $version ) {
 
 	do_action( 'doing_it_wrong_run', $function, $message, $version );
 
-	if ( WP_DEBUG && apply_filters( 'doing_it_wrong_trigger_error', true ) ) {
+	if ( apply_filters( 'doing_it_wrong_trigger_error', true ) ) {
 			$version = is_null( $version ) ? '' : sprintf( '(This message was added in version %s.)', $version );
 			$message .= sprintf( ' Please see <a href="%s">Debugging in WordPress</a> for more information.',
 				'https://codex.wordpress.org/Debugging_in_WordPress'

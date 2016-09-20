@@ -6,14 +6,11 @@
  * @package WordPress
  */
 
-if ( !isset($wp_did_header) ) {
+require_once( __DIR__ . '/wp-load.php' );
 
-	$wp_did_header = true;
+$wp->main();
 
-	require_once( __DIR__ . '/wp-load.php' );
+if ( !isset($wp_the_query) )
+	$wp_the_query = $wp_query;
 
-	wp();
-
-	require_once( ABSPATH . WPINC . '/template-loader.php' );
-
-}
+require_once( ABSPATH . WPINC . '/template-loader.php' );

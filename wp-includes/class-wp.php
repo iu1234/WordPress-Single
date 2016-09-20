@@ -348,21 +348,17 @@ class WP {
 
 	public function register_globals() {
 		global $wp_query;
-
 		foreach ( (array) $wp_query->query_vars as $key => $value ) {
 			$GLOBALS[ $key ] = $value;
 		}
-
 		$GLOBALS['query_string'] = $this->query_string;
 		$GLOBALS['posts'] = & $wp_query->posts;
 		$GLOBALS['post'] = isset( $wp_query->post ) ? $wp_query->post : null;
 		$GLOBALS['request'] = $wp_query->request;
-
 		if ( $wp_query->is_single() || $wp_query->is_page() ) {
 			$GLOBALS['more']   = 1;
 			$GLOBALS['single'] = 1;
 		}
-
 		if ( $wp_query->is_author() && isset( $wp_query->post ) )
 			$GLOBALS['authordata'] = get_user_by( 'id', $wp_query->post->post_author );
 	}
@@ -379,32 +375,21 @@ class WP {
 
 	public function handle_404() {
 		global $wp_query;
-
 		if ( false !== apply_filters( 'pre_handle_404', false, $wp_query ) ) {
 			return;
 		}
-
-		// If we've already issued a 404, bail.
-		if ( is_404() )
+		if ( $wp_query->is_404() )
 			return;
-
-		// Never 404 for the admin, robots, or if we found posts.
 		if ( is_admin() || is_robots() || $wp_query->posts ) {
-
 			$success = true;
 			if ( is_singular() ) {
 				$p = false;
-
 				if ( $wp_query->post instanceof WP_Post ) {
 					$p = clone $wp_query->post;
 				}
-
-				// Only set X-Pingback for single posts that allow pings.
 				if ( $p && pings_open( $p ) ) {
 					@header( 'X-Pingback: ' . get_bloginfo( 'pingback_url' ) );
 				}
-
-				// check for paged content that exceeds the max number of pages
 				$next = '<!--nextpage-->';
 				if ( $p && false !== strpos( $p->post_content, $next ) && ! empty( $this->query_vars['page'] ) ) {
 					$page = trim( $this->query_vars['page'], '/' );
@@ -417,24 +402,16 @@ class WP {
 				return;
 			}
 		}
-
-		// We will 404 for paged queries, as no posts were found.
 		if ( ! is_paged() ) {
-
-			// Don't 404 for authors without posts as long as they matched an author on this site.
 			$author = get_query_var( 'author' );
 			if ( is_author() && is_numeric( $author ) && $author > 0 && is_user_member_of_blog( $author ) ) {
 				status_header( 200 );
 				return;
 			}
-
-			// Don't 404 for these queries if they matched an object.
 			if ( ( is_tag() || is_category() || is_tax() || is_post_type_archive() ) && get_queried_object() ) {
 				status_header( 200 );
 				return;
 			}
-
-			// Don't 404 for these queries either.
 			if ( is_home() || is_search() || is_feed() ) {
 				status_header( 200 );
 				return;
@@ -454,7 +431,6 @@ class WP {
 		$this->query_posts();
 		$this->handle_404();
 		$this->register_globals();
-
 		do_action_ref_array( 'wp', array( &$this ) );
 	}
 }

@@ -9,35 +9,6 @@
  * @since 2.3.0
  */
 
-/**
- * Redirects incoming links to the proper URL based on the site url.
- *
- * Search engines consider www.somedomain.com and somedomain.com to be two
- * different URLs when they both go to the same location. This SEO enhancement
- * prevents penalty for duplicate content by redirecting all incoming links to
- * one or the other.
- *
- * Prevents redirection for feeds, trackbacks, searches, and
- * admin URLs. Does not redirect on non-pretty-permalink-supporting IIS 7+,
- * page/post previews, WP admin, Trackbacks, robots.txt, searches, or on POST
- * requests.
- *
- * Will also attempt to find the correct link when a user enters a URL that does
- * not exist based on exact WordPress query. Will instead try to parse the URL
- * or query in an attempt to figure the correct page to go to.
- *
- * @since 2.3.0
- *
- * @global WP_Rewrite $wp_rewrite
- * @global bool $is_IIS
- * @global WP_Query $wp_query
- * @global wpdb $wpdb WordPress database abstraction object.
- *
- * @param string $requested_url Optional. The URL that was requested, used to
- *		figure if redirect is needed.
- * @param bool $do_redirect Optional. Redirect to the new URL.
- * @return string|void The string of the URL, if redirect needed.
- */
 function redirect_canonical( $requested_url = null, $do_redirect = true ) {
 	global $wp_rewrite, $is_IIS, $wp_query, $wpdb, $wp;
 
@@ -45,8 +16,6 @@ function redirect_canonical( $requested_url = null, $do_redirect = true ) {
 		return;
 	}
 
-	// If we're not in wp-admin and the post has been published and preview nonce
-	// is non-existent or invalid then no need for preview in query
 	if ( is_preview() && get_query_var( 'p' ) && 'publish' == get_post_status( get_query_var( 'p' ) ) ) {
 		if ( ! isset( $_GET['preview_id'] )
 			|| ! isset( $_GET['preview_nonce'] )
@@ -60,7 +29,6 @@ function redirect_canonical( $requested_url = null, $do_redirect = true ) {
 	}
 
 	if ( ! $requested_url && isset( $_SERVER['HTTP_HOST'] ) ) {
-		// build the URL in the address bar
 		$requested_url  = is_ssl() ? 'https://' : 'http://';
 		$requested_url .= $_SERVER['HTTP_HOST'];
 		$requested_url .= $_SERVER['REQUEST_URI'];
@@ -74,18 +42,13 @@ function redirect_canonical( $requested_url = null, $do_redirect = true ) {
 	$redirect = $original;
 	$redirect_url = false;
 
-	// Notice fixing
 	if ( !isset($redirect['path']) )
 		$redirect['path'] = '';
 	if ( !isset($redirect['query']) )
 		$redirect['query'] = '';
 
-	// If the original URL ended with non-breaking spaces, they were almost
-	// certainly inserted by accident. Let's remove them, so the reader doesn't
-	// see a 404 error with no obvious cause.
 	$redirect['path'] = preg_replace( '|(%C2%A0)+$|i', '', $redirect['path'] );
 
-	// It's not a preview, so remove it from URL
 	if ( get_query_var( 'preview' ) ) {
 		$redirect['query'] = remove_query_arg( 'preview', $redirect['query'] );
 	}
@@ -110,8 +73,7 @@ function redirect_canonical( $requested_url = null, $do_redirect = true ) {
 		}
 	}
 
-	// These tests give us a WP-generated permalink
-	if ( is_404() ) {
+	if ( $wp_query->is_404() ) {
 
 		// Redirect ?page_id, ?p=, ?attachment_id= to their respective url's
 		$id = max( get_query_var('p'), get_query_var('page_id'), get_query_var('attachment_id') );
@@ -413,7 +375,7 @@ function redirect_canonical( $requested_url = null, $do_redirect = true ) {
 		$redirect['path'] = str_replace( '/' . $wp_rewrite->index . '/', '/', $redirect['path'] );
 
 	// trailing slashes
-	if ( is_object($wp_rewrite) && $wp_rewrite->using_permalinks() && !is_404() && (!is_front_page() || ( is_front_page() && (get_query_var('paged') > 1) ) ) ) {
+	if ( is_object($wp_rewrite) && $wp_rewrite->using_permalinks() && !$wp_query->is_404() && (!is_front_page() || ( is_front_page() && (get_query_var('paged') > 1) ) ) ) {
 		$user_ts_type = '';
 		if ( get_query_var('paged') > 0 ) {
 			$user_ts_type = 'paged';
@@ -620,8 +582,8 @@ function redirect_guess_404_permalink() {
  * @global WP_Rewrite $wp_rewrite
  */
 function wp_redirect_admin_locations() {
-	global $wp_rewrite;
-	if ( ! ( is_404() && $wp_rewrite->using_permalinks() ) )
+	global $wp_rewrite, $wp_query;
+	if ( ! ( $wp_query->is_404() && $wp_rewrite->using_permalinks() ) )
 		return;
 
 	$admins = array(

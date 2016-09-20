@@ -7,8 +7,6 @@
  * @since 4.4.0
  */
 
-define( 'REST_API_VERSION', '2.0' );
-
 function register_rest_route( $namespace, $route, $args = array(), $override = false ) {
 	global $wp_rest_server;
 
@@ -44,14 +42,10 @@ function register_rest_route( $namespace, $route, $args = array(), $override = f
 }
 
 function rest_api_init() {
-	rest_api_register_rewrites();
-	global $wp;
+	global $wp_rewrite, $wp;
+	$wp_rewrite->add_rule( '^' . rest_get_url_prefix() . '/?$', 'index.php?rest_route=/', 'top' );
+	$wp_rewrite->add_rule( '^' . rest_get_url_prefix() . '/(.*)?', 'index.php?rest_route=/$matches[1]', 'top' );
 	$wp->add_query_var( 'rest_route' );
-}
-
-function rest_api_register_rewrites() {
-	add_rewrite_rule( '^' . rest_get_url_prefix() . '/?$','index.php?rest_route=/','top' );
-	add_rewrite_rule( '^' . rest_get_url_prefix() . '/(.*)?','index.php?rest_route=/$matches[1]','top' );
 }
 
 function rest_api_default_filters() {
@@ -120,17 +114,12 @@ function rest_do_request( $request ) {
 }
 
 function rest_get_server() {
-	/* @var WP_REST_Server $wp_rest_server */
 	global $wp_rest_server;
-
 	if ( empty( $wp_rest_server ) ) {
-
 		$wp_rest_server_class = apply_filters( 'wp_rest_server_class', 'WP_REST_Server' );
 		$wp_rest_server = new $wp_rest_server_class;
-
 		do_action( 'rest_api_init', $wp_rest_server );
 	}
-
 	return $wp_rest_server;
 }
 

@@ -125,14 +125,11 @@ foreach ( wp_get_active_and_valid_plugins() as $plugin ) {
 	include_once( $plugin );
 }
 unset( $plugin );
-
 require( ABSPATH . WPINC . '/pluggable.php' );
-
 wp_set_internal_encoding();
 do_action( 'plugins_loaded' );
 wp_functionality_constants();
 wp_magic_quotes();
-
 do_action( 'sanitize_comment_cookies' );
 $GLOBALS['wp_the_query'] = new WP_Query();
 $GLOBALS['wp_query'] = $GLOBALS['wp_the_query'];
@@ -142,18 +139,14 @@ $GLOBALS['wp_widget_factory'] = new WP_Widget_Factory();
 $GLOBALS['wp_roles'] = new WP_Roles();
 
 do_action( 'setup_theme' );
-
-wp_templating_constants(  );
+wp_templating_constants();
 
 require_once( ABSPATH . WPINC . '/locale.php' );
-
 $GLOBALS['wp_locale'] = new WP_Locale();
 
 if ( file_exists( get_template_directory() . '/functions.php' ) )
 	include( get_template_directory() . '/functions.php' );
-
 do_action( 'after_setup_theme' );
-
 $GLOBALS['wp']->init();
 do_action( 'init' );
 do_action( 'wp_loaded' );

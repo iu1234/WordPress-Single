@@ -23,15 +23,9 @@ define('EP_PAGES', 4096);
 define( 'EP_ALL_ARCHIVES', EP_DATE | EP_YEAR | EP_MONTH | EP_DAY | EP_CATEGORIES | EP_TAGS | EP_AUTHORS );
 define( 'EP_ALL', EP_PERMALINK | EP_ATTACHMENT | EP_ROOT | EP_COMMENTS | EP_SEARCH | EP_PAGES | EP_ALL_ARCHIVES );
 
-function add_rewrite_rule( $regex, $query, $after = 'bottom' ) {
-	global $wp_rewrite;
-	$wp_rewrite->add_rule( $regex, $query, $after );
-}
-
 function add_rewrite_tag( $tag, $regex, $query = '' ) {
 	if ( strlen( $tag ) < 3 || $tag[0] != '%' || $tag[ strlen($tag) - 1 ] != '%' )
 		return;
-
 	global $wp_rewrite, $wp;
 
 	if ( empty( $query ) ) {
