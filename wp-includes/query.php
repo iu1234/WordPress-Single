@@ -8,21 +8,6 @@
  * @subpackage Query
  */
 
-function get_query_var( $var, $default = '' ) {
-	global $wp_query;
-	return $wp_query->get( $var, $default );
-}
-
-function get_queried_object_id() {
-	global $wp_query;
-	return $wp_query->get_queried_object_id();
-}
-
-function set_query_var( $var, $value ) {
-	global $wp_query;
-	$wp_query->set( $var, $value );
-}
-
 function query_posts($query) {
 	$GLOBALS['wp_query'] = new WP_Query();
 	return $GLOBALS['wp_query']->query($query);

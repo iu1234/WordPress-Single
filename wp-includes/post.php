@@ -9,11 +9,11 @@
 function create_initial_post_types() {
 	register_post_type( 'post', array(
 		'labels' => array(
-			'name_admin_bar' => _x( 'Post', 'add new on admin bar' ),
+			'name_admin_bar' => 'Post',
 		),
 		'public'  => true,
-		'_builtin' => true, /* internal use only. don't use this when registering your own post type. */
-		'_edit_link' => 'post.php?post=%d', /* internal use only. don't use this when registering your own post type. */
+		'_builtin' => true,
+		'_edit_link' => 'post.php?post=%d',
 		'capability_type' => 'post',
 		'map_meta_cap' => true,
 		'menu_position' => 5,
@@ -26,12 +26,12 @@ function create_initial_post_types() {
 
 	register_post_type( 'page', array(
 		'labels' => array(
-			'name_admin_bar' => _x( 'Page', 'add new on admin bar' ),
+			'name_admin_bar' => 'Page',
 		),
 		'public' => true,
 		'publicly_queryable' => false,
-		'_builtin' => true, /* internal use only. don't use this when registering your own post type. */
-		'_edit_link' => 'post.php?post=%d', /* internal use only. don't use this when registering your own post type. */
+		'_builtin' => true,
+		'_edit_link' => 'post.php?post=%d',
 		'capability_type' => 'page',
 		'map_meta_cap' => true,
 		'menu_position' => 20,
@@ -52,8 +52,8 @@ function create_initial_post_types() {
 		),
 		'public' => true,
 		'show_ui' => true,
-		'_builtin' => true, /* internal use only. don't use this when registering your own post type. */
-		'_edit_link' => 'post.php?post=%d', /* internal use only. don't use this when registering your own post type. */
+		'_builtin' => true,
+		'_edit_link' => 'post.php?post=%d',
 		'capability_type' => 'post',
 		'capabilities' => array(
 			'create_posts' => 'upload_files',
@@ -75,7 +75,7 @@ function create_initial_post_types() {
 			'singular_name' => 'Navigation Menu Item',
 		),
 		'public' => false,
-		'_builtin' => true, /* internal use only. don't use this when registering your own post type. */
+		'_builtin' => true,
 		'hierarchical' => false,
 		'rewrite' => false,
 		'delete_with_user' => false,
@@ -85,7 +85,7 @@ function create_initial_post_types() {
 	register_post_status( 'publish', array(
 		'label'       => _x( 'Published', 'post status' ),
 		'public'      => true,
-		'_builtin'    => true, /* internal use only. */
+		'_builtin'    => true,
 		'label_count' => _n_noop( 'Published <span class="count">(%s)</span>', 'Published <span class="count">(%s)</span>' ),
 	) );
 

@@ -97,15 +97,12 @@ class WP {
 				}
 			} else {
 				foreach ( (array) $rewrite as $match => $query ) {
-					// If the requesting file is the anchor of the match, prepend it to the path info.
 					if ( ! empty($req_uri) && strpos($match, $req_uri) === 0 && $req_uri != $request )
 						$request_match = $req_uri . '/' . $request;
-
 					if ( preg_match("#^$match#", $request_match, $matches) ||
 						preg_match("#^$match#", urldecode($request_match), $matches) ) {
 
 						if ( $wp_rewrite->use_verbose_page_rules && preg_match( '/pagename=\$matches\[([0-9]+)\]/', $query, $varmatch ) ) {
-							// This is a verbose page match, let's check to be sure about it.
 							$page = get_page_by_path( $matches[ $varmatch[1] ] );
 							if ( ! $page ) {
 						 		continue;
@@ -185,25 +182,18 @@ class WP {
 			}
 		}
 
-		// Convert urldecoded spaces back into +
 		foreach ( get_taxonomies( array() , 'objects' ) as $taxonomy => $t )
 			if ( $t->query_var && isset( $this->query_vars[$t->query_var] ) )
 				$this->query_vars[$t->query_var] = str_replace( ' ', '+', $this->query_vars[$t->query_var] );
 
-		// Don't allow non-publicly queryable taxonomies to be queried from the front end.
 		if ( ! is_admin() ) {
 			foreach ( get_taxonomies( array( 'publicly_queryable' => false ), 'objects' ) as $taxonomy => $t ) {
-				/*
-				 * Disallow when set to the 'taxonomy' query var.
-				 * Non-publicly queryable taxonomies cannot register custom query vars. See register_taxonomy().
-				 */
 				if ( isset( $this->query_vars['taxonomy'] ) && $taxonomy === $this->query_vars['taxonomy'] ) {
 					unset( $this->query_vars['taxonomy'], $this->query_vars['term'] );
 				}
 			}
 		}
 
-		// Limit publicly queried post_types to those that are publicly_queryable
 		if ( isset( $this->query_vars['post_type']) ) {
 			$queryable_post_types = get_post_types( array('publicly_queryable' => true) );
 			if ( ! is_array( $this->query_vars['post_type'] ) ) {
@@ -214,7 +204,6 @@ class WP {
 			}
 		}
 
-		// Resolve conflicts between posts with numeric slugs and date archive queries.
 		$this->query_vars = wp_resolve_numeric_slug_conflicts( $this->query_vars );
 
 		foreach ( (array) $this->private_query_vars as $var) {
@@ -234,7 +223,6 @@ class WP {
 		$headers = array();
 		$status = null;
 		$exit_required = false;
-
 		if ( is_user_logged_in() )
 			$headers = array_merge($headers, wp_get_nocache_headers());
 		if ( ! empty( $this->query_vars['error'] ) ) {
@@ -249,14 +237,8 @@ class WP {
 		} elseif ( empty( $this->query_vars['feed'] ) ) {
 			$headers['Content-Type'] = get_option('html_type') . '; charset=' . get_option('blog_charset');
 		} else {
-			// Set the correct content type for feeds
 			$type = $this->query_vars['feed'];
-			if ( 'feed' == $this->query_vars['feed'] ) {
-				$type = get_default_feed();
-			}
 			$headers['Content-Type'] = feed_content_type( $type ) . '; charset=' . get_option( 'blog_charset' );
-
-			// We're showing a feed, so WP is indeed the only thing that last changed
 			if ( !empty($this->query_vars['withcomments'])
 				|| false !== strpos( $this->query_vars['feed'], 'comments-' )
 				|| ( empty($this->query_vars['withoutcomments'])
@@ -275,19 +257,13 @@ class WP {
 			$wp_etag = '"' . md5($wp_last_modified) . '"';
 			$headers['Last-Modified'] = $wp_last_modified;
 			$headers['ETag'] = $wp_etag;
-
-			// Support for Conditional GET
 			if (isset($_SERVER['HTTP_IF_NONE_MATCH']))
 				$client_etag = wp_unslash( $_SERVER['HTTP_IF_NONE_MATCH'] );
 			else $client_etag = false;
 
 			$client_last_modified = empty($_SERVER['HTTP_IF_MODIFIED_SINCE']) ? '' : trim($_SERVER['HTTP_IF_MODIFIED_SINCE']);
-			// If string is empty, return 0. If not, attempt to parse into a timestamp
 			$client_modified_timestamp = $client_last_modified ? strtotime($client_last_modified) : 0;
-
-			// Make a timestamp for our most recent modification...
 			$wp_modified_timestamp = strtotime($wp_last_modified);
-
 			if ( ($client_last_modified && $client_etag) ?
 					 (($client_modified_timestamp >= $wp_modified_timestamp) && ($client_etag == $wp_etag)) :
 					 (($client_modified_timestamp >= $wp_modified_timestamp) || ($client_etag == $wp_etag)) ) {
@@ -295,37 +271,21 @@ class WP {
 				$exit_required = true;
 			}
 		}
-
 		$headers = apply_filters( 'wp_headers', $headers, $this );
 
 		if ( ! empty( $status ) )
 			status_header( $status );
 
-		// If Last-Modified is set to false, it should not be sent (no-cache situation).
 		if ( isset( $headers['Last-Modified'] ) && false === $headers['Last-Modified'] ) {
 			unset( $headers['Last-Modified'] );
 
-			// In PHP 5.3+, make sure we are not sending a Last-Modified header.
-			if ( function_exists( 'header_remove' ) ) {
-				@header_remove( 'Last-Modified' );
-			} else {
-				// In PHP 5.2, send an empty Last-Modified header, but only as a
-				// last resort to override a header already sent. #WP23021
-				foreach ( headers_list() as $header ) {
-					if ( 0 === stripos( $header, 'Last-Modified' ) ) {
-						$headers['Last-Modified'] = '';
-						break;
-					}
-				}
-			}
+		@header_remove( 'Last-Modified' );
 		}
 
 		foreach ( (array) $headers as $name => $field_value )
 			@header("{$name}: {$field_value}");
-
 		if ( $exit_required )
 			exit();
-
 		do_action_ref_array( 'send_headers', array( &$this ) );
 	}
 
@@ -334,12 +294,11 @@ class WP {
 		foreach ( (array) array_keys($this->query_vars) as $wpvar) {
 			if ( '' != $this->query_vars[$wpvar] ) {
 				$this->query_string .= (strlen($this->query_string) < 1) ? '' : '&';
-				if ( !is_scalar($this->query_vars[$wpvar]) ) // Discard non-scalars.
+				if ( !is_scalar($this->query_vars[$wpvar]) )
 					continue;
 				$this->query_string .= $wpvar . '=' . rawurlencode($this->query_vars[$wpvar]);
 			}
 		}
-
 		if ( has_filter( 'query_string' ) ) {
 			$this->query_string = apply_filters( 'query_string', $this->query_string );
 			parse_str($this->query_string, $this->query_vars);
@@ -387,9 +346,6 @@ class WP {
 				if ( $wp_query->post instanceof WP_Post ) {
 					$p = clone $wp_query->post;
 				}
-				if ( $p && pings_open( $p ) ) {
-					@header( 'X-Pingback: ' . get_bloginfo( 'pingback_url' ) );
-				}
 				$next = '<!--nextpage-->';
 				if ( $p && false !== strpos( $p->post_content, $next ) && ! empty( $this->query_vars['page'] ) ) {
 					$page = trim( $this->query_vars['page'], '/' );
@@ -418,7 +374,6 @@ class WP {
 			}
 		}
 
-		// Guess it's time to 404.
 		$wp_query->set_404();
 		status_header( 404 );
 		nocache_headers();
