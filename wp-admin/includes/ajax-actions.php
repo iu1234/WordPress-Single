@@ -7,18 +7,6 @@
  * @since 2.1.0
  */
 
-//
-// No-privilege Ajax handlers.
-//
-
-/**
- * Ajax handler for the Heartbeat API in
- * the no-privilege context.
- *
- * Runs when the user is not logged in.
- *
- * @since 3.6.0
- */
 function wp_ajax_nopriv_heartbeat() {
 	$response = array();
 
@@ -31,38 +19,11 @@ function wp_ajax_nopriv_heartbeat() {
 	if ( ! empty($_POST['data']) ) {
 		$data = wp_unslash( (array) $_POST['data'] );
 
-		/**
-		 * Filter Heartbeat AJAX response in no-privilege environments.
-		 *
-		 * @since 3.6.0
-		 *
-		 * @param array|object $response  The no-priv Heartbeat response object or array.
-		 * @param array        $data      An array of data passed via $_POST.
-		 * @param string       $screen_id The screen id.
-		 */
 		$response = apply_filters( 'heartbeat_nopriv_received', $response, $data, $screen_id );
 	}
 
-	/**
-	 * Filter Heartbeat AJAX response when no data is passed.
-	 *
-	 * @since 3.6.0
-	 *
-	 * @param array|object $response  The Heartbeat response object or array.
-	 * @param string       $screen_id The screen id.
-	 */
 	$response = apply_filters( 'heartbeat_nopriv_send', $response, $screen_id );
 
-	/**
-	 * Fires when Heartbeat ticks in no-privilege environments.
-	 *
-	 * Allows the transport to be easily replaced with long-polling.
-	 *
-	 * @since 3.6.0
-	 *
-	 * @param array|object $response  The no-priv Heartbeat response.
-	 * @param string       $screen_id The screen id.
-	 */
 	do_action( 'heartbeat_nopriv_tick', $response, $screen_id );
 
 	// Send the current time according to the server.
@@ -71,17 +32,6 @@ function wp_ajax_nopriv_heartbeat() {
 	wp_send_json($response);
 }
 
-//
-// GET-based Ajax handlers.
-//
-
-/**
- * Ajax handler for fetching a list table.
- *
- * @since 3.1.0
- *
- * @global WP_List_Table $wp_list_table
- */
 function wp_ajax_fetch_list() {
 	global $wp_list_table;
 
@@ -100,11 +50,6 @@ function wp_ajax_fetch_list() {
 	wp_die( 0 );
 }
 
-/**
- * Ajax handler for tag search.
- *
- * @since 3.1.0
- */
 function wp_ajax_ajax_tag_search() {
 	if ( ! isset( $_GET['tax'] ) ) {
 		wp_die( 0 );
@@ -131,21 +76,8 @@ function wp_ajax_ajax_tag_search() {
 	}
 	$s = trim( $s );
 
-	/**
-	 * Filter the minimum number of characters required to fire a tag search via AJAX.
-	 *
-	 * @since 4.0.0
-	 *
-	 * @param int    $characters The minimum number of characters required. Default 2.
-	 * @param object $tax        The taxonomy object.
-	 * @param string $s          The search term.
-	 */
 	$term_search_min_chars = (int) apply_filters( 'term_search_min_chars', 2, $tax, $s );
 
-	/*
-	 * Require $term_search_min_chars chars for matching (default: 2)
-	 * ensure it's a non-negative, non-zero integer.
-	 */
 	if ( ( $term_search_min_chars == 0 ) || ( strlen( $s ) < $term_search_min_chars ) ){
 		wp_die();
 	}
@@ -156,11 +88,6 @@ function wp_ajax_ajax_tag_search() {
 	wp_die();
 }
 
-/**
- * Ajax handler for compression testing.
- *
- * @since 3.1.0
- */
 function wp_ajax_wp_compression_test() {
 	if ( !current_user_can( 'manage_options' ) )
 		wp_die( -1 );
@@ -208,11 +135,6 @@ function wp_ajax_wp_compression_test() {
 	wp_die( 0 );
 }
 
-/**
- * Ajax handler for image editor previews.
- *
- * @since 3.1.0
- */
 function wp_ajax_imgedit_preview() {
 	$post_id = intval($_GET['postid']);
 	if ( empty($post_id) || !current_user_can('edit_post', $post_id) )
@@ -227,23 +149,11 @@ function wp_ajax_imgedit_preview() {
 	wp_die();
 }
 
-/**
- * Ajax handler for oEmbed caching.
- *
- * @since 3.1.0
- *
- * @global WP_Embed $wp_embed
- */
 function wp_ajax_oembed_cache() {
 	$GLOBALS['wp_embed']->cache_oembed( $_GET['post'] );
 	wp_die( 0 );
 }
 
-/**
- * Ajax handler for user autocomplete.
- *
- * @since 3.4.0
- */
 function wp_ajax_autocomplete_user() {
 	if ( ! is_multisite() || ! current_user_can( 'promote_users' ) || wp_is_large_network( 'users' ) )
 		wp_die( -1 );
@@ -299,11 +209,6 @@ function wp_ajax_autocomplete_user() {
 	wp_die( wp_json_encode( $return ) );
 }
 
-/**
- * Ajax handler for dashboard widgets.
- *
- * @since 3.4.0
- */
 function wp_ajax_dashboard_widgets() {
 	require_once ABSPATH . 'wp-admin/includes/dashboard.php';
 
@@ -320,30 +225,10 @@ function wp_ajax_dashboard_widgets() {
 	wp_die();
 }
 
-/**
- * Ajax handler for Customizer preview logged-in status.
- *
- * @since 3.4.0
- */
 function wp_ajax_logged_in() {
 	wp_die( 1 );
 }
 
-//
-// Ajax helpers.
-//
-
-/**
- * Sends back current comment total and new page links if they need to be updated.
- *
- * Contrary to normal success AJAX response ("1"), die with time() on success.
- *
- * @access private
- * @since 2.7.0
- *
- * @param int $comment_id
- * @param int $delta
- */
 function _wp_ajax_delete_comment_response( $comment_id, $delta = -1 ) {
 	$total    = isset( $_POST['_total'] )    ? (int) $_POST['_total']    : 0;
 	$per_page = isset( $_POST['_per_page'] ) ? (int) $_POST['_per_page'] : 0;
@@ -426,16 +311,6 @@ function _wp_ajax_delete_comment_response( $comment_id, $delta = -1 ) {
 	$x->send();
 }
 
-//
-// POST-based Ajax handlers.
-//
-
-/**
- * Ajax handler for adding a hierarchical term.
- *
- * @access private
- * @since 3.1.0
- */
 function _wp_ajax_add_hierarchical_term() {
 	$action = $_POST['action'];
 	$taxonomy = get_taxonomy(substr($action, 4));
@@ -523,11 +398,6 @@ function _wp_ajax_add_hierarchical_term() {
 	$x->send();
 }
 
-/**
- * Ajax handler for deleting a comment.
- *
- * @since 3.1.0
- */
 function wp_ajax_delete_comment() {
 	$id = isset( $_POST['id'] ) ? (int) $_POST['id'] : 0;
 
@@ -596,11 +466,6 @@ function wp_ajax_delete_tag() {
 		wp_die( 0 );
 }
 
-/**
- * Ajax handler for deleting a link.
- *
- * @since 3.1.0
- */
 function wp_ajax_delete_link() {
 	$id = isset( $_POST['id'] ) ? (int) $_POST['id'] : 0;
 
@@ -618,11 +483,6 @@ function wp_ajax_delete_link() {
 		wp_die( 0 );
 }
 
-/**
- * Ajax handler for deleting meta.
- *
- * @since 3.1.0
- */
 function wp_ajax_delete_meta() {
 	$id = isset( $_POST['id'] ) ? (int) $_POST['id'] : 0;
 
@@ -637,13 +497,6 @@ function wp_ajax_delete_meta() {
 	wp_die( 0 );
 }
 
-/**
- * Ajax handler for deleting a post.
- *
- * @since 3.1.0
- *
- * @param string $action Action to perform.
- */
 function wp_ajax_delete_post( $action ) {
 	if ( empty( $action ) )
 		$action = 'delete-post';
@@ -662,13 +515,6 @@ function wp_ajax_delete_post( $action ) {
 		wp_die( 0 );
 }
 
-/**
- * Ajax handler for sending a post to the trash.
- *
- * @since 3.1.0
- *
- * @param string $action Action to perform.
- */
 function wp_ajax_trash_post( $action ) {
 	if ( empty( $action ) )
 		$action = 'trash-post';
@@ -692,24 +538,12 @@ function wp_ajax_trash_post( $action ) {
 	wp_die( 0 );
 }
 
-/**
- * Ajax handler to restore a post from the trash.
- *
- * @since 3.1.0
- *
- * @param string $action Action to perform.
- */
 function wp_ajax_untrash_post( $action ) {
 	if ( empty( $action ) )
 		$action = 'untrash-post';
 	wp_ajax_trash_post( $action );
 }
 
-/**
- * @since 3.1.0
- *
- * @param string $action
- */
 function wp_ajax_delete_page( $action ) {
 	if ( empty( $action ) )
 		$action = 'delete-page';
@@ -728,18 +562,13 @@ function wp_ajax_delete_page( $action ) {
 		wp_die( 0 );
 }
 
-/**
- * Ajax handler to dim a comment.
- *
- * @since 3.1.0
- */
 function wp_ajax_dim_comment() {
 	$id = isset( $_POST['id'] ) ? (int) $_POST['id'] : 0;
 
 	if ( !$comment = get_comment( $id ) ) {
 		$x = new WP_Ajax_Response( array(
 			'what' => 'comment',
-			'id' => new WP_Error('invalid_comment', sprintf(__('Comment %d does not exist'), $id))
+			'id' => new WP_Error('invalid_comment', sprintf('Comment %d does not exist', $id))
 		) );
 		$x->send();
 	}
@@ -766,18 +595,10 @@ function wp_ajax_dim_comment() {
 		$x->send();
 	}
 
-	// Decide if we need to send back '1' or a more complicated response including page links and comment counts
 	_wp_ajax_delete_comment_response( $comment->comment_ID );
 	wp_die( 0 );
 }
 
-/**
- * Ajax handler for deleting a link category.
- *
- * @since 3.1.0
- *
- * @param string $action Action to perform.
- */
 function wp_ajax_add_link_category( $action ) {
 	if ( empty( $action ) )
 		$action = 'add-link-category';
@@ -809,13 +630,6 @@ function wp_ajax_add_link_category( $action ) {
 	$x->send();
 }
 
-/**
- * Ajax handler to add a tag.
- *
- * @since 3.1.0
- *
- * @global WP_List_Table $wp_list_table
- */
 function wp_ajax_add_tag() {
 	global $wp_list_table;
 
@@ -831,7 +645,7 @@ function wp_ajax_add_tag() {
 	$tag = wp_insert_term($_POST['tag-name'], $taxonomy, $_POST );
 
 	if ( !$tag || is_wp_error($tag) || (!$tag = get_term( $tag['term_id'], $taxonomy )) ) {
-		$message = __('An error has occurred. Please reload the page and try again.');
+		$message = 'An error has occurred. Please reload the page and try again.';
 		if ( is_wp_error($tag) && $tag->get_error_message() )
 			$message = $tag->get_error_message();
 
@@ -868,60 +682,34 @@ function wp_ajax_add_tag() {
 	$x->send();
 }
 
-/**
- * Ajax handler for getting a tagcloud.
- *
- * @since 3.1.0
- */
 function wp_ajax_get_tagcloud() {
 	if ( ! isset( $_POST['tax'] ) ) {
 		wp_die( 0 );
 	}
-
 	$taxonomy = sanitize_key( $_POST['tax'] );
 	$tax = get_taxonomy( $taxonomy );
 	if ( ! $tax ) {
 		wp_die( 0 );
 	}
-
 	if ( ! current_user_can( $tax->cap->assign_terms ) ) {
 		wp_die( -1 );
 	}
-
 	$tags = get_terms( $taxonomy, array( 'number' => 45, 'orderby' => 'count', 'order' => 'DESC' ) );
-
 	if ( empty( $tags ) )
 		wp_die( $tax->labels->not_found );
-
 	if ( is_wp_error( $tags ) )
 		wp_die( $tags->get_error_message() );
-
 	foreach ( $tags as $key => $tag ) {
 		$tags[ $key ]->link = '#';
 		$tags[ $key ]->id = $tag->term_id;
 	}
-
-	// We need raw tag names here, so don't filter the output
 	$return = wp_generate_tag_cloud( $tags, array('filter' => 0) );
-
 	if ( empty($return) )
 		wp_die( 0 );
-
 	echo $return;
-
 	wp_die();
 }
 
-/**
- * Ajax handler for getting comments.
- *
- * @since 3.1.0
- *
- * @global WP_List_Table $wp_list_table
- * @global int           $post_id
- *
- * @param string $action Action to perform.
- */
 function wp_ajax_get_comments( $action ) {
 	global $wp_list_table, $post_id;
 	if ( empty( $action ) )
@@ -965,15 +753,6 @@ function wp_ajax_get_comments( $action ) {
 	$x->send();
 }
 
-/**
- * Ajax handler for replying to a comment.
- *
- * @since 3.1.0
- *
- * @global WP_List_Table $wp_list_table
- *
- * @param string $action Action to perform.
- */
 function wp_ajax_replyto_comment( $action ) {
 	global $wp_list_table;
 	if ( empty( $action ) )
@@ -1012,11 +791,11 @@ function wp_ajax_replyto_comment( $action ) {
 			}
 		}
 	} else {
-		wp_die( __( 'Sorry, you must be logged in to reply to a comment.' ) );
+		wp_die( 'Sorry, you must be logged in to reply to a comment.' );
 	}
 
 	if ( '' == $comment_content )
-		wp_die( __( 'ERROR: please type a comment.' ) );
+		wp_die( 'ERROR: please type a comment.' );
 
 	$comment_parent = 0;
 	if ( isset( $_POST['comment_ID'] ) )
@@ -1024,7 +803,6 @@ function wp_ajax_replyto_comment( $action ) {
 	$comment_auto_approved = false;
 	$commentdata = compact('comment_post_ID', 'comment_author', 'comment_author_email', 'comment_author_url', 'comment_content', 'comment_type', 'comment_parent', 'user_ID');
 
-	// Automatically approve parent comment.
 	if ( !empty($_POST['approve_parent']) ) {
 		$parent = get_comment( $comment_parent );
 
@@ -1088,13 +866,6 @@ function wp_ajax_replyto_comment( $action ) {
 	$x->send();
 }
 
-/**
- * Ajax handler for editing a comment.
- *
- * @since 3.1.0
- *
- * @global WP_List_Table $wp_list_table
- */
 function wp_ajax_edit_comment() {
 	global $wp_list_table;
 
@@ -1105,7 +876,7 @@ function wp_ajax_edit_comment() {
 		wp_die( -1 );
 
 	if ( '' == $_POST['content'] )
-		wp_die( __( 'ERROR: please type a comment.' ) );
+		wp_die( 'ERROR: please type a comment.' );
 
 	if ( isset( $_POST['status'] ) )
 		$_POST['comment_status'] = $_POST['status'];
@@ -1135,11 +906,6 @@ function wp_ajax_edit_comment() {
 	$x->send();
 }
 
-/**
- * Ajax handler for adding a menu item.
- *
- * @since 3.1.0
- */
 function wp_ajax_add_menu_item() {
 	check_ajax_referer( 'add-menu_item', 'menu-settings-column-nonce' );
 
@@ -1147,9 +913,6 @@ function wp_ajax_add_menu_item() {
 		wp_die( -1 );
 
 	require_once ABSPATH . 'wp-admin/includes/nav-menu.php';
-
-	// For performance reasons, we omit some object properties from the checklist.
-	// The following is a hacky way to restore them when adding non-custom items.
 
 	$menu_items_data = array();
 	foreach ( (array) $_POST['menu-item'] as $menu_item_data ) {
@@ -1216,11 +979,6 @@ function wp_ajax_add_menu_item() {
 	wp_die();
 }
 
-/**
- * Ajax handler for adding meta.
- *
- * @since 3.1.0
- */
 function wp_ajax_add_meta() {
 	check_ajax_referer( 'add-meta', '_ajax_nonce-add-meta' );
 	$c = 0;
@@ -1254,12 +1012,12 @@ function wp_ajax_add_meta() {
 				}
 
 				if ( !$mid = add_meta( $pid ) )
-					wp_die( __( 'Please provide a custom field value.' ) );
+					wp_die( 'Please provide a custom field value.' );
 			} else {
 				wp_die( 0 );
 			}
 		} elseif ( ! $mid = add_meta( $pid ) ) {
-			wp_die( __( 'Please provide a custom field value.' ) );
+			wp_die( 'Please provide a custom field value.' );
 		}
 
 		$meta = get_metadata_by_mid( 'post', $mid );
@@ -1277,18 +1035,18 @@ function wp_ajax_add_meta() {
 		$key = wp_unslash( $_POST['meta'][$mid]['key'] );
 		$value = wp_unslash( $_POST['meta'][$mid]['value'] );
 		if ( '' == trim($key) )
-			wp_die( __( 'Please provide a custom field name.' ) );
+			wp_die( 'Please provide a custom field name.' );
 		if ( '' == trim($value) )
-			wp_die( __( 'Please provide a custom field value.' ) );
+			wp_die( 'Please provide a custom field value.' );
 		if ( ! $meta = get_metadata_by_mid( 'post', $mid ) )
-			wp_die( 0 ); // if meta doesn't exist
+			wp_die( 0 );
 		if ( is_protected_meta( $meta->meta_key, 'post' ) || is_protected_meta( $key, 'post' ) ||
 			! current_user_can( 'edit_post_meta', $meta->post_id, $meta->meta_key ) ||
 			! current_user_can( 'edit_post_meta', $meta->post_id, $key ) )
 			wp_die( -1 );
 		if ( $meta->meta_value != $value || $meta->meta_key != $key ) {
 			if ( !$u = update_metadata_by_mid( 'post', $mid, $value, $key ) )
-				wp_die( 0 ); // We know meta exists; we also know it's unchanged (or DB error, in which case there are bigger problems).
+				wp_die( 0 );
 		}
 
 		$x = new WP_Ajax_Response( array(
@@ -1306,15 +1064,6 @@ function wp_ajax_add_meta() {
 	$x->send();
 }
 
-/**
- * Ajax handler for adding a user.
- *
- * @since 3.1.0
- *
- * @global WP_List_Table $wp_list_table
- *
- * @param string $action Action to perform.
- */
 function wp_ajax_add_user( $action ) {
 	global $wp_list_table;
 	if ( empty( $action ) )
@@ -1353,11 +1102,6 @@ function wp_ajax_add_user( $action ) {
 	$x->send();
 }
 
-/**
- * Ajax handler for closed post boxes.
- *
- * @since 3.1.0
- */
 function wp_ajax_closed_postboxes() {
 	check_ajax_referer( 'closedpostboxes', 'closedpostboxesnonce' );
 	$closed = isset( $_POST['closed'] ) ? explode( ',', $_POST['closed']) : array();
@@ -1385,11 +1129,6 @@ function wp_ajax_closed_postboxes() {
 	wp_die( 1 );
 }
 
-/**
- * Ajax handler for hidden columns.
- *
- * @since 3.1.0
- */
 function wp_ajax_hidden_columns() {
 	check_ajax_referer( 'screen-options-nonce', 'screenoptionnonce' );
 	$page = isset( $_POST['page'] ) ? $_POST['page'] : '';
@@ -1406,11 +1145,6 @@ function wp_ajax_hidden_columns() {
 	wp_die( 1 );
 }
 
-/**
- * Ajax handler for updating whether to display the welcome panel.
- *
- * @since 3.1.0
- */
 function wp_ajax_update_welcome_panel() {
 	check_ajax_referer( 'welcome-panel-nonce', 'welcomepanelnonce' );
 
@@ -1422,11 +1156,6 @@ function wp_ajax_update_welcome_panel() {
 	wp_die( 1 );
 }
 
-/**
- * Ajax handler for retrieving menu meta boxes.
- *
- * @since 3.1.0
- */
 function wp_ajax_menu_get_metabox() {
 	if ( ! current_user_can( 'edit_theme_options' ) )
 		wp_die( -1 );
@@ -1470,11 +1199,6 @@ function wp_ajax_menu_get_metabox() {
 	wp_die();
 }
 
-/**
- * Ajax handler for internal linking.
- *
- * @since 3.1.0
- */
 function wp_ajax_wp_link_ajax() {
 	check_ajax_referer( 'internal-linking', '_ajax_linking_nonce' );
 
@@ -1502,11 +1226,6 @@ function wp_ajax_wp_link_ajax() {
 	wp_die();
 }
 
-/**
- * Ajax handler for menu locations save.
- *
- * @since 3.1.0
- */
 function wp_ajax_menu_locations_save() {
 	if ( ! current_user_can( 'edit_theme_options' ) )
 		wp_die( -1 );
@@ -1517,11 +1236,6 @@ function wp_ajax_menu_locations_save() {
 	wp_die( 1 );
 }
 
-/**
- * Ajax handler for saving the meta box order.
- *
- * @since 3.1.0
- */
 function wp_ajax_meta_box_order() {
 	check_ajax_referer( 'meta-box-order' );
 	$order = isset( $_POST['order'] ) ? (array) $_POST['order'] : false;
@@ -1547,11 +1261,6 @@ function wp_ajax_meta_box_order() {
 	wp_die( 1 );
 }
 
-/**
- * Ajax handler for menu quick searching.
- *
- * @since 3.1.0
- */
 function wp_ajax_menu_quick_search() {
 	if ( ! current_user_can( 'edit_theme_options' ) )
 		wp_die( -1 );
@@ -1563,22 +1272,12 @@ function wp_ajax_menu_quick_search() {
 	wp_die();
 }
 
-/**
- * Ajax handler to retrieve a permalink.
- *
- * @since 3.1.0
- */
 function wp_ajax_get_permalink() {
 	check_ajax_referer( 'getpermalink', 'getpermalinknonce' );
 	$post_id = isset($_POST['post_id'])? intval($_POST['post_id']) : 0;
 	wp_die( get_preview_post_link( $post_id ) );
 }
 
-/**
- * Ajax handler to retrieve a sample permalink.
- *
- * @since 3.1.0
- */
 function wp_ajax_sample_permalink() {
 	check_ajax_referer( 'samplepermalink', 'samplepermalinknonce' );
 	$post_id = isset($_POST['post_id'])? intval($_POST['post_id']) : 0;
@@ -1587,13 +1286,6 @@ function wp_ajax_sample_permalink() {
 	wp_die( get_sample_permalink_html( $post_id, $title, $slug ) );
 }
 
-/**
- * Ajax handler for Quick Edit saving a post from a list table.
- *
- * @since 3.1.0
- *
- * @global WP_List_Table $wp_list_table
- */
 function wp_ajax_inline_save() {
 	global $wp_list_table, $mode;
 
@@ -1683,13 +1375,6 @@ function wp_ajax_inline_save() {
 	wp_die();
 }
 
-/**
- * Ajax handler for quick edit saving for a term.
- *
- * @since 3.1.0
- *
- * @global WP_List_Table $wp_list_table
- */
 function wp_ajax_inline_save_tax() {
 	global $wp_list_table;
 
@@ -1735,13 +1420,6 @@ function wp_ajax_inline_save_tax() {
 	wp_die();
 }
 
-/**
- * Ajax handler for querying posts for the Find Posts modal.
- *
- * @see window.findPosts
- *
- * @since 3.1.0
- */
 function wp_ajax_find_posts() {
 	check_ajax_referer( 'find-posts' );
 
@@ -1760,10 +1438,10 @@ function wp_ajax_find_posts() {
 	$posts = get_posts( $args );
 
 	if ( ! $posts ) {
-		wp_send_json_error( __( 'No items found.' ) );
+		wp_send_json_error( 'No items found.' );
 	}
 
-	$html = '<table class="widefat"><thead><tr><th class="found-radio"><br /></th><th>'.__('Title').'</th><th class="no-break">'.__('Type').'</th><th class="no-break">'.__('Date').'</th><th class="no-break">'.__('Status').'</th></tr></thead><tbody>';
+	$html = '<table class="widefat"><thead><tr><th class="found-radio"><br /></th><th>Title</th><th class="no-break">Type</th><th class="no-break">Date</th><th class="no-break">Status</th></tr></thead><tbody>';
 	$alt = '';
 	foreach ( $posts as $post ) {
 		$title = trim( $post->post_title ) ? $post->post_title : __( '(no title)' );
@@ -1772,24 +1450,23 @@ function wp_ajax_find_posts() {
 		switch ( $post->post_status ) {
 			case 'publish' :
 			case 'private' :
-				$stat = __('Published');
+				$stat = 'Published';
 				break;
 			case 'future' :
-				$stat = __('Scheduled');
+				$stat = 'Scheduled';
 				break;
 			case 'pending' :
-				$stat = __('Pending Review');
+				$stat = 'Pending Review';
 				break;
 			case 'draft' :
-				$stat = __('Draft');
+				$stat = 'Draft';
 				break;
 		}
 
 		if ( '0000-00-00 00:00:00' == $post->post_date ) {
 			$time = '';
 		} else {
-			/* translators: date format in table columns, see http://php.net/date */
-			$time = mysql2date(__('Y/m/d'), $post->post_date);
+			$time = mysql2date('Y/m/d', $post->post_date);
 		}
 
 		$html .= '<tr class="' . trim( 'found-posts ' . $alt ) . '"><td class="found-radio"><input type="radio" id="found-'.$post->ID.'" name="found_post_id" value="' . esc_attr($post->ID) . '"></td>';
@@ -1801,11 +1478,6 @@ function wp_ajax_find_posts() {
 	wp_send_json_success( $html );
 }
 
-/**
- * Ajax handler for saving the widgets order.
- *
- * @since 3.1.0
- */
 function wp_ajax_widgets_order() {
 	check_ajax_referer( 'save-sidebar-widgets', 'savewidgets' );
 
@@ -1814,7 +1486,6 @@ function wp_ajax_widgets_order() {
 
 	unset( $_POST['savewidgets'], $_POST['action'] );
 
-	// Save widgets order for all sidebars.
 	if ( is_array($_POST['sidebars']) ) {
 		$sidebars = array();
 		foreach ( $_POST['sidebars'] as $key => $val ) {
@@ -1837,15 +1508,6 @@ function wp_ajax_widgets_order() {
 	wp_die( -1 );
 }
 
-/**
- * Ajax handler for saving a widget.
- *
- * @since 3.1.0
- *
- * @global array $wp_registered_widgets
- * @global array $wp_registered_widget_controls
- * @global array $wp_registered_widget_updates
- */
 function wp_ajax_save_widget() {
 	global $wp_registered_widgets, $wp_registered_widget_controls, $wp_registered_widget_updates;
 
@@ -1856,21 +1518,10 @@ function wp_ajax_save_widget() {
 
 	unset( $_POST['savewidgets'], $_POST['action'] );
 
-	/**
-	 * Fires early when editing the widgets displayed in sidebars.
-	 *
-	 * @since 2.8.0
-	 */
 	do_action( 'load-widgets.php' );
 
-	/**
-	 * Fires early when editing the widgets displayed in sidebars.
-	 *
-	 * @since 2.8.0
-	 */
 	do_action( 'widgets.php' );
 
-	/** This action is documented in wp-admin/widgets.php */
 	do_action( 'sidebar_admin_setup' );
 
 	$id_base = $_POST['id_base'];
@@ -1878,12 +1529,11 @@ function wp_ajax_save_widget() {
 	$sidebar_id = $_POST['sidebar'];
 	$multi_number = !empty($_POST['multi_number']) ? (int) $_POST['multi_number'] : 0;
 	$settings = isset($_POST['widget-' . $id_base]) && is_array($_POST['widget-' . $id_base]) ? $_POST['widget-' . $id_base] : false;
-	$error = '<p>' . __('An error has occurred. Please reload the page and try again.') . '</p>';
+	$error = '<p>An error has occurred. Please reload the page and try again.</p>';
 
 	$sidebars = wp_get_sidebars_widgets();
 	$sidebar = isset($sidebars[$sidebar_id]) ? $sidebars[$sidebar_id] : array();
 
-	// Delete.
 	if ( isset($_POST['delete_widget']) && $_POST['delete_widget'] ) {
 
 		if ( !isset($wp_registered_widgets[$widget_id]) )
@@ -1892,7 +1542,6 @@ function wp_ajax_save_widget() {
 		$sidebar = array_diff( $sidebar, array($widget_id) );
 		$_POST = array('sidebar' => $sidebar_id, 'widget-' . $id_base => array(), 'the-widget-id' => $widget_id, 'delete_widget' => '1');
 
-		/** This action is documented in wp-admin/widgets.php */
 		do_action( 'delete_widget', $widget_id, $sidebar_id, $id_base );
 
 	} elseif ( $settings && preg_match( '/__i__|%i%/', key($settings) ) ) {
@@ -1934,23 +1583,11 @@ function wp_ajax_save_widget() {
 	wp_die();
 }
 
-/**
- * Ajax handler for saving a widget.
- *
- * @since 3.9.0
- *
- * @global WP_Customize_Manager $wp_customize
- */
 function wp_ajax_update_widget() {
 	global $wp_customize;
 	$wp_customize->widgets->wp_ajax_update_widget();
 }
 
-/**
- * Ajax handler for removing inactive widgets.
- *
- * @since 4.4.0
- */
 function wp_ajax_delete_inactive_widgets() {
 	check_ajax_referer( 'remove-inactive-widgets', 'removeinactivewidgets' );
 
@@ -1981,24 +1618,14 @@ function wp_ajax_delete_inactive_widgets() {
 	wp_die();
 }
 
-/**
- * Ajax handler for uploading attachments
- *
- * @since 3.3.0
- */
 function wp_ajax_upload_attachment() {
 	check_ajax_referer( 'media-form' );
-	/*
-	 * This function does not use wp_send_json_success() / wp_send_json_error()
-	 * as the html4 Plupload handler requires a text/html content-type for older IE.
-	 * See https://core.trac.wordpress.org/ticket/31037
-	 */
 
 	if ( ! current_user_can( 'upload_files' ) ) {
 		echo wp_json_encode( array(
 			'success' => false,
 			'data'    => array(
-				'message'  => __( 'You do not have permission to upload files.' ),
+				'message'  => 'You do not have permission to upload files.',
 				'filename' => $_FILES['async-upload']['name'],
 			)
 		) );
@@ -2012,7 +1639,7 @@ function wp_ajax_upload_attachment() {
 			echo wp_json_encode( array(
 				'success' => false,
 				'data'    => array(
-					'message'  => __( "You don't have permission to attach files to this post." ),
+					'message'  => "You don't have permission to attach files to this post.",
 					'filename' => $_FILES['async-upload']['name'],
 				)
 			) );
@@ -2025,14 +1652,13 @@ function wp_ajax_upload_attachment() {
 
 	$post_data = isset( $_REQUEST['post_data'] ) ? $_REQUEST['post_data'] : array();
 
-	// If the context is custom header or background, make sure the uploaded file is an image.
 	if ( isset( $post_data['context'] ) && in_array( $post_data['context'], array( 'custom-header', 'custom-background' ) ) ) {
 		$wp_filetype = wp_check_filetype_and_ext( $_FILES['async-upload']['tmp_name'], $_FILES['async-upload']['name'] );
 		if ( ! wp_match_mime_types( 'image', $wp_filetype['type'] ) ) {
 			echo wp_json_encode( array(
 				'success' => false,
 				'data'    => array(
-					'message'  => __( 'The uploaded file is not a valid image. Please try again.' ),
+					'message'  => 'The uploaded file is not a valid image. Please try again.',
 					'filename' => $_FILES['async-upload']['name'],
 				)
 			) );
@@ -2074,11 +1700,6 @@ function wp_ajax_upload_attachment() {
 	wp_die();
 }
 
-/**
- * Ajax handler for image editing.
- *
- * @since 3.1.0
- */
 function wp_ajax_image_editor() {
 	$attachment_id = intval($_POST['postid']);
 	if ( empty($attachment_id) || !current_user_can('edit_post', $attachment_id) )
@@ -2106,11 +1727,6 @@ function wp_ajax_image_editor() {
 	wp_die();
 }
 
-/**
- * Ajax handler for setting the featured image.
- *
- * @since 3.1.0
- */
 function wp_ajax_set_post_thumbnail() {
 	$json = ! empty( $_REQUEST['json'] ); // New-style request
 
@@ -2142,13 +1758,6 @@ function wp_ajax_set_post_thumbnail() {
 	wp_die( 0 );
 }
 
-/**
- * AJAX handler for setting the featured image for an attachment.
- *
- * @since 4.0.0
- *
- * @see set_post_thumbnail()
- */
 function wp_ajax_set_attachment_thumbnail() {
 	if ( empty( $_POST['urls'] ) || ! is_array( $_POST['urls'] ) ) {
 		wp_send_json_error();
@@ -2193,30 +1802,14 @@ function wp_ajax_set_attachment_thumbnail() {
 	wp_send_json_error();
 }
 
-/**
- * Ajax handler for date formatting.
- *
- * @since 3.1.0
- */
 function wp_ajax_date_format() {
 	wp_die( date_i18n( sanitize_option( 'date_format', wp_unslash( $_POST['date'] ) ) ) );
 }
 
-/**
- * Ajax handler for time formatting.
- *
- * @since 3.1.0
- */
 function wp_ajax_time_format() {
 	wp_die( date_i18n( sanitize_option( 'time_format', wp_unslash( $_POST['date'] ) ) ) );
 }
 
-/**
- * Ajax handler for saving posts from the fullscreen editor.
- *
- * @since 3.1.0
- * @deprecated 4.3.0
- */
 function wp_ajax_wp_fullscreen_save_post() {
 	$post_id = isset( $_POST['post_ID'] ) ? (int) $_POST['post_ID'] : 0;
 
@@ -2267,24 +1860,11 @@ function wp_ajax_wp_remove_post_lock() {
 	if ( $active_lock[1] != get_current_user_id() )
 		wp_die( 0 );
 
-	/**
-	 * Filter the post lock window duration.
-	 *
-	 * @since 3.3.0
-	 *
-	 * @param int $interval The interval in seconds the post lock duration
-	 *                      should last, plus 5 seconds. Default 150.
-	 */
 	$new_lock = ( time() - apply_filters( 'wp_check_post_lock_window', 150 ) + 5 ) . ':' . $active_lock[1];
 	update_post_meta( $post_id, '_edit_lock', $new_lock, implode( ':', $active_lock ) );
 	wp_die( 1 );
 }
 
-/**
- * Ajax handler for dismissing a WordPress pointer.
- *
- * @since 3.1.0
- */
 function wp_ajax_dismiss_wp_pointer() {
 	$pointer = $_POST['pointer'];
 	if ( $pointer != sanitize_key( $pointer ) )
@@ -2304,11 +1884,6 @@ function wp_ajax_dismiss_wp_pointer() {
 	wp_die( 1 );
 }
 
-/**
- * Ajax handler for getting an attachment.
- *
- * @since 3.5.0
- */
 function wp_ajax_get_attachment() {
 	if ( ! isset( $_REQUEST['id'] ) )
 		wp_send_json_error();
@@ -2331,11 +1906,6 @@ function wp_ajax_get_attachment() {
 	wp_send_json_success( $attachment );
 }
 
-/**
- * Ajax handler for querying attachments.
- *
- * @since 3.5.0
- */
 function wp_ajax_query_attachments() {
 	if ( ! current_user_can( 'upload_files' ) )
 		wp_send_json_error();
@@ -2364,16 +1934,6 @@ function wp_ajax_query_attachments() {
 	if ( current_user_can( get_post_type_object( 'attachment' )->cap->read_private_posts ) )
 		$query['post_status'] .= ',private';
 
-	/**
-	 * Filter the arguments passed to WP_Query during an AJAX
-	 * call for querying attachments.
-	 *
-	 * @since 3.7.0
-	 *
-	 * @see WP_Query::parse_query()
-	 *
-	 * @param array $query An array of query variables.
-	 */
 	$query = apply_filters( 'ajax_query_attachments_args', $query );
 	$query = new WP_Query( $query );
 
@@ -2383,11 +1943,6 @@ function wp_ajax_query_attachments() {
 	wp_send_json_success( $posts );
 }
 
-/**
- * Ajax handler for updating attachment attributes.
- *
- * @since 3.5.0
- */
 function wp_ajax_save_attachment() {
 	if ( ! isset( $_REQUEST['id'] ) || ! isset( $_REQUEST['changes'] ) )
 		wp_send_json_error();
@@ -2457,11 +2012,6 @@ function wp_ajax_save_attachment() {
 	wp_send_json_success();
 }
 
-/**
- * Ajax handler for saving backwards compatible attachment attributes.
- *
- * @since 3.5.0
- */
 function wp_ajax_save_attachment_compat() {
 	if ( ! isset( $_REQUEST['id'] ) )
 		wp_send_json_error();
@@ -2504,11 +2054,6 @@ function wp_ajax_save_attachment_compat() {
 	wp_send_json_success( $attachment );
 }
 
-/**
- * Ajax handler for saving the attachment order.
- *
- * @since 3.5.0
- */
 function wp_ajax_save_attachment_order() {
 	if ( ! isset( $_REQUEST['post_id'] ) )
 		wp_send_json_error();
@@ -2540,15 +2085,6 @@ function wp_ajax_save_attachment_order() {
 	wp_send_json_success();
 }
 
-/**
- * Ajax handler for sending an attachment to the editor.
- *
- * Generates the HTML to send an attachment to the editor.
- * Backwards compatible with the media_send_to_editor filter
- * and the chain of filters that follow.
- *
- * @since 3.5.0
- */
 function wp_ajax_send_attachment_to_editor() {
 	check_ajax_referer( 'media-send-to-editor', 'nonce' );
 
@@ -2604,21 +2140,6 @@ function wp_ajax_send_attachment_to_editor() {
 	wp_send_json_success( $html );
 }
 
-/**
- * Ajax handler for sending a link to the editor.
- *
- * Generates the HTML to send a non-image embed link to the editor.
- *
- * Backwards compatible with the following filters:
- * - file_send_to_editor_url
- * - audio_send_to_editor_url
- * - video_send_to_editor_url
- *
- * @since 3.5.0
- *
- * @global WP_Post  $post
- * @global WP_Embed $wp_embed
- */
 function wp_ajax_send_link_to_editor() {
 	global $post, $wp_embed;
 
@@ -2665,13 +2186,6 @@ function wp_ajax_send_link_to_editor() {
 	wp_send_json_success( $html );
 }
 
-/**
- * Ajax handler for the Heartbeat API.
- *
- * Runs when the user is logged in.
- *
- * @since 3.6.0
- */
 function wp_ajax_heartbeat() {
 	if ( empty( $_POST['_nonce'] ) ) {
 		wp_send_json_error();
@@ -2702,38 +2216,11 @@ function wp_ajax_heartbeat() {
 	}
 
 	if ( ! empty( $data ) ) {
-		/**
-		 * Filter the Heartbeat response received.
-		 *
-		 * @since 3.6.0
-		 *
-		 * @param array  $response  The Heartbeat response.
-		 * @param array  $data      The $_POST data sent.
-		 * @param string $screen_id The screen id.
-		 */
 		$response = apply_filters( 'heartbeat_received', $response, $data, $screen_id );
 	}
 
-	/**
-	 * Filter the Heartbeat response sent.
-	 *
-	 * @since 3.6.0
-	 *
-	 * @param array  $response  The Heartbeat response.
-	 * @param string $screen_id The screen id.
-	 */
 	$response = apply_filters( 'heartbeat_send', $response, $screen_id );
 
-	/**
-	 * Fires when Heartbeat ticks in logged-in environments.
-	 *
-	 * Allows the transport to be easily replaced with long-polling.
-	 *
-	 * @since 3.6.0
-	 *
-	 * @param array  $response  The Heartbeat response.
-	 * @param string $screen_id The screen id.
-	 */
 	do_action( 'heartbeat_tick', $response, $screen_id );
 
 	// Send the current time according to the server
@@ -2742,14 +2229,7 @@ function wp_ajax_heartbeat() {
 	wp_send_json( $response );
 }
 
-/**
- * Ajax handler for getting revision diffs.
- *
- * @since 3.6.0
- */
 function wp_ajax_get_revision_diffs() {
-	require ABSPATH . 'wp-admin/includes/revision.php';
-
 	if ( ! $post = get_post( (int) $_REQUEST['post_id'] ) )
 		wp_send_json_error();
 
@@ -2774,14 +2254,6 @@ function wp_ajax_get_revision_diffs() {
 	wp_send_json_success( $return );
 }
 
-/**
- * Ajax handler for auto-saving the selected color scheme for
- * a user's own profile.
- *
- * @since 3.8.0
- *
- * @global array $_wp_admin_css_colors
- */
 function wp_ajax_save_user_color_scheme() {
 	global $_wp_admin_css_colors;
 
@@ -2802,14 +2274,6 @@ function wp_ajax_save_user_color_scheme() {
 	) );
 }
 
-/**
- * Ajax handler for getting themes from themes_api().
- *
- * @since 3.9.0
- *
- * @global array $themes_allowedtags
- * @global array $theme_field_defaults
- */
 function wp_ajax_query_themes() {
 	global $themes_allowedtags, $theme_field_defaults;
 
@@ -2859,15 +2323,6 @@ function wp_ajax_query_themes() {
 	wp_send_json_success( $api );
 }
 
-/**
- * Apply [embed] AJAX handlers to a string.
- *
- * @since 4.0.0
- *
- * @global WP_Post    $post       Global $post.
- * @global WP_Embed   $wp_embed   Embed API instance.
- * @global WP_Scripts $wp_scripts
- */
 function wp_ajax_parse_embed() {
 	global $post, $wp_embed;
 
@@ -2896,9 +2351,7 @@ function wp_ajax_parse_embed() {
 
 	$wp_embed->return_false_on_fail = true;
 
-	if ( is_ssl() && 0 === strpos( $url, 'http://' ) ) {
-		// Admin is ssl and the user pasted non-ssl URL.
-		// Check if the provider supports ssl embeds and use that for the preview.
+	if ( 0 === strpos( $url, 'http://' ) ) {
 		$ssl_shortcode = preg_replace( '%^(\\[embed[^\\]]*\\])http://%i', '$1https://', $shortcode );
 		$parsed = $wp_embed->run_shortcode( $ssl_shortcode );
 
@@ -2914,7 +2367,7 @@ function wp_ajax_parse_embed() {
 	if ( ! $parsed ) {
 		wp_send_json_error( array(
 			'type' => 'not-embeddable',
-			'message' => sprintf( __( '%s failed to embed.' ), '<code>' . esc_html( $url ) . '</code>' ),
+			'message' => sprintf( '%s failed to embed.', '<code>' . esc_html( $url ) . '</code>' ),
 		) );
 	}
 
@@ -2944,7 +2397,7 @@ function wp_ajax_parse_embed() {
 		// Admin is ssl and the embed is not. Iframes, scripts, and other "active content" will be blocked.
 		wp_send_json_error( array(
 			'type' => 'not-ssl',
-			'message' => __( 'This preview is unavailable in the editor.' ),
+			'message' => 'This preview is unavailable in the editor.',
 		) );
 	}
 
@@ -2954,12 +2407,6 @@ function wp_ajax_parse_embed() {
 	) );
 }
 
-/**
- * @since 4.0.0
- *
- * @global WP_Post    $post
- * @global WP_Scripts $wp_scripts
- */
 function wp_ajax_parse_media_shortcode() {
 	global $post, $wp_scripts;
 
@@ -2987,7 +2434,7 @@ function wp_ajax_parse_media_shortcode() {
 	if ( empty( $parsed ) ) {
 		wp_send_json_error( array(
 			'type' => 'no-items',
-			'message' => __( 'No items found.' ),
+			'message' => 'No items found.',
 		) );
 	}
 
@@ -3089,16 +2536,8 @@ function wp_ajax_update_plugin() {
 	if ( is_array( $result ) && !empty( $result[ $plugin ] ) ) {
 		$plugin_update_data = current( $result );
 
-		/*
-		 * If the `update_plugins` site transient is empty (e.g. when you update
-		 * two plugins in quick succession before the transient repopulates),
-		 * this may be the return.
-		 *
-		 * Preferably something can be done to ensure `update_plugins` isn't empty.
-		 * For now, surface some sort of error here.
-		 */
 		if ( $plugin_update_data === true ) {
-			$status['error'] = __( 'Plugin update failed.' );
+			$status['error'] = 'Plugin update failed.';
  			wp_send_json_error( $status );
 		}
 
@@ -3106,7 +2545,7 @@ function wp_ajax_update_plugin() {
 		$plugin_data = reset( $plugin_data );
 
 		if ( $plugin_data['Version'] ) {
-			$status['newVersion'] = sprintf( __( 'Version %s' ), $plugin_data['Version'] );
+			$status['newVersion'] = sprintf( 'Version %s', $plugin_data['Version'] );
 		}
 
 		wp_send_json_success( $status );
@@ -3127,18 +2566,11 @@ function wp_ajax_update_plugin() {
 
 	} else {
 		// An unhandled error occured
-		$status['error'] = __( 'Plugin update failed.' );
+		$status['error'] = 'Plugin update failed.';
 		wp_send_json_error( $status );
 	}
 }
 
-/**
- * AJAX handler for saving a post from Press This.
- *
- * @since 4.2.0
- *
- * @global WP_Press_This $wp_press_this
- */
 function wp_ajax_press_this_save_post() {
 	if ( empty( $GLOBALS['wp_press_this'] ) ) {
 		include( ABSPATH . 'wp-admin/includes/class-wp-press-this.php' );
@@ -3147,13 +2579,6 @@ function wp_ajax_press_this_save_post() {
 	$GLOBALS['wp_press_this']->save_post();
 }
 
-/**
- * AJAX handler for creating new category from Press This.
- *
- * @since 4.2.0
- *
- * @global WP_Press_This $wp_press_this
- */
 function wp_ajax_press_this_add_category() {
 	if ( empty( $GLOBALS['wp_press_this'] ) ) {
 		include( ABSPATH . 'wp-admin/includes/class-wp-press-this.php' );
@@ -3162,13 +2587,6 @@ function wp_ajax_press_this_add_category() {
 	$GLOBALS['wp_press_this']->add_category();
 }
 
-/**
- * AJAX handler for cropping an image.
- *
- * @since 4.3.0
- *
- * @global WP_Site_Icon $wp_site_icon
- */
 function wp_ajax_crop_image() {
 	$attachment_id = absint( $_POST['id'] );
 
@@ -3182,7 +2600,7 @@ function wp_ajax_crop_image() {
 	$cropped = wp_crop_image( $attachment_id, $data['x1'], $data['y1'], $data['width'], $data['height'], $data['dst_width'], $data['dst_height'] );
 
 	if ( ! $cropped || is_wp_error( $cropped ) ) {
-		wp_send_json_error( array( 'message' => __( 'Image could not be processed.' ) ) );
+		wp_send_json_error( array( 'message' => 'Image could not be processed.' ) );
 	}
 
 	switch ( $context ) {
@@ -3217,17 +2635,6 @@ function wp_ajax_crop_image() {
 
 		default:
 
-			/**
-			 * Fires before a cropped image is saved.
-			 *
-			 * Allows to add filters to modify the way a cropped image is saved.
-			 *
-			 * @since 4.3.0
-			 *
-			 * @param string $context       The Customizer control requesting the cropped image.
-			 * @param int    $attachment_id The attachment ID of the original image.
-			 * @param string $cropped       Path to the cropped image file.
-			 */
 			do_action( 'wp_ajax_crop_image_pre_save', $context, $attachment_id, $cropped );
 
 			/** This filter is documented in wp-admin/custom-header.php */
@@ -3250,46 +2657,19 @@ function wp_ajax_crop_image() {
 			$attachment_id = wp_insert_attachment( $object, $cropped );
 			$metadata = wp_generate_attachment_metadata( $attachment_id, $cropped );
 
-			/**
-			 * Filter the cropped image attachment metadata.
-			 *
-			 * @since 4.3.0
-			 *
-			 * @see wp_generate_attachment_metadata()
-			 *
-			 * @param array $metadata Attachment metadata.
-			 */
 			$metadata = apply_filters( 'wp_ajax_cropped_attachment_metadata', $metadata );
 			wp_update_attachment_metadata( $attachment_id, $metadata );
 
-			/**
-			 * Filter the attachment ID for a cropped image.
-			 *
-			 * @since 4.3.0
-			 *
-			 * @param int    $attachment_id The attachment ID of the cropped image.
-			 * @param string $context       The Customizer control requesting the cropped image.
-			 */
 			$attachment_id = apply_filters( 'wp_ajax_cropped_attachment_id', $attachment_id, $context );
 	}
 
 	wp_send_json_success( wp_prepare_attachment_for_js( $attachment_id ) );
 }
 
-/**
- * Ajax handler for generating a password.
- *
- * @since 4.4.0
- */
 function wp_ajax_generate_password() {
 	wp_send_json_success( wp_generate_password( 24 ) );
 }
 
-/**
- * Ajax handler for saving the user's WordPress.org username.
- *
- * @since 4.4.0
- */
 function wp_ajax_save_wporg_username() {
 	if ( ! current_user_can( 'install_themes' ) && ! current_user_can( 'install_plugins' ) ) {
 		wp_send_json_error();
