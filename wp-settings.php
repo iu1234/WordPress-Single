@@ -20,7 +20,6 @@ date_default_timezone_set( 'UTC' );
 
 wp_unregister_GLOBALS();
 wp_fix_server_vars();
-wp_favicon_request();
 wp_maintenance();
 timer_start();
 

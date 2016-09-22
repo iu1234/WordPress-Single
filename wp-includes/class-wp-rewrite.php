@@ -33,10 +33,6 @@ class WP_Rewrite {
 
 	var $feed_base = 'feed';
 
-	var $comment_feed_structure;
-
-	var $feed_structure;
-
 	public $front;
 
 	public $root = '';
@@ -61,19 +57,7 @@ class WP_Rewrite {
 
 	public $use_verbose_page_rules = true;
 
-	var $rewritecode = array(
-		'%year%',
-		'%monthnum%',
-		'%day%',
-		'%hour%',
-		'%minute%',
-		'%second%',
-		'%postname%',
-		'%post_id%',
-		'%author%',
-		'%pagename%',
-		'%search%'
-	);
+	var $rewritecode = array( '%year%',	'%monthnum%', '%day%', '%hour%', '%minute%', '%second%', '%postname%', '%post_id%',	'%author%',	'%pagename%', '%search%' );
 
 	var $rewritereplace = array(
 		'([0-9]{4})',
@@ -89,21 +73,29 @@ class WP_Rewrite {
 		'(.+)'
 	);
 
-	var $queryreplace = array(
-		'year=',
-		'monthnum=',
-		'day=',
-		'hour=',
-		'minute=',
-		'second=',
-		'name=',
-		'p=',
-		'author_name=',
-		'pagename=',
-		's='
-	);
+	var $queryreplace = array( 'year=',	'monthnum=', 'day=', 'hour=', 'minute=', 'second=',	'name=', 'p=', 'author_name=', 'pagename=',	's=' );
 
-	public $feeds = array( 'feed', 'rdf', 'rss', 'rss2', 'atom' );
+	public function __construct() {
+		$this->init();
+	}
+	
+	public function init() {
+		$this->extra_rules = $this->non_wp_rules = $this->endpoints = array();
+		$this->permalink_structure = get_option('permalink_structure');
+		$this->front = substr($this->permalink_structure, 0, strpos($this->permalink_structure, '%'));
+		$this->root = '';
+		if ( $this->using_index_permalinks() )
+			$this->root = $this->index . '/';
+		unset($this->author_structure);
+		unset($this->date_structure);
+		unset($this->page_structure);
+		unset($this->search_structure);
+		$this->use_trailing_slashes = ( '/' == substr($this->permalink_structure, -1, 1) );
+		if ( preg_match("/^[^%]*%(?:postname|category|tag|author)%/", $this->permalink_structure) )
+			 $this->use_verbose_page_rules = true;
+		else
+			$this->use_verbose_page_rules = false;
+	}
 
 	public function using_permalinks() {
 		return ! empty($this->permalink_structure);
@@ -135,22 +127,18 @@ class WP_Rewrite {
 	public function page_uri_index() {
 		global $wpdb;
 
-		// Get pages in order of hierarchy, i.e. children after parents.
 		$pages = $wpdb->get_results("SELECT ID, post_name, post_parent FROM $wpdb->posts WHERE post_type = 'page' AND post_status != 'auto-draft'");
 		$posts = get_page_hierarchy( $pages );
 
-		// If we have no pages get out quick.
 		if ( !$posts )
 			return array( array(), array() );
 
-		// Now reverse it, because we need parents after children for rewrite rules to work properly.
 		$posts = array_reverse($posts, true);
 
 		$page_uris = array();
 		$page_attachment_uris = array();
 
 		foreach ( $posts as $id => $post ) {
-			// URL => page name
 			$uri = get_page_uri($id);
 			$attachments = $wpdb->get_results( $wpdb->prepare( "SELECT ID, post_name, post_parent FROM $wpdb->posts WHERE post_type = 'attachment' AND post_parent = %d", $id ));
 			if ( !empty($attachments) ) {
@@ -167,9 +155,7 @@ class WP_Rewrite {
 	}
 
 	public function page_rewrite_rules() {
-		// The extra .? at the beginning prevents clashes with other regular expressions in the rules array.
 		$this->add_rewrite_tag( '%pagename%', '(.?.+?)', 'pagename=' );
-
 		return $this->generate_rewrite_rules( $this->get_page_permastruct(), EP_PAGES, true, true, false, false );
 	}
 
@@ -182,7 +168,6 @@ class WP_Rewrite {
 			return false;
 		}
 
-		// The date permalink must have year, month, and day separated by slashes.
 		$endians = array('%year%/%monthnum%/%day%', '%day%/%monthnum%/%year%', '%monthnum%/%day%/%year%');
 
 		$this->date_structure = '';
@@ -303,34 +288,6 @@ class WP_Rewrite {
 		return $this->page_structure;
 	}
 
-	public function get_feed_permastruct() {
-		if ( isset($this->feed_structure) )
-			return $this->feed_structure;
-
-		if ( empty($this->permalink_structure) ) {
-			$this->feed_structure = '';
-			return false;
-		}
-
-		$this->feed_structure = $this->root . $this->feed_base . '/%feed%';
-
-		return $this->feed_structure;
-	}
-
-	public function get_comment_feed_permastruct() {
-		if ( isset($this->comment_feed_structure) )
-			return $this->comment_feed_structure;
-
-		if (empty($this->permalink_structure)) {
-			$this->comment_feed_structure = '';
-			return false;
-		}
-
-		$this->comment_feed_structure = $this->root . $this->comments_base . '/' . $this->feed_base . '/%feed%';
-
-		return $this->comment_feed_structure;
-	}
-
 	public function add_rewrite_tag( $tag, $regex, $query ) {
 		$position = array_search( $tag, $this->rewritecode );
 		if ( false !== $position && null !== $position ) {
@@ -355,35 +312,22 @@ class WP_Rewrite {
 
 	public function generate_rewrite_rules($permalink_structure, $ep_mask = EP_NONE, $paged = true, $feed = true, $forcomments = false, $walk_dirs = true, $endpoints = true) {
 
-		$feedregex2 = '';
-		foreach ( (array) $this->feeds as $feed_name)
-			$feedregex2 .= $feed_name . '|';
-		$feedregex2 = '(' . trim($feedregex2, '|') . ')/?$';
-
-		$feedregex = $this->feed_base . '/' . $feedregex2;
-
-		$trackbackregex = 'trackback/?$';
 		$pageregex = $this->pagination_base . '/?([0-9]{1,})/?$';
 		$commentregex = $this->comments_pagination_base . '-([0-9]{1,})/?$';
 		$embedregex = 'embed/?$';
 
-		// Build up an array of endpoint regexes to append => queries to append.
 		if ( $endpoints ) {
 			$ep_query_append = array ();
 			foreach ( (array) $this->endpoints as $endpoint) {
-				// Match everything after the endpoint name, but allow for nothing to appear there.
 				$epmatch = $endpoint[1] . '(/(.*))?/?$';
 
-				// This will be appended on to the rest of the query for each dir.
 				$epquery = '&' . $endpoint[2] . '=';
 				$ep_query_append[$epmatch] = array ( $endpoint[0], $epquery );
 			}
 		}
 
-		// Get everything up to the first rewrite tag.
 		$front = substr($permalink_structure, 0, strpos($permalink_structure, '%'));
 
-		// Build an array of the tags (note that said array ends up being in $tokens[0]).
 		preg_match_all('/%.+?%/', $permalink_structure, $tokens);
 
 		$num_tokens = count($tokens[0]);
@@ -528,62 +472,26 @@ class WP_Rewrite {
 					}
 				}
 
-				// If creating rules for a permalink, do all the endpoints like attachments etc.
 				if ( $post ) {
-					// Create query and regex for trackback.
-					$trackbackmatch = $match . $trackbackregex;
-					$trackbackquery = $trackbackindex . '?' . $query . '&tb=1';
-
-					// Create query and regex for embeds.
 					$embedmatch = $match . $embedregex;
 					$embedquery = $embedindex . '?' . $query . '&embed=true';
 
-					// Trim slashes from the end of the regex for this dir.
 					$match = rtrim($match, '/');
 
-					// Get rid of brackets.
 					$submatchbase = str_replace( array('(', ')'), '', $match);
 
-					// Add a rule for at attachments, which take the form of <permalink>/some-text.
 					$sub1 = $submatchbase . '/([^/]+)/';
 
-					// Add trackback regex <permalink>/trackback/...
-					$sub1tb = $sub1 . $trackbackregex;
-
-					// And <permalink>/feed/(atom|...)
-					$sub1feed = $sub1 . $feedregex;
-
-					// And <permalink>/(feed|atom...)
-					$sub1feed2 = $sub1 . $feedregex2;
-
-					// And <permalink>/comment-page-xx
 					$sub1comment = $sub1 . $commentregex;
 
-					// And <permalink>/embed/...
 					$sub1embed = $sub1 . $embedregex;
 
-					/*
-					 * Add another rule to match attachments in the explicit form:
-					 * <permalink>/attachment/some-text
-					 */
 					$sub2 = $submatchbase . '/attachment/([^/]+)/';
 
-					// And add trackbacks <permalink>/attachment/trackback.
-					$sub2tb = $sub2 . $trackbackregex;
-
-					// Feeds, <permalink>/attachment/feed/(atom|...)
-					$sub2feed = $sub2 . $feedregex;
-
-					// And feeds again on to this <permalink>/attachment/(feed|atom...)
-					$sub2feed2 = $sub2 . $feedregex2;
-
-					// And <permalink>/comment-page-xx
 					$sub2comment = $sub2 . $commentregex;
 
-					// And <permalink>/embed/...
 					$sub2embed = $sub2 . $embedregex;
 
-					// Create queries for these extra tag-ons we've just dealt with.
 					$subquery = $index . '?attachment=' . $this->preg_index(1);
 					$subtbquery = $subquery . '&tb=1';
 					$subfeedquery = $subquery . '&feed=' . $this->preg_index(2);
@@ -600,65 +508,39 @@ class WP_Rewrite {
 						}
 					}
 
-					/*
-					 * Now we've finished with endpoints, finish off the $sub1 and $sub2 matches
-					 * add a ? as we don't have to match that last slash, and finally a $ so we
-					 * match to the end of the URL
-					 */
 					$sub1 .= '?$';
 					$sub2 .= '?$';
 
-					/*
-					 * Post pagination, e.g. <permalink>/2/
-					 * Previously: '(/[0-9]+)?/?$', which produced '/2' for page.
-					 * When cast to int, returned 0.
-					 */
 					$match = $match . '(?:/([0-9]+))?/?$';
 					$query = $index . '?' . $query . '&page=' . $this->preg_index($num_toks + 1);
 
-				// Not matching a permalink so this is a lot simpler.
 				} else {
-					// Close the match and finalise the query.
 					$match .= '?$';
 					$query = $index . '?' . $query;
 				}
 
-				/*
-				 * Create the final array for this dir by joining the $rewrite array (which currently
-				 * only contains rules/queries for trackback, pages etc) to the main regex/query for
-				 * this dir
-				 */
 				$rewrite = array_merge($rewrite, array($match => $query));
 
-				// If we're matching a permalink, add those extras (attachments etc) on.
 				if ( $post ) {
-					// Add trackback.
-					$rewrite = array_merge(array($trackbackmatch => $trackbackquery), $rewrite);
-
-					// Add embed.
 					$rewrite = array_merge( array( $embedmatch => $embedquery ), $rewrite );
 
-					// Add regexes/queries for attachments, attachment trackbacks and so on.
+
 					if ( ! $page ) {
-						// Require <permalink>/attachment/stuff form for pages because of confusion with subpages.
+
 						$rewrite = array_merge( $rewrite, array(
 							$sub1        => $subquery,
 							$sub1tb      => $subtbquery,
-							$sub1feed    => $subfeedquery,
-							$sub1feed2   => $subfeedquery,
 							$sub1comment => $subcommentquery,
 							$sub1embed   => $subembedquery
 						) );
 					}
 
-					$rewrite = array_merge( array( $sub2 => $subquery, $sub2tb => $subtbquery, $sub2feed => $subfeedquery, $sub2feed2 => $subfeedquery, $sub2comment => $subcommentquery, $sub2embed => $subembedquery ), $rewrite );
+					$rewrite = array_merge( array( $sub2 => $subquery, $sub2tb => $subtbquery, $sub2comment => $subcommentquery, $sub2embed => $subembedquery ), $rewrite );
 				}
 			}
-			// Add the rules for this dir to the accumulating $post_rewrite.
 			$post_rewrite = array_merge($rewrite, $post_rewrite);
 		}
 
-		// The finished rules. phew!
 		return $post_rewrite;
 	}
 
@@ -704,7 +586,6 @@ class WP_Rewrite {
 
 		$comments_rewrite = apply_filters( 'comments_rewrite_rules', $comments_rewrite );
 
-		// Search rewrite rules.
 		$search_structure = $this->get_search_permastruct();
 		$search_rewrite = $this->generate_rewrite_rules($search_structure, EP_SEARCH);
 
@@ -714,12 +595,10 @@ class WP_Rewrite {
 
 		$author_rewrite = apply_filters( 'author_rewrite_rules', $author_rewrite );
 
-		// Pages rewrite rules.
 		$page_rewrite = $this->page_rewrite_rules();
 
 		$page_rewrite = apply_filters( 'page_rewrite_rules', $page_rewrite );
 
-		// Extra permastructs.
 		foreach ( $this->extra_permastructs as $permastructname => $struct ) {
 			if ( is_array( $struct ) ) {
 				if ( count( $struct ) == 2 )
@@ -779,11 +658,8 @@ class WP_Rewrite {
 		$rules .= "RewriteBase $home_root\n";
 		$rules .= "RewriteRule ^index\.php$ - [L]\n";
 
-		// Add in the rules that don't redirect to WP's index.php (and thus shouldn't be handled by WP at all).
 		foreach ( (array) $this->non_wp_rules as $match => $query) {
-			// Apache 1.3 does not support the reluctant (non-greedy) modifier.
 			$match = str_replace('.+?', '.+', $match);
-
 			$rules .= 'RewriteRule ^' . $match . ' ' . $home_root . $query . " [QSA,L]\n";
 		}
 
@@ -844,7 +720,6 @@ class WP_Rewrite {
 	public function add_endpoint( $name, $places, $query_var = true ) {
 		global $wp;
 
-		// For backward compatibility, if null has explicitly been passed as `$query_var`, assume `true`.
 		if ( true === $query_var || null === func_get_arg( 2 ) ) {
 			$query_var = $name;
 		}
@@ -856,7 +731,6 @@ class WP_Rewrite {
 	}
 
 	public function add_permastruct( $name, $struct, $args = array() ) {
-		// Backwards compatibility for the old parameters: $with_front and $ep_mask.
 		if ( ! is_array( $args ) )
 			$args = array( 'with_front' => $args );
 		if ( func_num_args() == 4 )
@@ -889,8 +763,6 @@ class WP_Rewrite {
 
 	public function flush_rules( $hard = true ) {
 		static $do_hard_later = null;
-
-		// Prevent this action from running before everyone has registered their rewrites.
 		if ( ! did_action( 'wp_loaded' ) ) {
 			add_action( 'wp_loaded', array( $this, 'flush_rules' ) );
 			$do_hard_later = ( isset( $do_hard_later ) ) ? $do_hard_later || $hard : $hard;
@@ -910,32 +782,6 @@ class WP_Rewrite {
 		}
 		if ( function_exists( 'save_mod_rewrite_rules' ) )
 			save_mod_rewrite_rules();
-		if ( function_exists( 'iis7_save_url_rewrite_rules' ) )
-			iis7_save_url_rewrite_rules();
-	}
-
-	public function init() {
-		$this->extra_rules = $this->non_wp_rules = $this->endpoints = array();
-		$this->permalink_structure = get_option('permalink_structure');
-		$this->front = substr($this->permalink_structure, 0, strpos($this->permalink_structure, '%'));
-		$this->root = '';
-
-		if ( $this->using_index_permalinks() )
-			$this->root = $this->index . '/';
-
-		unset($this->author_structure);
-		unset($this->date_structure);
-		unset($this->page_structure);
-		unset($this->search_structure);
-		unset($this->feed_structure);
-		unset($this->comment_feed_structure);
-		$this->use_trailing_slashes = ( '/' == substr($this->permalink_structure, -1, 1) );
-
-		// Enable generic rules for pages if permalink structure doesn't begin with a wildcard.
-		if ( preg_match("/^[^%]*%(?:postname|category|tag|author)%/", $this->permalink_structure) )
-			 $this->use_verbose_page_rules = true;
-		else
-			$this->use_verbose_page_rules = false;
 	}
 
 	public function set_permalink_structure($permalink_structure) {
@@ -963,7 +809,4 @@ class WP_Rewrite {
 		}
 	}
 
-	public function __construct() {
-		$this->init();
-	}
 }

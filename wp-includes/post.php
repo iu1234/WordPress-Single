@@ -23,7 +23,6 @@ function create_initial_post_types() {
 		'delete_with_user' => true,
 		'supports' => array( 'title', 'editor', 'author', 'thumbnail', 'excerpt', 'trackbacks', 'custom-fields', 'comments', 'revisions', 'post-formats' ),
 	) );
-
 	register_post_type( 'page', array(
 		'labels' => array(
 			'name_admin_bar' => 'Page',
@@ -41,12 +40,11 @@ function create_initial_post_types() {
 		'delete_with_user' => true,
 		'supports' => array( 'title', 'editor', 'author', 'thumbnail', 'page-attributes', 'custom-fields', 'comments', 'revisions' ),
 	) );
-
 	register_post_type( 'attachment', array(
 		'labels' => array(
-			'name' => _x('Media', 'post type general name'),
-			'name_admin_bar' => _x( 'Media', 'add new from admin bar' ),
-			'add_new' => _x( 'Add New', 'add new media' ),
+			'name' => 'Media',
+			'name_admin_bar' => 'Media',
+			'add_new' =>'Add New',
  			'edit_item' => 'Edit Media',
  			'view_item' => 'View Attachment Page',
 		),
@@ -68,7 +66,6 @@ function create_initial_post_types() {
 	) );
 	add_post_type_support( 'attachment:audio', 'thumbnail' );
 	add_post_type_support( 'attachment:video', 'thumbnail' );
-
 	register_post_type( 'nav_menu_item', array(
 		'labels' => array(
 			'name' => 'Navigation Menu Items',
@@ -81,85 +78,71 @@ function create_initial_post_types() {
 		'delete_with_user' => false,
 		'query_var' => false,
 	) );
-
 	register_post_status( 'publish', array(
-		'label'       => _x( 'Published', 'post status' ),
+		'label'       => 'Published',
 		'public'      => true,
 		'_builtin'    => true,
 		'label_count' => _n_noop( 'Published <span class="count">(%s)</span>', 'Published <span class="count">(%s)</span>' ),
 	) );
-
 	register_post_status( 'future', array(
-		'label'       => _x( 'Scheduled', 'post status' ),
+		'label'       => 'Scheduled',
 		'protected'   => true,
-		'_builtin'    => true, /* internal use only. */
+		'_builtin'    => true,
 		'label_count' => _n_noop('Scheduled <span class="count">(%s)</span>', 'Scheduled <span class="count">(%s)</span>' ),
 	) );
-
 	register_post_status( 'draft', array(
-		'label'       => _x( 'Draft', 'post status' ),
+		'label'       => 'Draft',
 		'protected'   => true,
-		'_builtin'    => true, /* internal use only. */
+		'_builtin'    => true,
 		'label_count' => _n_noop( 'Draft <span class="count">(%s)</span>', 'Drafts <span class="count">(%s)</span>' ),
 	) );
-
 	register_post_status( 'pending', array(
-		'label'       => _x( 'Pending', 'post status' ),
+		'label'       => 'Pending',
 		'protected'   => true,
-		'_builtin'    => true, /* internal use only. */
+		'_builtin'    => true,
 		'label_count' => _n_noop( 'Pending <span class="count">(%s)</span>', 'Pending <span class="count">(%s)</span>' ),
 	) );
-
 	register_post_status( 'private', array(
-		'label'       => _x( 'Private', 'post status' ),
+		'label'       => 'Private',
 		'private'     => true,
-		'_builtin'    => true, /* internal use only. */
+		'_builtin'    => true,
 		'label_count' => _n_noop( 'Private <span class="count">(%s)</span>', 'Private <span class="count">(%s)</span>' ),
 	) );
-
 	register_post_status( 'trash', array(
-		'label'       => _x( 'Trash', 'post status' ),
+		'label'       => 'Trash',
 		'internal'    => true,
-		'_builtin'    => true, /* internal use only. */
+		'_builtin'    => true,
 		'label_count' => _n_noop( 'Trash <span class="count">(%s)</span>', 'Trash <span class="count">(%s)</span>' ),
 		'show_in_admin_status_list' => true,
 	) );
-
 	register_post_status( 'auto-draft', array(
 		'label'    => 'auto-draft',
 		'internal' => true,
-		'_builtin' => true, /* internal use only. */
+		'_builtin' => true,
 	) );
-
 	register_post_status( 'inherit', array(
 		'label'    => 'inherit',
 		'internal' => true,
-		'_builtin' => true, /* internal use only. */
+		'_builtin' => true,
 		'exclude_from_search' => false,
 	) );
 }
 
 function get_attached_file( $attachment_id, $unfiltered = false ) {
 	$file = get_post_meta( $attachment_id, '_wp_attached_file', true );
-
-	// If the file is relative, prepend upload dir.
 	if ( $file && 0 !== strpos( $file, '/' ) && ! preg_match( '|^.:\\\|', $file ) && ( ( $uploads = wp_get_upload_dir() ) && false === $uploads['error'] ) ) {
 		$file = $uploads['basedir'] . "/$file";
 	}
-
 	if ( $unfiltered ) {
 		return $file;
 	}
-
 	return apply_filters( 'get_attached_file', $file, $attachment_id );
 }
 
 function update_attached_file( $attachment_id, $file ) {
 	if ( !get_post( $attachment_id ) )
 		return false;
-
 	$file = apply_filters( 'update_attached_file', $file, $attachment_id );
-
 	if ( $file = _wp_relative_upload_path( $file ) )
 		return update_post_meta( $attachment_id, '_wp_attached_file', $file );
 	else
@@ -168,13 +151,11 @@ function update_attached_file( $attachment_id, $file ) {
 
 function _wp_relative_upload_path( $path ) {
 	$new_path = $path;
-
 	$uploads = wp_get_upload_dir();
 	if ( 0 === strpos( $new_path, $uploads['basedir'] ) ) {
 			$new_path = str_replace( $uploads['basedir'], '', $new_path );
 			$new_path = ltrim( $new_path, '/' );
 	}
-
 	return apply_filters( '_wp_relative_upload_path', $new_path, $path );
 }
 
@@ -240,8 +221,6 @@ function get_extended( $post ) {
 		$extended = '';
 		$more_text = '';
 	}
-
-	//  leading and trailing whitespace.
 	$main = preg_replace('/^[\s]*(.*)[\s]*$/', '\\1', $main);
 	$extended = preg_replace('/^[\s]*(.*)[\s]*$/', '\\1', $extended);
 	$more_text = preg_replace('/^[\s]*(.*)[\s]*$/', '\\1', $more_text);
@@ -252,7 +231,6 @@ function get_extended( $post ) {
 function get_post( $post = null, $output = OBJECT, $filter = 'raw' ) {
 	if ( empty( $post ) && isset( $GLOBALS['post'] ) )
 		$post = $GLOBALS['post'];
-
 	if ( $post instanceof WP_Post ) {
 		$_post = $post;
 	} elseif ( is_object( $post ) ) {
@@ -267,38 +245,27 @@ function get_post( $post = null, $output = OBJECT, $filter = 'raw' ) {
 	} else {
 		$_post = WP_Post::get_instance( $post );
 	}
-
 	if ( ! $_post )
 		return null;
-
 	$_post = $_post->filter( $filter );
-
 	if ( $output == ARRAY_A )
 		return $_post->to_array();
 	elseif ( $output == ARRAY_N )
 		return array_values( $_post->to_array() );
-
 	return $_post;
 }
 
 function get_post_ancestors( $post ) {
 	$post = get_post( $post );
-
 	if ( ! $post || empty( $post->post_parent ) || $post->post_parent == $post->ID )
 		return array();
-
 	$ancestors = array();
-
 	$id = $ancestors[] = $post->post_parent;
-
 	while ( $ancestor = get_post( $id ) ) {
-		// Loop detection: If the ancestor has been seen before, break.
 		if ( empty( $ancestor->post_parent ) || ( $ancestor->post_parent == $post->ID ) || in_array( $ancestor->post_parent, $ancestors ) )
 			break;
-
 		$id = $ancestors[] = $ancestor->post_parent;
 	}
-
 	return $ancestors;
 }
 
@@ -332,12 +299,8 @@ function get_post_status( $ID = '' ) {
 	if ( 'attachment' == $post->post_type ) {
 		if ( 'private' == $post->post_status )
 			return 'private';
-
-		// Unattached attachments are assumed to be published.
 		if ( ( 'inherit' == $post->post_status ) && ( 0 == $post->post_parent) )
 			return 'publish';
-
-		// Inherit status from the parent.
 		if ( $post->post_parent && ( $post->ID != $post->post_parent ) ) {
 			$parent_post_status = get_post_status( $post->post_parent );
 			if ( 'trash' == $parent_post_status ) {
@@ -348,7 +311,6 @@ function get_post_status( $ID = '' ) {
 		}
 
 	}
-
 	return apply_filters( 'get_post_status', $post->post_status, $post );
 }
 
@@ -359,7 +321,6 @@ function get_post_statuses() {
 		'private' => 'Private',
 		'publish' => 'Published'
 	);
-
 	return $status;
 }
 
@@ -369,7 +330,6 @@ function get_page_statuses() {
 		'private' => 'Private',
 		'publish' => 'Published'
 	);
-
 	return $status;
 }
 
@@ -378,8 +338,6 @@ function register_post_status( $post_status, $args = array() ) {
 
 	if (!is_array($wp_post_statuses))
 		$wp_post_statuses = array();
-
-	// Args prefixed with an underscore are reserved for internal use.
 	$defaults = array(
 		'label' => false,
 		'label_count' => false,
@@ -1504,25 +1462,15 @@ function wp_trash_post_comments( $post = null ) {
 	if ( empty($comments) )
 		return;
 
-	// Cache current status for each comment.
 	$statuses = array();
 	foreach ( $comments as $comment )
 		$statuses[$comment->comment_ID] = $comment->comment_approved;
 	add_post_meta($post_id, '_wp_trash_meta_comments_status', $statuses);
 
-	// Set status for all comments to post-trashed.
 	$result = $wpdb->update($wpdb->comments, array('comment_approved' => 'post-trashed'), array('comment_post_ID' => $post_id));
 
 	clean_comment_cache( array_keys($statuses) );
 
-	/**
-	 * Fires after comments are sent to the trash.
-	 *
-	 * @since 2.9.0
-	 *
-	 * @param int   $post_id  Post ID.
-	 * @param array $statuses Array of comment statuses.
-	 */
 	do_action( 'trashed_post_comments', $post_id, $statuses );
 
 	return $result;
@@ -1544,7 +1492,6 @@ function wp_untrash_post_comments( $post = null ) {
 
 	do_action( 'untrash_post_comments', $post_id );
 
-	// Restore each comment to its original status.
 	$group_by_status = array();
 	foreach ( $statuses as $comment_id => $comment_status )
 		$group_by_status[$comment_status][] = $comment_id;
@@ -1593,7 +1540,7 @@ function wp_get_post_terms( $post_id = 0, $taxonomy = 'post_tag', $args = array(
 function wp_get_recent_posts( $args = array(), $output = ARRAY_A ) {
 
 	if ( is_numeric( $args ) ) {
-		_deprecated_argument( __FUNCTION__, '3.1', __( 'Passing an integer number of posts is deprecated. Pass an array of arguments instead.' ) );
+		_deprecated_argument( __FUNCTION__, '3.1', 'Passing an integer number of posts is deprecated. Pass an array of arguments instead.' );
 		$args = array( 'numberposts' => absint( $args ) );
 	}
 
@@ -1660,13 +1607,11 @@ function wp_insert_post( $postarr, $wp_error = false ) {
 
 	if ( ! empty( $postarr['ID'] ) ) {
 		$update = true;
-
-		// Get the post ID and GUID.
 		$post_ID = $postarr['ID'];
 		$post_before = get_post( $post_ID );
 		if ( is_null( $post_before ) ) {
 			if ( $wp_error ) {
-				return new WP_Error( 'invalid_post', __( 'Invalid post ID.' ) );
+				return new WP_Error( 'invalid_post', 'Invalid post ID.' );
 			}
 			return 0;
 		}
@@ -1685,7 +1630,6 @@ function wp_insert_post( $postarr, $wp_error = false ) {
 	if ( isset( $postarr['post_name'] ) ) {
 		$post_name = $postarr['post_name'];
 	} elseif ( $update ) {
-		// For an update, don't modify the post_name if it wasn't supplied as an argument.
 		$post_name = $post_before->post_name;
 	}
 
@@ -1709,11 +1653,9 @@ function wp_insert_post( $postarr, $wp_error = false ) {
 	}
 
 	if ( ! empty( $postarr['post_category'] ) ) {
-		// Filter out empty terms.
 		$post_category = array_filter( $postarr['post_category'] );
 	}
 
-	// Make sure we set a valid category.
 	if ( empty( $post_category ) || 0 == count( $post_category ) || ! is_array( $post_category ) ) {
 		// 'post' requires at least one category.
 		if ( 'post' == $post_type && 'auto-draft' != $post_status ) {
@@ -1723,15 +1665,10 @@ function wp_insert_post( $postarr, $wp_error = false ) {
 		}
 	}
 
-	// Don't allow contributors to set the post slug for pending review posts.
 	if ( 'pending' == $post_status && !current_user_can( 'publish_posts' ) ) {
 		$post_name = '';
 	}
 
-	/*
-	 * Create a valid post name. Drafts and pending posts are allowed to have
-	 * an empty post name.
-	 */
 	if ( empty($post_name) ) {
 		if ( !in_array( $post_status, array( 'draft', 'pending', 'auto-draft' ) ) ) {
 			$post_name = sanitize_title($post_title);
@@ -1739,7 +1676,6 @@ function wp_insert_post( $postarr, $wp_error = false ) {
 			$post_name = '';
 		}
 	} else {
-		// On updates, we need to check to see if it's using the old, fixed sanitization context.
 		$check_name = sanitize_title( $post_name, '', 'old-save' );
 		if ( $update && strtolower( urlencode( $post_name ) ) == $check_name && get_post_field( 'post_name', $post_ID ) == $check_name ) {
 			$post_name = $check_name;
@@ -1748,10 +1684,6 @@ function wp_insert_post( $postarr, $wp_error = false ) {
 		}
 	}
 
-	/*
-	 * If the post date is empty (due to having been new or a draft) and status
-	 * is not 'draft' or 'pending', set date to now.
-	 */
 	if ( empty( $postarr['post_date'] ) || '0000-00-00 00:00:00' == $postarr['post_date'] ) {
 		if ( empty( $postarr['post_date_gmt'] ) || '0000-00-00 00:00:00' == $postarr['post_date_gmt'] ) {
 			$post_date = current_time( 'mysql' );
@@ -1762,14 +1694,13 @@ function wp_insert_post( $postarr, $wp_error = false ) {
 		$post_date = $postarr['post_date'];
 	}
 
-	// Validate the date.
 	$mm = substr( $post_date, 5, 2 );
 	$jj = substr( $post_date, 8, 2 );
 	$aa = substr( $post_date, 0, 4 );
 	$valid_date = wp_checkdate( $mm, $jj, $aa, $post_date );
 	if ( ! $valid_date ) {
 		if ( $wp_error ) {
-			return new WP_Error( 'invalid_date', __( 'Whoops, the provided date is invalid.' ) );
+			return new WP_Error( 'invalid_date', 'Whoops, the provided date is invalid.' );
 		} else {
 			return 0;
 		}
@@ -1807,7 +1738,6 @@ function wp_insert_post( $postarr, $wp_error = false ) {
 		}
 	}
 
-	// Comment status.
 	if ( empty( $postarr['comment_status'] ) ) {
 		if ( $update ) {
 			$comment_status = 'closed';
@@ -1818,7 +1748,6 @@ function wp_insert_post( $postarr, $wp_error = false ) {
 		$comment_status = $postarr['comment_status'];
 	}
 
-	// These variables are needed by compact() later.
 	$post_content_filtered = $postarr['post_content_filtered'];
 	$post_author = isset( $postarr['post_author'] ) ? $postarr['post_author'] : $user_id;
 	$ping_status = empty( $postarr['ping_status'] ) ? get_default_comment_status( $post_type, 'pingback' ) : $postarr['ping_status'];
@@ -1826,10 +1755,6 @@ function wp_insert_post( $postarr, $wp_error = false ) {
 	$pinged = isset( $postarr['pinged'] ) ? $postarr['pinged'] : '';
 	$import_id = isset( $postarr['import_id'] ) ? $postarr['import_id'] : 0;
 
-	/*
-	 * The 'wp_insert_post_parent' filter expects all variables to be present.
-	 * Previously, these variables would have already been extracted
-	 */
 	if ( isset( $postarr['menu_order'] ) ) {
 		$menu_order = (int) $postarr['menu_order'];
 	} else {

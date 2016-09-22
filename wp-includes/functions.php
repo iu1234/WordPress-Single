@@ -1909,22 +1909,21 @@ function wp_list_pluck( $list, $field, $index_key = null ) {
 }
 
 function wp_maybe_load_widgets() {
-
-	if ( ! apply_filters( 'load_default_widgets', true ) ) {
-		return;
-	}
-
-	require_once( ABSPATH . WPINC . '/default-widgets.php' );
-
+	require_once( ABSPATH . WPINC . '/widgets/class-wp-widget-pages.php' );
+	require_once( ABSPATH . WPINC . '/widgets/class-wp-widget-links.php' );
+	require_once( ABSPATH . WPINC . '/widgets/class-wp-widget-search.php' );
+	require_once( ABSPATH . WPINC . '/widgets/class-wp-widget-meta.php' );
+	require_once( ABSPATH . WPINC . '/widgets/class-wp-widget-text.php' );
+	require_once( ABSPATH . WPINC . '/widgets/class-wp-widget-categories.php' );
+	require_once( ABSPATH . WPINC . '/widgets/class-wp-widget-recent-posts.php' );
+	require_once( ABSPATH . WPINC . '/widgets/class-wp-nav-menu-widget.php' );
 	add_action( '_admin_menu', 'wp_widgets_add_menu' );
 }
 
 function wp_widgets_add_menu() {
 	global $submenu;
-
 	if ( ! current_theme_supports( 'widgets' ) )
 		return;
-
 	$submenu['themes.php'][7] = array( 'Widgets', 'edit_theme_options', 'widgets.php' );
 	ksort( $submenu['themes.php'], SORT_NUMERIC );
 }

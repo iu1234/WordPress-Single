@@ -11,47 +11,14 @@
  * @subpackage oEmbed
  */
 
-/**
- * Core class used to implement oEmbed functionality.
- *
- * @since 2.9.0
- */
 class WP_oEmbed {
 
-	/**
-	 * A list of oEmbed providers.
-	 *
-	 * @since 2.9.0
-	 * @access public
-	 * @var array
-	 */
 	public $providers = array();
 
-	/**
-	 * A list of an early oEmbed providers.
-	 *
-	 * @since 4.0.0
-	 * @access public
-	 * @static
-	 * @var array
-	 */
 	public static $early_providers = array();
 
-	/**
-	 * A list of private/protected methods, used for backwards compatibility.
-	 *
-	 * @since 4.2.0
-	 * @access private
-	 * @var array
-	 */
 	private $compat_methods = array( '_fetch_with_format', '_parse_json', '_parse_xml', '_parse_body' );
 
-	/**
-	 * Constructor.
-	 *
-	 * @since 2.9.0
-	 * @access public
-	 */
 	public function __construct() {
 		$host = urlencode( home_url() );
 		$providers = array(
@@ -114,93 +81,11 @@ class WP_oEmbed {
 
 		self::$early_providers = array();
 
-		/**
-		 * Filter the list of whitelisted oEmbed providers.
-		 *
-		 * Since WordPress 4.4, oEmbed discovery is enabled for all users and allows embedding of sanitized
-		 * iframes. The providers in this list are whitelisted, meaning they are trusted and allowed to
-		 * embed any content, such as iframes, videos, JavaScript, and arbitrary HTML.
-		 *
-		 * Supported providers:
-		 *
-		 * |   Provider   |        Flavor         | Supports HTTPS |   Since   |
-		 * | ------------ | --------------------- | :------------: | --------- |
-		 * | Dailymotion  | dailymotion.com       |      Yes       | 2.9.0     |
-		 * | Flickr       | flickr.com            |      Yes       | 2.9.0     |
-		 * | Hulu         | hulu.com              |      Yes       | 2.9.0     |
-		 * | Photobucket  | photobucket.com       |      No        | 2.9.0     |
-		 * | Scribd       | scribd.com            |      Yes       | 2.9.0     |
-		 * | Vimeo        | vimeo.com             |      Yes       | 2.9.0     |
-		 * | WordPress.tv | wordpress.tv          |      Yes       | 2.9.0     |
-		 * | YouTube      | youtube.com/watch     |      Yes       | 2.9.0     |
-		 * | Funny or Die | funnyordie.com        |      Yes       | 3.0.0     |
-		 * | Polldaddy    | polldaddy.com         |      Yes       | 3.0.0     |
-		 * | SmugMug      | smugmug.com           |      Yes       | 3.0.0     |
-		 * | YouTube      | youtu.be              |      Yes       | 3.0.0     |
-		 * | Twitter      | twitter.com           |      Yes       | 3.4.0     |
-		 * | Instagram    | instagram.com         |      Yes       | 3.5.0     |
-		 * | Instagram    | instagr.am            |      Yes       | 3.5.0     |
-		 * | Slideshare   | slideshare.net        |      Yes       | 3.5.0     |
-		 * | SoundCloud   | soundcloud.com        |      Yes       | 3.5.0     |
-		 * | Dailymotion  | dai.ly                |      Yes       | 3.6.0     |
-		 * | Flickr       | flic.kr               |      Yes       | 3.6.0     |
-		 * | Spotify      | spotify.com           |      Yes       | 3.6.0     |
-		 * | Imgur        | imgur.com             |      Yes       | 3.9.0     |
-		 * | Meetup.com   | meetup.com            |      Yes       | 3.9.0     |
-		 * | Meetup.com   | meetu.ps              |      Yes       | 3.9.0     |
-		 * | Animoto      | animoto.com           |      Yes       | 4.0.0     |
-		 * | Animoto      | video214.com          |      Yes       | 4.0.0     |
-		 * | CollegeHumor | collegehumor.com      |      Yes       | 4.0.0     |
-		 * | Issuu        | issuu.com             |      Yes       | 4.0.0     |
-		 * | Mixcloud     | mixcloud.com          |      Yes       | 4.0.0     |
-		 * | Polldaddy    | poll.fm               |      Yes       | 4.0.0     |
-		 * | TED          | ted.com               |      Yes       | 4.0.0     |
-		 * | YouTube      | youtube.com/playlist  |      Yes       | 4.0.0     |
-		 * | Vine         | vine.co               |      Yes       | 4.1.0     |
-		 * | Tumblr       | tumblr.com            |      Yes       | 4.2.0     |
-		 * | Kickstarter  | kickstarter.com       |      Yes       | 4.2.0     |
-		 * | Kickstarter  | kck.st                |      Yes       | 4.2.0     |
-		 * | Cloudup      | cloudup.com           |      Yes       | 4.4.0     |
-		 * | ReverbNation | reverbnation.com      |      Yes       | 4.4.0     |
-		 * | VideoPress   | videopress.com        |      Yes       | 4.4.0     |
-		 * | Reddit       | reddit.com            |      Yes       | 4.4.0     |
-		 * | Speaker Deck | speakerdeck.com       |      Yes       | 4.4.0     |
-		 * | Twitter      | twitter.com/timelines |      Yes       | 4.5.0     |
-		 * | Twitter      | twitter.com/moments   |      Yes       | 4.5.0     |
-		 *
-		 * No longer supported providers:
-		 *
-		 * |   Provider   |        Flavor        | Supports HTTPS |   Since   |  Removed  |
-		 * | ------------ | -------------------- | :------------: | --------- | --------- |
-		 * | Qik          | qik.com              |      Yes       | 2.9.0     | 3.9.0     |
-		 * | Viddler      | viddler.com          |      Yes       | 2.9.0     | 4.0.0     |
-		 * | Revision3    | revision3.com        |      No        | 2.9.0     | 4.2.0     |
-		 * | Blip         | blip.tv              |      No        | 2.9.0     | 4.4.0     |
-		 * | Rdio         | rdio.com             |      Yes       | 3.6.0     | 4.4.1     |
-		 * | Rdio         | rd.io                |      Yes       | 3.6.0     | 4.4.1     |
-		 *
-		 * @see wp_oembed_add_provider()
-		 *
-		 * @since 2.9.0
-		 *
-		 * @param array $providers An array of popular oEmbed providers.
-		 */
 		$this->providers = apply_filters( 'oembed_providers', $providers );
 
-		// Fix any embeds that contain new lines in the middle of the HTML which breaks wpautop().
 		add_filter( 'oembed_dataparse', array($this, '_strip_newlines'), 10, 3 );
 	}
 
-	/**
-	 * Exposes private/protected methods for backwards compatibility.
-	 *
-	 * @since 4.0.0
-	 * @access public
-	 *
-	 * @param callable $name      Method to call.
-	 * @param array    $arguments Arguments to pass when calling.
-	 * @return mixed|bool Return value of the callback, false otherwise.
-	 */
 	public function __call( $name, $arguments ) {
 		if ( in_array( $name, $this->compat_methods ) ) {
 			return call_user_func_array( array( $this, $name ), $arguments );
@@ -208,18 +93,6 @@ class WP_oEmbed {
 		return false;
 	}
 
-	/**
-	 * Takes a URL and returns the corresponding oEmbed provider's URL, if there is one.
-	 *
-	 * @since 4.0.0
-	 * @access public
-	 *
-	 * @see WP_oEmbed::discover()
-	 *
-	 * @param string        $url  The URL to the content.
-	 * @param string|array  $args Optional provider arguments.
-	 * @return false|string False on failure, otherwise the oEmbed provider URL.
-	 */
 	public function get_provider( $url, $args = '' ) {
 
 		$provider = false;
@@ -248,26 +121,6 @@ class WP_oEmbed {
 		return $provider;
 	}
 
-	/**
-	 * Adds an oEmbed provider.
-	 *
-	 * The provider is removed just-in-time when wp_oembed_add_provider() is called before
-	 * the {@see 'plugins_loaded'} hook.
-	 *
-	 * The just-in-time addition is for the benefit of the {@see 'oembed_providers'} filter.
-	 *
-	 * @static
-	 * @since 4.0.0
-	 * @access public
-	 *
-	 * @see wp_oembed_add_provider()
-	 *
-	 * @param string $format   Format of URL that this provider can handle. You can use
-	 *                         asterisks as wildcards.
-	 * @param string $provider The URL to the oEmbed provider..
-	 * @param bool   $regex    Optional. Whether the $format parameter is in a regex format.
-	 *                         Default false.
-	 */
 	public static function _add_provider_early( $format, $provider, $regex = false ) {
 		if ( empty( self::$early_providers['add'] ) ) {
 			self::$early_providers['add'] = array();
@@ -276,23 +129,6 @@ class WP_oEmbed {
 		self::$early_providers['add'][ $format ] = array( $provider, $regex );
 	}
 
-	/**
-	 * Removes an oEmbed provider.
-	 *
-	 * The provider is removed just-in-time when wp_oembed_remove_provider() is called before
-	 * the {@see 'plugins_loaded'} hook.
-	 *
-	 * The just-in-time removal is for the benefit of the {@see 'oembed_providers'} filter.
-	 *
-	 * @since 4.0.0
-	 * @access public
-	 * @static
-	 *
-	 * @see wp_oembed_remove_provider()
-	 *
-	 * @param string $format The format of URL that this provider can handle. You can use
-	 *                       asterisks as wildcards.
-	 */
 	public static function _remove_provider_early( $format ) {
 		if ( empty( self::$early_providers['remove'] ) ) {
 			self::$early_providers['remove'] = array();
@@ -301,35 +137,7 @@ class WP_oEmbed {
 		self::$early_providers['remove'][] = $format;
 	}
 
-	/**
-	 * The do-it-all function that takes a URL and attempts to return the HTML.
-	 *
-	 * @see WP_oEmbed::fetch()
-	 * @see WP_oEmbed::data2html()
-	 *
-	 * @since 2.9.0
-	 * @access public
-	 *
-	 * @param string       $url  The URL to the content that should be attempted to be embedded.
-	 * @param array|string $args Optional. Arguments, usually passed from a shortcode. Default empty.
-	 * @return false|string False on failure, otherwise the UNSANITIZED (and potentially unsafe) HTML that should be used to embed.
-	 */
 	public function get_html( $url, $args = '' ) {
-		/**
-		 * Filters the oEmbed result before any HTTP requests are made.
-		 *
-		 * This allows one to short-circuit the default logic, perhaps by
-		 * replacing it with a routine that is more optimal for your setup.
-		 *
-		 * Passing a non-null value to the filter will effectively short-circuit retrieval,
-		 * returning the passed value instead.
-		 *
-		 * @since 4.5.3
-		 *
-		 * @param null|string $result The UNSANITIZED (and potentially unsafe) HTML that should be used to embed. Default null.
-		 * @param string      $url    The URL to the content that should be attempted to be embedded.
-		 * @param array       $args   Optional. Arguments, usually passed from a shortcode. Default empty.
-		 */
 		$pre = apply_filters( 'pre_oembed_result', null, $url, $args );
 
 		if ( null !== $pre ) {
@@ -342,58 +150,21 @@ class WP_oEmbed {
 			return false;
 		}
 
-		/**
-		 * Filter the HTML returned by the oEmbed provider.
-		 *
-		 * @since 2.9.0
-		 *
-		 * @param string $data The returned oEmbed HTML.
-		 * @param string $url  URL of the content to be embedded.
-		 * @param array  $args Optional arguments, usually passed from a shortcode.
-		 */
 		return apply_filters( 'oembed_result', $this->data2html( $data, $url ), $url, $args );
 	}
 
-	/**
-	 * Attempts to discover link tags at the given URL for an oEmbed provider.
-	 *
-	 * @since 2.9.0
-	 * @access public
-	 *
-	 * @param string $url The URL that should be inspected for discovery `<link>` tags.
-	 * @return false|string False on failure, otherwise the oEmbed provider URL.
-	 */
 	public function discover( $url ) {
 		$providers = array();
 		$args = array(
 			'limit_response_size' => 153600, // 150 KB
 		);
 
-		/**
-		 * Filter oEmbed remote get arguments.
-		 *
-		 * @since 4.0.0
-		 *
-		 * @see WP_Http::request()
-		 *
-		 * @param array  $args oEmbed remote get arguments.
-		 * @param string $url  URL to be inspected.
-		 */
 		$args = apply_filters( 'oembed_remote_get_args', $args, $url );
 
 		// Fetch URL content
 		$request = wp_safe_remote_get( $url, $args );
 		if ( $html = wp_remote_retrieve_body( $request ) ) {
 
-			/**
-			 * Filter the link types that contain oEmbed provider URLs.
-			 *
-			 * @since 2.9.0
-			 *
-			 * @param array $format Array of oEmbed link types. Accepts 'application/json+oembed',
-			 *                      'text/xml+oembed', and 'application/xml+oembed' (incorrect,
-			 *                      used by at least Vimeo).
-			 */
 			$linktypes = apply_filters( 'oembed_linktypes', array(
 				'application/json+oembed' => 'json',
 				'text/xml+oembed' => 'xml',
@@ -438,17 +209,6 @@ class WP_oEmbed {
 			return false;
 	}
 
-	/**
-	 * Connects to a oEmbed provider and returns the result.
-	 *
-	 * @since 2.9.0
-	 * @access public
-	 *
-	 * @param string       $provider The URL to the oEmbed provider.
-	 * @param string       $url      The URL to the content that is desired to be embedded.
-	 * @param array|string $args     Optional. Arguments, usually passed from a shortcode. Default empty.
-	 * @return false|object False on failure, otherwise the result in the form of an object.
-	 */
 	public function fetch( $provider, $url, $args = '' ) {
 		$args = wp_parse_args( $args, wp_embed_defaults( $url ) );
 
@@ -456,15 +216,6 @@ class WP_oEmbed {
 		$provider = add_query_arg( 'maxheight', (int) $args['height'], $provider );
 		$provider = add_query_arg( 'url', urlencode($url), $provider );
 
-		/**
-		 * Filter the oEmbed URL to be fetched.
-		 *
-		 * @since 2.9.0
-		 *
-		 * @param string $provider URL of the oEmbed provider.
-		 * @param string $url      URL of the content to be embedded.
-		 * @param array  $args     Optional arguments, usually passed from a shortcode.
-		 */
 		$provider = apply_filters( 'oembed_fetch_url', $provider, $url, $args );
 
 		foreach ( array( 'json', 'xml' ) as $format ) {
@@ -476,16 +227,6 @@ class WP_oEmbed {
 		return false;
 	}
 
-	/**
-	 * Fetches result from an oEmbed provider for a specific format and complete provider URL
-	 *
-	 * @since 3.0.0
-	 * @access private
-	 *
-	 * @param string $provider_url_with_args URL to the provider with full arguments list (url, maxheight, etc.)
-	 * @param string $format Format to use
-	 * @return false|object|WP_Error False on failure, otherwise the result in the form of an object.
-	 */
 	private function _fetch_with_format( $provider_url_with_args, $format ) {
 		$provider_url_with_args = add_query_arg( 'format', $format, $provider_url_with_args );
 
@@ -501,29 +242,11 @@ class WP_oEmbed {
 		return $this->$parse_method( $body );
 	}
 
-	/**
-	 * Parses a json response body.
-	 *
-	 * @since 3.0.0
-	 * @access private
-	 *
-	 * @param string $response_body
-	 * @return object|false
-	 */
 	private function _parse_json( $response_body ) {
 		$data = json_decode( trim( $response_body ) );
 		return ( $data && is_object( $data ) ) ? $data : false;
 	}
 
-	/**
-	 * Parses an XML response body.
-	 *
-	 * @since 3.0.0
-	 * @access private
-	 *
-	 * @param string $response_body
-	 * @return object|false
-	 */
 	private function _parse_xml( $response_body ) {
 		if ( ! function_exists( 'libxml_disable_entity_loader' ) )
 			return false;
@@ -539,15 +262,6 @@ class WP_oEmbed {
 		return $return;
 	}
 
-	/**
-	 * Serves as a helper function for parsing an XML response body.
-	 *
-	 * @since 3.6.0
-	 * @access private
-	 *
-	 * @param string $response_body
-	 * @return object|false
-	 */
 	private function _parse_xml_body( $response_body ) {
 		if ( ! function_exists( 'simplexml_import_dom' ) || ! class_exists( 'DOMDocument', false ) )
 			return false;
@@ -577,16 +291,6 @@ class WP_oEmbed {
 		return $return;
 	}
 
-	/**
-	 * Converts a data object from WP_oEmbed::fetch() and returns the HTML.
-	 *
-	 * @since 2.9.0
-	 * @access public
-	 *
-	 * @param object $data A data object result from an oEmbed provider.
-	 * @param string $url The URL to the content that is desired to be embedded.
-	 * @return false|string False on error, otherwise the HTML needed to embed.
-	 */
 	public function data2html( $data, $url ) {
 		if ( ! is_object( $data ) || empty( $data->type ) )
 			return false;
@@ -619,32 +323,9 @@ class WP_oEmbed {
 				$return = false;
 		}
 
-		/**
-		 * Filter the returned oEmbed HTML.
-		 *
-		 * Use this filter to add support for custom data types, or to filter the result.
-		 *
-		 * @since 2.9.0
-		 *
-		 * @param string $return The returned oEmbed HTML.
-		 * @param object $data   A data object result from an oEmbed provider.
-		 * @param string $url    The URL of the content to be embedded.
-		 */
 		return apply_filters( 'oembed_dataparse', $return, $data, $url );
 	}
 
-	/**
-	 * Strips any new lines from the HTML.
-	 *
-	 * @since 2.9.0 as strip_scribd_newlines()
-	 * @since 3.0.0
-	 * @access public
-	 *
-	 * @param string $html Existing HTML.
-	 * @param object $data Data object from WP_oEmbed::data2html()
-	 * @param string $url The original URL passed to oEmbed.
-	 * @return string Possibly modified $html
-	 */
 	public function _strip_newlines( $html, $data, $url ) {
 		if ( false === strpos( $html, "\n" ) ) {
 			return $html;
@@ -675,16 +356,6 @@ class WP_oEmbed {
 	}
 }
 
-/**
- * Returns the initialized WP_oEmbed object.
- *
- * @since 2.9.0
- * @access private
- *
- * @staticvar WP_oEmbed $wp_oembed
- *
- * @return WP_oEmbed object.
- */
 function _wp_oembed_get_object() {
 	static $wp_oembed = null;
 

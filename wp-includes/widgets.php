@@ -66,11 +66,9 @@ function register_sidebars( $number = 1, $args = array() ) {
 		else
 			$_args['name'] = isset($args['name']) ? $args['name'] : 'Sidebar';
 
-		// Custom specified ID's are suffixed if they exist already.
-		// Automatically generated sidebar names need to be suffixed regardless starting at -0
 		if ( isset($args['id']) ) {
 			$_args['id'] = $args['id'];
-			$n = 2; // Start at -2 for conflicting custom ID's
+			$n = 2;
 			while ( is_registered_sidebar( $_args['id'] ) ) {
 				$_args['id'] = $args['id'] . '-' . $n++;
 			}
@@ -584,7 +582,6 @@ function retrieve_widgets( $theme_changed = false ) {
 	$sidebars_widgets = $_sidebars_widgets;
 	unset($_sidebars_widgets, $_widgets);
 
-	// find hidden/lost multi-widget instances
 	$lost_widgets = array();
 	foreach ( $wp_registered_widgets as $key => $val ) {
 		if ( in_array($key, $shown_widgets, true) )
@@ -602,26 +599,18 @@ function retrieve_widgets( $theme_changed = false ) {
 	if ( 'customize' !== $theme_changed ) {
 		wp_set_sidebars_widgets( $sidebars_widgets );
 	}
-
 	return $sidebars_widgets;
 }
 
 function wp_widgets_init() {
-	if ( !is_blog_installed() )
-		return;
-
 	register_widget('WP_Widget_Pages');
-	register_widget('WP_Widget_Calendar');
 	register_widget('WP_Widget_Archives');
-	if ( get_option( 'link_manager_enabled' ) )
-		register_widget('WP_Widget_Links');
+	register_widget('WP_Widget_Links');
 	register_widget('WP_Widget_Meta');
 	register_widget('WP_Widget_Search');
 	register_widget('WP_Widget_Text');
 	register_widget('WP_Widget_Categories');
 	register_widget('WP_Widget_Recent_Posts');
-	register_widget('WP_Widget_Recent_Comments');
-	register_widget('WP_Widget_Tag_Cloud');
 	register_widget('WP_Nav_Menu_Widget');
 	do_action( 'widgets_init' );
 }

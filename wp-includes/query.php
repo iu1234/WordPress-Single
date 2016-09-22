@@ -8,24 +8,6 @@
  * @subpackage Query
  */
 
-function query_posts($query) {
-	$GLOBALS['wp_query'] = new WP_Query();
-	return $GLOBALS['wp_query']->query($query);
-}
-
-function wp_reset_query() {
-	$GLOBALS['wp_query'] = $GLOBALS['wp_the_query'];
-	wp_reset_postdata();
-}
-
-function wp_reset_postdata() {
-	global $wp_query;
-
-	if ( isset( $wp_query ) ) {
-		$wp_query->reset_postdata();
-	}
-}
-
 class WP_Query {
 
 	public $query;
@@ -127,6 +109,12 @@ class WP_Query {
 	private $compat_fields = array( 'query_vars_hash', 'query_vars_changed' );
 
 	private $compat_methods = array( 'init_query_flags', 'parse_tax_query' );
+	
+	public function __construct($query = '') {
+		if ( ! empty($query) ) {
+			$this->query($query);
+		}
+	}
 
 	private function init_query_flags() {
 		$this->is_single = false;
@@ -726,13 +714,6 @@ class WP_Query {
 
 		$this->tax_query = new WP_Tax_Query( $tax_query );
 
-		/**
-		 * Fires after taxonomy-related query vars have been parsed.
-		 *
-		 * @since 3.7.0
-		 *
-		 * @param WP_Query $this The WP_Query instance.
-		 */
 		do_action( 'parse_tax_query', $this );
 	}
 
@@ -1042,7 +1023,7 @@ class WP_Query {
 		$page = 1;
 
 		if ( isset( $q['caller_get_posts'] ) ) {
-			_deprecated_argument( 'WP_Query', '3.1', __( '"caller_get_posts" is deprecated. Use "ignore_sticky_posts" instead.' ) );
+			_deprecated_argument( 'WP_Query', '3.1', '"caller_get_posts" is deprecated. Use "ignore_sticky_posts" instead.' );
 			if ( !isset( $q['ignore_sticky_posts'] ) )
 				$q['ignore_sticky_posts'] = $q['caller_get_posts'];
 		}
@@ -1319,16 +1300,7 @@ class WP_Query {
 			}
 		}
 
-		/*
-		 * Ensure that 'taxonomy', 'term', 'term_id', 'cat', and
-		 * 'category_name' vars are set for backward compatibility.
-		 */
 		if ( ! empty( $this->tax_query->queried_terms ) ) {
-
-			/*
-			 * Set 'taxonomy', 'term', and 'term_id' to the
-			 * first taxonomy other than 'post_tag' or 'category'.
-			 */
 			if ( ! isset( $q['taxonomy'] ) ) {
 				foreach ( $this->tax_query->queried_terms as $queried_taxonomy => $queried_items ) {
 					if ( empty( $queried_items['terms'][0] ) ) {
@@ -1437,12 +1409,7 @@ class WP_Query {
 			$q['order'] = $rand ? '' : $this->parse_order( $q['order'] );
 		}
 
-		// Order by.
 		if ( empty( $q['orderby'] ) ) {
-			/*
-			 * Boolean false or empty array blanks out ORDER BY,
-			 * while leaving the value unset or otherwise empty sets the default.
-			 */
 			if ( isset( $q['orderby'] ) && ( is_array( $q['orderby'] ) || false === $q['orderby'] ) ) {
 				$orderby = '';
 			} else {
@@ -1801,14 +1768,6 @@ class WP_Query {
 			$this->posts = array_map( 'get_post', $this->posts );
 
 		if ( ! $q['suppress_filters'] ) {
-			/**
-			 * Filter the raw post results array, prior to status checks.
-			 *
-			 * @since 2.3.0
-			 *
-			 * @param array    $posts The post results array.
-			 * @param WP_Query &$this The WP_Query instance (passed by reference).
-			 */
 			$this->posts = apply_filters_ref_array( 'posts_results', array( $this->posts, &$this ) );
 		}
 
@@ -2084,12 +2043,6 @@ class WP_Query {
 			return $this->queried_object_id;
 		}
 		return 0;
-	}
-
-	public function __construct($query = '') {
-		if ( ! empty($query) ) {
-			$this->query($query);
-		}
 	}
 
 	public function __get( $name ) {
@@ -2452,15 +2405,6 @@ class WP_Query {
 		}
 	}
 
-	public function lazyload_term_meta( $check, $term_id ) {
-		_deprecated_function( __METHOD__, '4.5.0' );
-		return $check;
-	}
-
-	public function lazyload_comment_meta( $check, $comment_id ) {
-		_deprecated_function( __METHOD__, '4.5.0' );
-		return $check;
-	}
 }
 
 function wp_old_slug_redirect() {
@@ -2492,8 +2436,6 @@ function wp_old_slug_redirect() {
 
 		$query = $wpdb->prepare("SELECT post_id FROM $wpdb->postmeta, $wpdb->posts WHERE ID = post_id AND post_type = %s AND meta_key = '_wp_old_slug' AND meta_value = %s", $post_type, $wp_query->query_vars['name']);
 
-		// if year, monthnum, or day have been specified, make our query more precise
-		// just in case there are multiple identical _wp_old_slug values
 		if ( '' != $wp_query->query_vars['year'] )
 			$query .= $wpdb->prepare(" AND YEAR(post_date) = %d", $wp_query->query_vars['year']);
 		if ( '' != $wp_query->query_vars['monthnum'] )

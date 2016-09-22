@@ -115,7 +115,6 @@ class WP {
 							}
 						}
 
-						// Got a match.
 						$this->matched_rule = $match;
 						break;
 					}
@@ -135,7 +134,6 @@ class WP {
 					unset( $error, $_GET['error'] );
 			}
 
-			// If req_uri is empty or if it is a request for ourself, unset error.
 			if ( empty($request) || $req_uri == $self || strpos($_SERVER['PHP_SELF'], 'wp-admin/') !== false ) {
 				unset( $error, $_GET['error'] );
 

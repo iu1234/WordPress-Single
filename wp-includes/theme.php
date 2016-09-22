@@ -1078,7 +1078,6 @@ function _custom_logo_header_styles() {
 		$classes = (array) get_theme_support( 'custom-logo', 'header-text' );
 		$classes = array_map( 'sanitize_html_class', $classes );
 		$classes = '.' . implode( ', .', $classes );
-
 		?>
 
 		<style id="custom-logo-css" type="text/css">

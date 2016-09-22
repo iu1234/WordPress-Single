@@ -7,41 +7,12 @@
  * @link http://www.openwall.com/phpass/
  */
 
-#
-# Written by Solar Designer <solar at openwall.com> in 2004-2006 and placed in
-# the public domain.  Revised in subsequent years, still public domain.
-#
-# There's absolutely no warranty.
-#
-# Please be sure to update the Version line if you edit this file in any way.
-# It is suggested that you leave the main version number intact, but indicate
-# your project name (after the slash) and add your own revision information.
-#
-# Please do not change the "private" password hashing method implemented in
-# here, thereby making your hashes incompatible.  However, if you must, please
-# change the hash type identifier (the "$P$") to something different.
-#
-# Obviously, since this code is in the public domain, the above are not
-# requirements (there can be none), but merely suggestions.
-#
-
-/**
- * Portable PHP password hashing framework.
- *
- * @package phpass
- * @version 0.3 / WordPress
- * @link http://www.openwall.com/phpass/
- * @since 2.5.0
- */
 class PasswordHash {
 	var $itoa64;
 	var $iteration_count_log2;
 	var $portable_hashes;
 	var $random_state;
 
-	/**
-	 * PHP5 constructor.
-	 */
 	function __construct( $iteration_count_log2, $portable_hashes )
 	{
 		$this->itoa64 = './0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
@@ -52,14 +23,7 @@ class PasswordHash {
 
 		$this->portable_hashes = $portable_hashes;
 
-		$this->random_state = microtime() . uniqid(rand(), TRUE); // removed getmypid() for compatibility reasons
-	}
-
-	/**
-	 * PHP4 constructor.
-	 */
-	public function PasswordHash( $iteration_count_log2, $portable_hashes ) {
-		self::__construct( $iteration_count_log2, $portable_hashes );
+		$this->random_state = microtime() . uniqid(rand(), TRUE);
 	}
 
 	function get_random_bytes($count)
@@ -139,23 +103,10 @@ class PasswordHash {
 		if (strlen($salt) != 8)
 			return $output;
 
-		# We're kind of forced to use MD5 here since it's the only
-		# cryptographic primitive available in all versions of PHP
-		# currently in use.  To implement our own low-level crypto
-		# in PHP would result in much worse performance and
-		# consequently in lower iteration counts and hashes that are
-		# quicker to crack (by non-PHP code).
-		if (PHP_VERSION >= '5') {
-			$hash = md5($salt . $password, TRUE);
-			do {
-				$hash = md5($hash . $password, TRUE);
-			} while (--$count);
-		} else {
-			$hash = pack('H*', md5($salt . $password));
-			do {
-				$hash = pack('H*', md5($hash . $password));
-			} while (--$count);
-		}
+		$hash = md5($salt . $password, TRUE);
+		do {
+			$hash = md5($hash . $password, TRUE);
+		} while (--$count);
 
 		$output = substr($setting, 0, 12);
 		$output .= $this->encode64($hash, 16);
@@ -166,8 +117,7 @@ class PasswordHash {
 	function gensalt_extended($input)
 	{
 		$count_log2 = min($this->iteration_count_log2 + 8, 24);
-		# This should be odd to not reveal weak DES keys, and the
-		# maximum valid value is (2**24 - 1) which is odd anyway.
+
 		$count = (1 << $count_log2) - 1;
 
 		$output = '_';
@@ -183,14 +133,6 @@ class PasswordHash {
 
 	function gensalt_blowfish($input)
 	{
-		# This one needs to use a different order of characters and a
-		# different encoding scheme from the one in encode64() above.
-		# We care because the last character in our encoded string will
-		# only represent 2 bits.  While two known implementations of
-		# bcrypt will happily accept and correct a salt string which
-		# has the 4 unused bits set to non-zero, we do not want to take
-		# chances and we also do not want to waste an additional byte
-		# of entropy.
 		$itoa64 = './ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
 		$output = '$2a$';
@@ -255,9 +197,6 @@ class PasswordHash {
 		if (strlen($hash) == 34)
 			return $hash;
 
-		# Returning '*' on error is safe here, but would _not_ be safe
-		# in a crypt(3)-like function used _both_ for generating new
-		# hashes and for validating passwords against existing hashes.
 		return '*';
 	}
 

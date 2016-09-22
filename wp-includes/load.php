@@ -33,14 +33,11 @@ function wp_unregister_GLOBALS() {
 
 function wp_fix_server_vars() {
 	global $PHP_SELF;
-
 	$default_server_values = array(
 		'SERVER_SOFTWARE' => '',
 		'REQUEST_URI' => '',
 	);
-
 	$_SERVER = array_merge( $default_server_values, $_SERVER );
-
 	if ( empty( $_SERVER['REQUEST_URI'] ) || ( PHP_SAPI != 'cgi-fcgi' && preg_match( '/^Microsoft-IIS\//', $_SERVER['SERVER_SOFTWARE'] ) ) ) {
 
 		if ( isset( $_SERVER['HTTP_X_ORIGINAL_URL'] ) ) {
@@ -76,13 +73,6 @@ function wp_fix_server_vars() {
 	$PHP_SELF = $_SERVER['PHP_SELF'];
 	if ( empty( $PHP_SELF ) )
 		$_SERVER['PHP_SELF'] = $PHP_SELF = preg_replace( '/(\?.*)?$/', '', $_SERVER["REQUEST_URI"] );
-}
-
-function wp_favicon_request() {
-	if ( '/favicon.ico' == $_SERVER['REQUEST_URI'] ) {
-		header('Content-Type: image/vnd.microsoft.icon');
-		exit;
-	}
 }
 
 function wp_maintenance() {
@@ -177,17 +167,10 @@ function wp_set_internal_encoding() {
 }
 
 function wp_magic_quotes() {
-	if ( get_magic_quotes_gpc() ) {
-		$_GET    = stripslashes_deep( $_GET    );
-		$_POST   = stripslashes_deep( $_POST   );
-		$_COOKIE = stripslashes_deep( $_COOKIE );
-	}
-
 	$_GET    = add_magic_quotes( $_GET    );
 	$_POST   = add_magic_quotes( $_POST   );
 	$_COOKIE = add_magic_quotes( $_COOKIE );
 	$_SERVER = add_magic_quotes( $_SERVER );
-
 	$_REQUEST = array_merge( $_GET, $_POST );
 }
 
@@ -201,7 +184,6 @@ function is_admin() {
 		return $GLOBALS['current_screen']->in_admin();
 	elseif ( defined( 'WP_ADMIN' ) )
 		return WP_ADMIN;
-
 	return false;
 }
 
@@ -210,23 +192,6 @@ function is_blog_admin() {
 		return $GLOBALS['current_screen']->in_admin( 'site' );
 	elseif ( defined( 'WP_BLOG_ADMIN' ) )
 		return WP_BLOG_ADMIN;
-
-	return false;
-}
-
-function is_network_admin() {
-	if ( isset( $GLOBALS['current_screen'] ) )
-		return $GLOBALS['current_screen']->in_admin( 'network' );
-	elseif ( defined( 'WP_NETWORK_ADMIN' ) )
-		return WP_NETWORK_ADMIN;
-	return false;
-}
-
-function is_user_admin() {
-	if ( isset( $GLOBALS['current_screen'] ) )
-		return $GLOBALS['current_screen']->in_admin( 'user' );
-	elseif ( defined( 'WP_USER_ADMIN' ) )
-		return WP_USER_ADMIN;
 
 	return false;
 }
