@@ -36,24 +36,21 @@ function get_post_type_archive_template() {
 }
 
 function get_author_template() {
-	$author = get_queried_object();
-
+	global $wp_query;
+	$author = $wp_query->get_queried_object();
 	$templates = array();
-
 	if ( $author instanceof WP_User ) {
 		$templates[] = "author-{$author->user_nicename}.php";
 		$templates[] = "author-{$author->ID}.php";
 	}
 	$templates[] = 'author.php';
-
 	return get_query_template( 'author', $templates );
 }
 
 function get_category_template() {
-	$category = get_queried_object();
-
+	global $wp_query;
+	$category = $wp_query->get_queried_object();
 	$templates = array();
-
 	if ( ! empty( $category->slug ) ) {
 		$templates[] = "category-{$category->slug}.php";
 		$templates[] = "category-{$category->term_id}.php";
@@ -64,31 +61,27 @@ function get_category_template() {
 }
 
 function get_tag_template() {
-	$tag = get_queried_object();
-
+	global $wp_query;
+	$tag = $wp_query->get_queried_object();
 	$templates = array();
-
 	if ( ! empty( $tag->slug ) ) {
 		$templates[] = "tag-{$tag->slug}.php";
 		$templates[] = "tag-{$tag->term_id}.php";
 	}
 	$templates[] = 'tag.php';
-
 	return get_query_template( 'tag', $templates );
 }
 
 function get_taxonomy_template() {
-	$term = get_queried_object();
-
+	global $wp_query;
+	$term = $wp_query->get_queried_object();
 	$templates = array();
-
 	if ( ! empty( $term->slug ) ) {
 		$taxonomy = $term->taxonomy;
 		$templates[] = "taxonomy-$taxonomy-{$term->slug}.php";
 		$templates[] = "taxonomy-$taxonomy.php";
 	}
 	$templates[] = 'taxonomy.php';
-
 	return get_query_template( 'taxonomy', $templates );
 }
 
@@ -123,7 +116,8 @@ function get_page_template() {
 }
 
 function get_single_template() {
-	$object = get_queried_object();
+	global $wp_query;
+	$object = $wp_query->get_queried_object();
 	$templates = array();
 	if ( ! empty( $object->post_type ) ) {
 		$templates[] = "single-{$object->post_type}-{$object->post_name}.php";
@@ -131,20 +125,6 @@ function get_single_template() {
 	}
 	$templates[] = "single.php";
 	return get_query_template( 'single', $templates );
-}
-
-function get_embed_template() {
-	$object = get_queried_object();
-	$templates = array();
-	if ( ! empty( $object->post_type ) ) {
-		$post_format = get_post_format( $object );
-		if ( $post_format ) {
-			$templates[] = "embed-{$object->post_type}-{$post_format}.php";
-		}
-		$templates[] = "embed-{$object->post_type}.php";
-	}
-	$templates[] = "embed.php";
-	return get_query_template( 'embed', $templates );
 }
 
 function get_attachment_template() {
@@ -186,7 +166,7 @@ function locate_template($template_names, $load = false, $require_once = true ) 
 }
 
 function load_template( $_template_file, $require_once = true ) {
-	global $posts, $post, $wp_did_header, $wp_query, $wp_rewrite, $wpdb, $wp_version, $wp, $id, $comment, $user_ID;
+	global $posts, $post, $wp_did_header, $wp_query, $wp_rewrite, $wpdb, $wp, $id, $comment, $user_ID;
 	if ( is_array( $wp_query->query_vars ) ) {
 		extract( $wp_query->query_vars, EXTR_SKIP );
 	}
@@ -199,4 +179,3 @@ function load_template( $_template_file, $require_once = true ) {
 		require( $_template_file );
 	}
 }
-

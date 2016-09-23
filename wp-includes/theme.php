@@ -69,19 +69,10 @@ function wp_clean_themes_cache( $clear_update_cache = true ) {
 		$theme->cache_delete();
 }
 
-function is_child_theme() {
-	return ( get_template_directory() !== get_stylesheet_directory() );
-}
-
-function get_stylesheet() {
-	return apply_filters( 'stylesheet', get_option( 'stylesheet' ) );
-}
-
 function get_stylesheet_directory() {
-	$stylesheet = get_stylesheet();
+	$stylesheet = get_option( 'stylesheet' );
 	$theme_root = get_theme_root( $stylesheet );
 	$stylesheet_dir = "$theme_root/$stylesheet";
-
 	return apply_filters( 'stylesheet_directory', $stylesheet_dir, $stylesheet, $theme_root );
 }
 
@@ -89,14 +80,12 @@ function get_stylesheet_directory_uri() {
 	$stylesheet = str_replace( '%2F', '/', rawurlencode( get_stylesheet() ) );
 	$theme_root_uri = get_theme_root_uri( $stylesheet );
 	$stylesheet_dir_uri = "$theme_root_uri/$stylesheet";
-
 	return apply_filters( 'stylesheet_directory_uri', $stylesheet_dir_uri, $stylesheet, $theme_root_uri );
 }
 
 function get_stylesheet_uri() {
 	$stylesheet_dir_uri = get_stylesheet_directory_uri();
 	$stylesheet_uri = $stylesheet_dir_uri . '/style.css';
-
 	return apply_filters( 'stylesheet_uri', $stylesheet_uri, $stylesheet_dir_uri );
 }
 
@@ -111,19 +100,13 @@ function get_locale_stylesheet_uri() {
 		$stylesheet_uri = "$stylesheet_dir_uri/{$wp_locale->text_direction}.css";
 	else
 		$stylesheet_uri = '';
-
 	return apply_filters( 'locale_stylesheet_uri', $stylesheet_uri, $stylesheet_dir_uri );
 }
 
-function get_template() {
-	return apply_filters( 'template', get_option( 'template' ) );
-}
-
 function get_template_directory() {
-	$template = get_template();
+	$template = get_option( 'template' );
 	$theme_root = get_theme_root( $template );
 	$template_dir = "$theme_root/$template";
-
 	return apply_filters( 'template_directory', $template_dir, $template, $theme_root );
 }
 
@@ -136,10 +119,8 @@ function get_template_directory_uri() {
 
 function get_theme_roots() {
 	global $wp_theme_directories;
-
 	if ( count($wp_theme_directories) <= 1 )
 		return '/themes';
-
 	$theme_roots = get_site_transient( 'theme_roots' );
 	if ( false === $theme_roots ) {
 		search_theme_directories( true );
@@ -641,13 +622,6 @@ function _get_random_header_data() {
 	return $_wp_random_header;
 }
 
-/**
- * Get random header image url from registered images in theme.
- *
- * @since 3.2.0
- *
- * @return string Path to header image
- */
 function get_random_header_image() {
 	$random_image = _get_random_header_data();
 	if ( empty( $random_image->url ) )

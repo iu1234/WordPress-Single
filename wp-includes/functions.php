@@ -1793,7 +1793,7 @@ function wp_parse_args( $args, $defaults = '' ) {
 	elseif ( is_array( $args ) )
 		$r =& $args;
 	else
-		wp_parse_str( $args, $r );
+		parse_str( $args, $r );
 
 	if ( is_array( $defaults ) )
 		return array_merge( $defaults, $r );

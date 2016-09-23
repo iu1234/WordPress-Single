@@ -95,27 +95,7 @@ class WP_Admin_Bar {
 		$this->remove_node( $id );
 	}
 
-	/**
-	 * Adds a node to the menu.
-	 *
-	 * @since 3.1.0
-	 * @since 4.5.0 Added the ability to pass 'lang' and 'dir' meta data.
-	 * @access public
-	 *
-	 * @param array $args {
-	 *     Arguments for adding a node.
-	 *
-	 *     @type string $id     ID of the item.
-	 *     @type string $title  Title of the node.
-	 *     @type string $parent Optional. ID of the parent node.
-	 *     @type string $href   Optional. Link for the item.
-	 *     @type bool   $group  Optional. Whether or not the node is a group. Default false.
-	 *     @type array  $meta   Meta data including the following keys: 'html', 'class', 'rel', 'lang', 'dir',
-	 *                          'onclick', 'target', 'title', 'tabindex'. Default empty.
-	 * }
-	 */
 	public function add_node( $args ) {
-		// Shim for old method signature: add_node( $parent_id, $menu_obj, $args )
 		if ( func_num_args() >= 3 && is_string( func_get_arg(0) ) )
 			$args = array_merge( array( 'parent' => func_get_arg(0) ), func_get_arg(2) );
 
@@ -127,8 +107,7 @@ class WP_Admin_Bar {
 			if ( empty( $args['title'] ) )
 				return;
 
-			_doing_it_wrong( __METHOD__, __( 'The menu ID should not be empty.' ), '3.3' );
-			// Deprecated: Generate an ID from the title.
+			_doing_it_wrong( __METHOD__, 'The menu ID should not be empty.', '3.3' );
 			$args['id'] = esc_attr( sanitize_title( trim( $args['title'] ) ) );
 		}
 
@@ -165,28 +144,15 @@ class WP_Admin_Bar {
 		$this->_set_node( $args );
 	}
 
-	/**
-	 * @param array $args
-	 */
 	final protected function _set_node( $args ) {
 		$this->nodes[ $args['id'] ] = (object) $args;
 	}
 
-	/**
-	 * Gets a node.
-	 *
-	 * @param string $id
-	 * @return object Node.
-	 */
 	final public function get_node( $id ) {
 		if ( $node = $this->_get_node( $id ) )
 			return clone $node;
 	}
 
-	/**
-	 * @param string $id
-	 * @return object|void
-	 */
 	final protected function _get_node( $id ) {
 		if ( $this->bound )
 			return;
@@ -198,9 +164,6 @@ class WP_Admin_Bar {
 			return $this->nodes[ $id ];
 	}
 
-	/**
-	 * @return array|void
-	 */
 	final public function get_nodes() {
 		if ( ! $nodes = $this->_get_nodes() )
 			return;
@@ -211,9 +174,6 @@ class WP_Admin_Bar {
 		return $nodes;
 	}
 
-	/**
-	 * @return array|void
-	 */
 	final protected function _get_nodes() {
 		if ( $this->bound )
 			return;
@@ -221,73 +181,41 @@ class WP_Admin_Bar {
 		return $this->nodes;
 	}
 
-	/**
-	 * Add a group to a menu node.
-	 *
-	 * @since 3.3.0
-	 *
-	 * @param array $args {
-	 *     Array of arguments for adding a group.
-	 *
-	 *     @type string $id     ID of the item.
-	 *     @type string $parent Optional. ID of the parent node. Default 'root'.
-	 *     @type array  $meta   Meta data for the group including the following keys:
-	 *                         'class', 'onclick', 'target', and 'title'.
-	 * }
-	 */
 	final public function add_group( $args ) {
 		$args['group'] = true;
 
 		$this->add_node( $args );
 	}
 
-	/**
-	 * Remove a node.
-	 *
-	 * @param string $id The ID of the item.
-	 */
 	public function remove_node( $id ) {
 		$this->_unset_node( $id );
 	}
 
-	/**
-	 * @param string $id
-	 */
 	final protected function _unset_node( $id ) {
 		unset( $this->nodes[ $id ] );
 	}
 
-	/**
-	 * @access public
-	 */
 	public function render() {
 		$root = $this->_bind();
 		if ( $root )
 			$this->_render( $root );
 	}
 
-	/**
-	 * @return object|void
-	 */
 	final protected function _bind() {
 		if ( $this->bound )
 			return;
 
-		// Add the root node.
-		// Clear it first, just in case. Don't mess with The Root.
 		$this->remove_node( 'root' );
 		$this->add_node( array(
 			'id'    => 'root',
 			'group' => false,
 		) );
 
-		// Normalize nodes: define internal 'children' and 'type' properties.
 		foreach ( $this->_get_nodes() as $node ) {
 			$node->children = array();
 			$node->type = ( $node->group ) ? 'group' : 'item';
 			unset( $node->group );
 
-			// The Root wants your orphans. No lonely items allowed.
 			if ( ! $node->parent )
 				$node->parent = 'root';
 		}
@@ -296,12 +224,10 @@ class WP_Admin_Bar {
 			if ( 'root' == $node->id )
 				continue;
 
-			// Fetch the parent node. If it isn't registered, ignore the node.
 			if ( ! $parent = $this->_get_node( $node->parent ) ) {
 				continue;
 			}
 
-			// Generate the group class (we distinguish between top level and other level groups).
 			$group_class = ( $node->parent == 'root' ) ? 'ab-top-menu' : 'ab-submenu';
 
 			if ( $node->type == 'group' ) {
@@ -311,16 +237,11 @@ class WP_Admin_Bar {
 					$node->meta['class'] .= ' ' . $group_class;
 			}
 
-			// Items in items aren't allowed. Wrap nested items in 'default' groups.
 			if ( $parent->type == 'item' && $node->type == 'item' ) {
 				$default_id = $parent->id . '-default';
 				$default    = $this->_get_node( $default_id );
 
-				// The default group is added here to allow groups that are
-				// added before standard menu items to render first.
 				if ( ! $default ) {
-					// Use _set_node because add_node can be overloaded.
-					// Make sure to specify default settings for all properties.
 					$this->_set_node( array(
 						'id'        => $default_id,
 						'parent'    => $parent->id,
@@ -337,16 +258,11 @@ class WP_Admin_Bar {
 				}
 				$parent = $default;
 
-			// Groups in groups aren't allowed. Add a special 'container' node.
-			// The container will invisibly wrap both groups.
 			} elseif ( $parent->type == 'group' && $node->type == 'group' ) {
 				$container_id = $parent->id . '-container';
 				$container    = $this->_get_node( $container_id );
 
-				// We need to create a container for this group, life is sad.
 				if ( ! $container ) {
-					// Use _set_node because add_node can be overloaded.
-					// Make sure to specify default settings for all properties.
 					$this->_set_node( array(
 						'id'       => $container_id,
 						'type'     => 'container',
@@ -390,16 +306,9 @@ class WP_Admin_Bar {
 		return $root;
 	}
 
-	/**
-	 *
-	 * @global bool $is_IE
-	 * @param object $root
-	 */
 	final protected function _render( $root ) {
 		global $is_IE;
 
-		// Add browser classes.
-		// We have to do this here since admin bar shows on the front end.
 		$class = 'nojq nojs';
 		if ( $is_IE ) {
 			if ( strpos( $_SERVER['HTTP_USER_AGENT'], 'MSIE 7' ) )
@@ -415,7 +324,7 @@ class WP_Admin_Bar {
 		?>
 		<div id="wpadminbar" class="<?php echo $class; ?>">
 			<?php if ( ! is_admin() ) { ?>
-				<a class="screen-reader-shortcut" href="#wp-toolbar" tabindex="1"><?php _e( 'Skip to toolbar' ); ?></a>
+				<a class="screen-reader-shortcut" href="#wp-toolbar" tabindex="1">Skip to toolbar</a>
 			<?php } ?>
 			<div class="quicklinks" id="wp-toolbar" role="navigation" aria-label="<?php esc_attr_e( 'Toolbar' ); ?>" tabindex="0">
 				<?php foreach ( $root->children as $group ) {
@@ -423,16 +332,13 @@ class WP_Admin_Bar {
 				} ?>
 			</div>
 			<?php if ( is_user_logged_in() ) : ?>
-			<a class="screen-reader-shortcut" href="<?php echo esc_url( wp_logout_url() ); ?>"><?php _e('Log Out'); ?></a>
+			<a class="screen-reader-shortcut" href="<?php echo esc_url( wp_logout_url() ); ?>">Log Out</a>
 			<?php endif; ?>
 		</div>
 
 		<?php
 	}
 
-	/**
-	 * @param object $node
-	 */
 	final protected function _render_container( $node ) {
 		if ( $node->type != 'container' || empty( $node->children ) )
 			return;
@@ -444,9 +350,6 @@ class WP_Admin_Bar {
 		?></div><?php
 	}
 
-	/**
-	 * @param object $node
-	 */
 	final protected function _render_group( $node ) {
 		if ( $node->type == 'container' ) {
 			$this->_render_container( $node );
@@ -467,9 +370,6 @@ class WP_Admin_Bar {
 		?></ul><?php
 	}
 
-	/**
-	 * @param object $node
-	 */
 	final protected function _render_item( $node ) {
 		if ( $node->type != 'item' )
 			return;
@@ -554,32 +454,22 @@ class WP_Admin_Bar {
 		</li><?php
 	}
 
-	/**
-	 * @param string $id    Unused.
-	 * @param object $node
-	 */
 	public function recursive_render( $id, $node ) {
 		_deprecated_function( __METHOD__, '3.3', 'WP_Admin_bar::render(), WP_Admin_Bar::_render_item()' );
 		$this->_render_item( $node );
 	}
 
-	/**
-	 * @access public
-	 */
 	public function add_menus() {
-		// User related, aligned right.
 		add_action( 'admin_bar_menu', 'wp_admin_bar_my_account_menu', 0 );
 		add_action( 'admin_bar_menu', 'wp_admin_bar_search_menu', 4 );
 		add_action( 'admin_bar_menu', 'wp_admin_bar_my_account_item', 7 );
 
-		// Site related.
 		add_action( 'admin_bar_menu', 'wp_admin_bar_sidebar_toggle', 0 );
 		add_action( 'admin_bar_menu', 'wp_admin_bar_my_sites_menu', 20 );
 		add_action( 'admin_bar_menu', 'wp_admin_bar_site_menu', 30 );
 		add_action( 'admin_bar_menu', 'wp_admin_bar_customize_menu', 40 );
 		add_action( 'admin_bar_menu', 'wp_admin_bar_updates_menu', 50 );
 
-		// Content related.
 		if ( ! is_network_admin() && ! is_user_admin() ) {
 			add_action( 'admin_bar_menu', 'wp_admin_bar_comments_menu', 60 );
 			add_action( 'admin_bar_menu', 'wp_admin_bar_new_content_menu', 70 );
@@ -588,11 +478,6 @@ class WP_Admin_Bar {
 
 		add_action( 'admin_bar_menu', 'wp_admin_bar_add_secondary_groups', 200 );
 
-		/**
-		 * Fires after menus are added to the menu bar.
-		 *
-		 * @since 3.1.0
-		 */
 		do_action( 'add_admin_bar_menus' );
 	}
 }

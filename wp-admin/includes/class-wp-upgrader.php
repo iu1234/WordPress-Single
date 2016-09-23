@@ -13,89 +13,18 @@
 
 require ABSPATH . 'wp-admin/includes/class-wp-upgrader-skins.php';
 
-/**
- * Core class used for upgrading/installing a local set of files via
- * the Filesystem Abstraction classes from a Zip file.
- *
- * @since 2.8.0
- */
 class WP_Upgrader {
 
-	/**
-	 * The error/notification strings used to update the user on the progress.
-	 *
-	 * @since 2.8.0
-	 * @access public
-	 * @var string $strings
-	 */
 	public $strings = array();
 
-	/**
-	 * The upgrader skin being used.
-	 *
-	 * @since 2.8.0
-	 * @access public
-	 * @var WP_Upgrader_Skin $skin
-	 */
 	public $skin = null;
 
-	/**
-	 * The result of the installation.
-	 *
-	 * This is set by {@see WP_Upgrader::install_package()}, only when the package is installed
-	 * successfully. It will then be an array, unless a {@see WP_Error} is returned by the
-	 * {@see 'upgrader_post_install'} filter. In that case, the `WP_Error` will be assigned to
-	 * it.
-	 *
-	 * @since 2.8.0
-	 * @access public
-	 *
-	 * @var WP_Error|array $result {
-	 *      @type string $source             The full path to the source the files were installed from.
-	 *      @type string $source_files       List of all the files in the source directory.
-	 *      @type string $destination        The full path to the install destination folder.
-	 *      @type string $destination_name   The name of the destination folder, or empty if `$destination`
-	 *                                       and `$local_destination` are the same.
-	 *      @type string $local_destination  The full local path to the destination folder. This is usually
-	 *                                       the same as `$destination`.
-	 *      @type string $remote_destination The full remote path to the destination folder
-	 *                                       (i.e., from `$wp_filesystem`).
-	 *      @type bool   $clear_destination  Whether the destination folder was cleared.
-	 * }
-	 */
 	public $result = array();
 
-	/**
-	 * The total number of updates being performed.
-	 *
-	 * Set by the bulk update methods.
-	 *
-	 * @since 3.0.0
-	 * @access public
-	 * @var int $update_count
-	 */
 	public $update_count = 0;
 
-	/**
-	 * The current update if multiple updates are being performed.
-	 *
-	 * Used by the bulk update methods, and incremented for each update.
-	 *
-	 * @since 3.0.0
-	 * @access public
-	 * @var int
-	 */
 	public $update_current = 0;
 
-	/**
-	 * Construct the upgrader with a skin.
-	 *
-	 * @since 2.8.0
-	 * @access public
-	 *
-	 * @param WP_Upgrader_Skin $skin The upgrader skin to use. Default is a {@see WP_Upgrader_Skin}
-	 *                               instance.
-	 */
 	public function __construct( $skin = null ) {
 		if ( null == $skin )
 			$this->skin = new WP_Upgrader_Skin();
@@ -103,26 +32,11 @@ class WP_Upgrader {
 			$this->skin = $skin;
 	}
 
-	/**
-	 * Initialize the upgrader.
-	 *
-	 * This will set the relationship between the skin being used and this upgrader,
-	 * and also add the generic strings to `WP_Upgrader::$strings`.
-	 *
-	 * @since 2.8.0
-	 * @access public
-	 */
 	public function init() {
 		$this->skin->set_upgrader($this);
 		$this->generic_strings();
 	}
 
-	/**
-	 * Add the generic strings to WP_Upgrader::$strings.
-	 *
-	 * @since 2.8.0
-	 * @access public
-	 */
 	public function generic_strings() {
 		$this->strings['bad_request'] = __('Invalid Data provided.');
 		$this->strings['fs_unavailable'] = __('Could not access filesystem.');
@@ -134,7 +48,7 @@ class WP_Upgrader {
 		/* translators: %s: directory name */
 		$this->strings['fs_no_folder'] = __('Unable to locate needed folder (%s).');
 
-		$this->strings['download_failed'] = __('Download failed.');
+		$this->strings['download_failed'] = 'Download failed.';
 		$this->strings['installing_package'] = __('Installing the latest version&#8230;');
 		$this->strings['no_files'] = __('The package contains no files.');
 		$this->strings['folder_exists'] = __('Destination folder already exists.');
@@ -146,21 +60,6 @@ class WP_Upgrader {
 		$this->strings['maintenance_end'] = __('Disabling Maintenance mode&#8230;');
 	}
 
-	/**
-	 * Connect to the filesystem.
-	 *
-	 * @since 2.8.0
-	 * @access public
-	 *
-	 * @global WP_Filesystem_Base $wp_filesystem Subclass
-	 *
-	 * @param array $directories                  Optional. A list of directories. If any of these do
-	 *                                            not exist, a {@see WP_Error} object will be returned.
-	 *                                            Default empty array.
-	 * @param bool  $allow_relaxed_file_ownership Whether to allow relaxed file ownership.
-	 *                                            Default false.
-	 * @return bool|WP_Error True if able to connect, false or a {@see WP_Error} otherwise.
-	 */
 	public function fs_connect( $directories = array(), $allow_relaxed_file_ownership = false ) {
 		global $wp_filesystem;
 
@@ -210,29 +109,8 @@ class WP_Upgrader {
 		return true;
 	} //end fs_connect();
 
-	/**
-	 * Download a package.
-	 *
-	 * @since 2.8.0
-	 * @access public
-	 *
-	 * @param string $package The URI of the package. If this is the full path to an
-	 *                        existing local file, it will be returned untouched.
-	 * @return string|WP_Error The full path to the downloaded package file, or a {@see WP_Error} object.
-	 */
 	public function download_package( $package ) {
 
-		/**
-		 * Filter whether to return the package.
-		 *
-		 * @since 3.7.0
-		 * @access public
-		 *
-		 * @param bool        $reply   Whether to bail without returning the package.
-		 *                             Default false.
-		 * @param string      $package The package file name.
-		 * @param WP_Upgrader $this    The WP_Upgrader instance.
-		 */
 		$reply = apply_filters( 'upgrader_pre_download', false, $package, $this );
 		if ( false !== $reply )
 			return $reply;
@@ -253,19 +131,6 @@ class WP_Upgrader {
 		return $download_file;
 	}
 
-	/**
-	 * Unpack a compressed package file.
-	 *
-	 * @since 2.8.0
-	 * @access public
-	 *
-	 * @global WP_Filesystem_Base $wp_filesystem Subclass
-	 *
-	 * @param string $package        Full path to the package file.
-	 * @param bool   $delete_package Optional. Whether to delete the package file after attempting
-	 *                               to unpack it. Default true.
-	 * @return string|WP_Error The path to the unpacked contents, or a {@see WP_Error} on failure.
-	 */
 	public function unpack_package( $package, $delete_package = true ) {
 		global $wp_filesystem;
 

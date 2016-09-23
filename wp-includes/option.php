@@ -138,27 +138,18 @@ function update_option( $option, $value, $autoload = null ) {
 	return true;
 }
 
-function add_option( $option, $value = '', $deprecated = '', $autoload = 'yes' ) {
+function add_option( $option, $value = '', $autoload = 'yes' ) {
 	global $wpdb;
-
-	if ( !empty( $deprecated ) )
-		_deprecated_argument( __FUNCTION__, '2.3' );
-
 	$option = trim($option);
 	if ( empty($option) )
 		return false;
-
 	wp_protect_special_option( $option );
-
 	if ( is_object($value) )
 		$value = clone $value;
 
 	$value = sanitize_option( $option, $value );
-
-	// Make sure the option doesn't already exist. We can check the 'notoptions' cache before we ask for a db query
 	$notoptions = wp_cache_get( 'notoptions', 'options' );
 	if ( !is_array( $notoptions ) || !isset( $notoptions[$option] ) )
-		/** This filter is documented in wp-includes/option.php */
 		if ( apply_filters( 'default_option_' . $option, false ) !== get_option( $option ) )
 			return false;
 
@@ -237,24 +228,19 @@ function get_transient( $transient ) {
 	$pre = apply_filters( 'pre_transient_' . $transient, false, $transient );
 	if ( false !== $pre )
 		return $pre;
-
-	if ( wp_using_ext_object_cache() ) {
-		$value = wp_cache_get( $transient, 'transient' );
-	} else {
-		$transient_option = '_transient_' . $transient;
-		$alloptions = wp_load_alloptions();
-		if ( !isset( $alloptions[$transient_option] ) ) {
-			$transient_timeout = '_transient_timeout_' . $transient;
-			$timeout = get_option( $transient_timeout );
-			if ( false !== $timeout && $timeout < time() ) {
-				delete_option( $transient_option  );
-				delete_option( $transient_timeout );
-				$value = false;
-			}
+	$transient_option = '_transient_' . $transient;
+	$alloptions = wp_load_alloptions();
+	if ( !isset( $alloptions[$transient_option] ) ) {
+		$transient_timeout = '_transient_timeout_' . $transient;
+		$timeout = get_option( $transient_timeout );
+		if ( false !== $timeout && $timeout < time() ) {
+			delete_option( $transient_option  );
+			delete_option( $transient_timeout );
+			$value = false;
 		}
-		if ( ! isset( $value ) )
-			$value = get_option( $transient_option );
 	}
+	if ( ! isset( $value ) )
+		$value = get_option( $transient_option );
 	return apply_filters( 'transient_' . $transient, $value, $transient );
 }
 
@@ -472,32 +458,23 @@ function delete_site_transient( $transient ) {
 }
 
 function get_site_transient( $transient ) {
-
 	$pre = apply_filters( 'pre_site_transient_' . $transient, false, $transient );
-
 	if ( false !== $pre )
 		return $pre;
 
-	if ( wp_using_ext_object_cache() ) {
-		$value = wp_cache_get( $transient, 'site-transient' );
-	} else {
-		// Core transients that do not have a timeout. Listed here so querying timeouts can be avoided.
-		$no_timeout = array('update_core', 'update_plugins', 'update_themes');
-		$transient_option = '_site_transient_' . $transient;
-		if ( ! in_array( $transient, $no_timeout ) ) {
-			$transient_timeout = '_site_transient_timeout_' . $transient;
-			$timeout = get_site_option( $transient_timeout );
-			if ( false !== $timeout && $timeout < time() ) {
-				delete_site_option( $transient_option  );
-				delete_site_option( $transient_timeout );
-				$value = false;
-			}
+	$no_timeout = array('update_core', 'update_plugins', 'update_themes');
+	$transient_option = '_site_transient_' . $transient;
+	if ( ! in_array( $transient, $no_timeout ) ) {
+		$transient_timeout = '_site_transient_timeout_' . $transient;
+		$timeout = get_site_option( $transient_timeout );
+		if ( false !== $timeout && $timeout < time() ) {
+			delete_site_option( $transient_option  );
+			delete_site_option( $transient_timeout );
+			$value = false;
 		}
-
-		if ( ! isset( $value ) )
-			$value = get_site_option( $transient_option );
 	}
-
+	if ( ! isset( $value ) )
+		$value = get_site_option( $transient_option );
 	return apply_filters( 'site_transient_' . $transient, $value, $transient );
 }
 

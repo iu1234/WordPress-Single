@@ -7,37 +7,6 @@
  * @package WordPress
  */
 
-/**
- * Replaces common plain text characters into formatted entities
- *
- * As an example,
- *
- *     'cause today's effort makes it worth tomorrow's "holiday" ...
- *
- * Becomes:
- *
- *     &#8217;cause today&#8217;s effort makes it worth tomorrow&#8217;s &#8220;holiday&#8221; &#8230;
- *
- * Code within certain html blocks are skipped.
- *
- * Do not use this function before the 'init' action hook; everything will break.
- *
- * @since 0.71
- *
- * @global array $wp_cockneyreplace Array of formatted entities for certain common phrases
- * @global array $shortcode_tags
- * @staticvar array $static_characters
- * @staticvar array $static_replacements
- * @staticvar array $dynamic_characters
- * @staticvar array $dynamic_replacements
- * @staticvar array $default_no_texturize_tags
- * @staticvar array $default_no_texturize_shortcodes
- * @staticvar bool  $run_texturize
- *
- * @param string $text The text to be formatted
- * @param bool   $reset Set to true for unit testing. Translated patterns will reset.
- * @return string The string replaced with html entities
- */
 function wptexturize( $text, $reset = false ) {
 	global $wp_cockneyreplace, $shortcode_tags;
 	static $static_characters = null,
@@ -65,20 +34,6 @@ function wptexturize( $text, $reset = false ) {
 
 	// Set up static variables. Run once only.
 	if ( $reset || ! isset( $static_characters ) ) {
-		/**
-		 * Filter whether to skip running wptexturize().
-		 *
-		 * Passing false to the filter will effectively short-circuit wptexturize().
-		 * returning the original text passed to the function instead.
-		 *
-		 * The filter runs only once, the first time wptexturize() is called.
-		 *
-		 * @since 4.0.0
-		 *
-		 * @see wptexturize()
-		 *
-		 * @param bool $run_texturize Whether to short-circuit wptexturize().
-		 */
 		$run_texturize = apply_filters( 'run_wptexturize', $run_texturize );
 		if ( false === $run_texturize ) {
 			return $text;
@@ -289,20 +244,6 @@ function wptexturize( $text, $reset = false ) {
 	return implode( '', $textarr );
 }
 
-/**
- * Implements a logic tree to determine whether or not "7'." represents seven feet,
- * then converts the special char into either a prime char or a closing quote char.
- *
- * @since 4.3.0
- *
- * @param string $haystack    The plain text to be searched.
- * @param string $needle      The character to search for such as ' or ".
- * @param string $prime       The prime char to use for replacement.
- * @param string $open_quote  The opening quote char. Opening quote replacement must be
- *                            accomplished already.
- * @param string $close_quote The closing quote char to use for replacement.
- * @return string The $haystack value after primes and quotes replacements.
- */
 function wptexturize_primes( $haystack, $needle, $prime, $open_quote, $close_quote ) {
 	$spaces = wp_spaces_regexp();
 	$flag = '<!--wp-prime-or-quote-->';
@@ -358,20 +299,6 @@ function wptexturize_primes( $haystack, $needle, $prime, $open_quote, $close_quo
 	return implode( $open_quote, $sentences );
 }
 
-/**
- * Search for disabled element tags. Push element to stack on tag open and pop
- * on tag close.
- *
- * Assumes first char of $text is tag opening and last char is tag closing.
- * Assumes second char of $text is optionally '/' to indicate closing as in </html>.
- *
- * @since 2.9.0
- * @access private
- *
- * @param string $text Text to check. Must be a tag like `<html>` or `[shortcode]`.
- * @param array  $stack List of open tag elements.
- * @param array  $disabled_elements The tag names to match against. Spaces are not allowed in tag names.
- */
 function _wptexturize_pushpop_element( $text, &$stack, $disabled_elements ) {
 	// Is it an opening tag or closing tag?
 	if ( isset( $text[1] ) && '/' !== $text[1] ) {
@@ -412,20 +339,6 @@ function _wptexturize_pushpop_element( $text, &$stack, $disabled_elements ) {
 	}
 }
 
-/**
- * Replaces double line-breaks with paragraph elements.
- *
- * A group of regex replaces used to identify text formatted with newlines and
- * replace double line-breaks with HTML paragraph tags. The remaining line-breaks
- * after conversion become <<br />> tags, unless $br is set to '0' or 'false'.
- *
- * @since 0.71
- *
- * @param string $pee The text which has to be formatted.
- * @param bool   $br  Optional. If set, this will convert all remaining line-breaks
- *                    after paragraphing. Default true.
- * @return string Text which has been converted into correct paragraph tags.
- */
 function wpautop( $pee, $br = true ) {
 	$pre_tags = array();
 
@@ -576,25 +489,10 @@ function wpautop( $pee, $br = true ) {
 	return $pee;
 }
 
-/**
- * Separate HTML elements and comments from the text.
- *
- * @since 4.2.4
- *
- * @param string $input The text which has to be formatted.
- * @return array The formatted text.
- */
 function wp_html_split( $input ) {
 	return preg_split( get_html_split_regex(), $input, -1, PREG_SPLIT_DELIM_CAPTURE );
 }
 
-/**
- * Retrieve the regular expression for an HTML element.
- *
- * @since 4.4.0
- *
- * @return string The regular expression
- */
 function get_html_split_regex() {
 	static $regex;
 
@@ -642,17 +540,6 @@ function get_html_split_regex() {
 	return $regex;
 }
 
-/**
- * Retrieve the combined regular expression for HTML and shortcodes.
- *
- * @access private
- * @ignore
- * @internal This function will be removed in 4.5.0 per Shortcode API Roadmap.
- * @since 4.4.0
- *
- * @param string $shortcode_regex The result from _get_wptexturize_shortcode_regex().  Optional.
- * @return string The regular expression
- */
 function _get_wptexturize_split_regex( $shortcode_regex = '' ) {
 	static $html_regex;
 
@@ -683,17 +570,6 @@ function _get_wptexturize_split_regex( $shortcode_regex = '' ) {
 	return $regex;
 }
 
-/**
- * Retrieve the regular expression for shortcodes.
- *
- * @access private
- * @ignore
- * @internal This function will be removed in 4.5.0 per Shortcode API Roadmap.
- * @since 4.4.0
- *
- * @param array $tagnames List of shortcodes to find.
- * @return string The regular expression
- */
 function _get_wptexturize_shortcode_regex( $tagnames ) {
 	$tagregexp = join( '|', array_map( 'preg_quote', $tagnames ) );
 	$tagregexp = "(?:$tagregexp)(?=[\\s\\]\\/])"; // Excerpt of get_shortcode_regex().
@@ -712,15 +588,6 @@ function _get_wptexturize_shortcode_regex( $tagnames ) {
 	return $regex;
 }
 
-/**
- * Replace characters or phrases within HTML elements only.
- *
- * @since 4.2.3
- *
- * @param string $haystack The text which has to be formatted.
- * @param array $replace_pairs In the form array('from' => 'to', ...).
- * @return string The formatted text.
- */
 function wp_replace_in_html_tags( $haystack, $replace_pairs ) {
 	// Find all elements.
 	$textarr = wp_html_split( $haystack );
@@ -762,31 +629,10 @@ function wp_replace_in_html_tags( $haystack, $replace_pairs ) {
 	return $haystack;
 }
 
-/**
- * Newline preservation help function for wpautop
- *
- * @since 3.1.0
- * @access private
- *
- * @param array $matches preg_replace_callback matches array
- * @return string
- */
 function _autop_newline_preservation_helper( $matches ) {
 	return str_replace( "\n", "<WPPreserveNewline />", $matches[0] );
 }
 
-/**
- * Don't auto-p wrap shortcodes that stand alone
- *
- * Ensures that shortcodes are not wrapped in `<p>...</p>`.
- *
- * @since 2.9.0
- *
- * @global array $shortcode_tags
- *
- * @param string $pee The content.
- * @return string The filtered content.
- */
 function shortcode_unautop( $pee ) {
 	global $shortcode_tags;
 
@@ -832,18 +678,6 @@ function shortcode_unautop( $pee ) {
 	return preg_replace( $pattern, '$1', $pee );
 }
 
-/**
- * Checks to see if a string is utf8 encoded.
- *
- * NOTE: This function checks for 5-Byte sequences, UTF8
- *       has Bytes Sequences with a maximum length of 4.
- *
- * @author bmorel at ssi dot fr (modified)
- * @since 1.2.1
- *
- * @param string $str The string to be checked
- * @return bool True if $str fits a UTF-8 model, false otherwise.
- */
 function seems_utf8( $str ) {
 	mbstring_binary_safe_encoding();
 	$length = strlen($str);
@@ -865,29 +699,6 @@ function seems_utf8( $str ) {
 	return true;
 }
 
-/**
- * Converts a number of special characters into their HTML entities.
- *
- * Specifically deals with: &, <, >, ", and '.
- *
- * $quote_style can be set to ENT_COMPAT to encode " to
- * &quot;, or ENT_QUOTES to do both. Default is ENT_NOQUOTES where no quotes are encoded.
- *
- * @since 1.2.2
- * @access private
- *
- * @staticvar string $_charset
- *
- * @param string     $string         The text which is to be encoded.
- * @param int|string $quote_style    Optional. Converts double quotes if set to ENT_COMPAT,
- *                                   both single and double if set to ENT_QUOTES or none if set to ENT_NOQUOTES.
- *                                   Also compatible with old values; converting single quotes if set to 'single',
- *                                   double if set to 'double' or both if otherwise set.
- *                                   Default is ENT_NOQUOTES.
- * @param string     $charset        Optional. The character encoding of the string. Default is false.
- * @param bool       $double_encode  Optional. Whether to encode existing html entities. Default is false.
- * @return string The encoded text with HTML entities.
- */
 function _wp_specialchars( $string, $quote_style = ENT_NOQUOTES, $charset = false, $double_encode = false ) {
 	$string = (string) $string;
 
@@ -941,26 +752,6 @@ function _wp_specialchars( $string, $quote_style = ENT_NOQUOTES, $charset = fals
 	return $string;
 }
 
-/**
- * Converts a number of HTML entities into their special characters.
- *
- * Specifically deals with: &, <, >, ", and '.
- *
- * $quote_style can be set to ENT_COMPAT to decode " entities,
- * or ENT_QUOTES to do both " and '. Default is ENT_NOQUOTES where no quotes are decoded.
- *
- * @since 2.8.0
- *
- * @param string     $string The text which is to be decoded.
- * @param string|int $quote_style Optional. Converts double quotes if set to ENT_COMPAT,
- *                                both single and double if set to ENT_QUOTES or
- *                                none if set to ENT_NOQUOTES.
- *                                Also compatible with old _wp_specialchars() values;
- *                                converting single quotes if set to 'single',
- *                                double if set to 'double' or both if otherwise set.
- *                                Default is ENT_NOQUOTES.
- * @return string The decoded text without HTML entities.
- */
 function wp_specialchars_decode( $string, $quote_style = ENT_NOQUOTES ) {
 	$string = (string) $string;
 
@@ -1009,18 +800,6 @@ function wp_specialchars_decode( $string, $quote_style = ENT_NOQUOTES ) {
 	return strtr( $string, $translation );
 }
 
-/**
- * Checks for invalid UTF8 in a string.
- *
- * @since 2.8.0
- *
- * @staticvar bool $is_utf8
- * @staticvar bool $utf8_pcre
- *
- * @param string  $string The text which is to be checked.
- * @param bool    $strip Optional. Whether to attempt to strip out invalid UTF8. Default is false.
- * @return string The checked text.
- */
 function wp_check_invalid_utf8( $string, $strip = false ) {
 	$string = (string) $string;
 
@@ -1060,15 +839,6 @@ function wp_check_invalid_utf8( $string, $strip = false ) {
 	return '';
 }
 
-/**
- * Encode the Unicode values to be used in the URI.
- *
- * @since 1.5.0
- *
- * @param string $utf8_string
- * @param int    $length Max  length of the string
- * @return string String with Unicode encoded for URI.
- */
 function utf8_uri_encode( $utf8_string, $length = 0 ) {
 	$unicode = '';
 	$values = array();
@@ -1119,16 +889,6 @@ function utf8_uri_encode( $utf8_string, $length = 0 ) {
 	return $unicode;
 }
 
-/**
- * Converts all accent characters to ASCII characters.
- *
- * If there are no accent characters, then the string given is just returned.
- *
- * @since 1.2.1
- *
- * @param string $string Text that might have accent characters
- * @return string Filtered string with replaced "nice" characters.
- */
 function remove_accents( $string ) {
 	if ( !preg_match('/[\x80-\xff]/', $string) )
 		return $string;
@@ -1357,32 +1117,10 @@ function remove_accents( $string ) {
 	return $string;
 }
 
-/**
- * Sanitizes a filename, replacing whitespace with dashes.
- *
- * Removes special characters that are illegal in filenames on certain
- * operating systems and special characters requiring special escaping
- * to manipulate at the command line. Replaces spaces and consecutive
- * dashes with a single dash. Trims period, dash and underscore from beginning
- * and end of filename. It is not guaranteed that this function will return a
- * filename that is allowed to be uploaded.
- *
- * @since 2.1.0
- *
- * @param string $filename The filename to be sanitized
- * @return string The sanitized filename
- */
 function sanitize_file_name( $filename ) {
 	$filename_raw = $filename;
 	$special_chars = array("?", "[", "]", "/", "\\", "=", "<", ">", ":", ";", ",", "'", "\"", "&", "$", "#", "*", "(", ")", "|", "~", "`", "!", "{", "}", "%", "+", chr(0));
-	/**
-	 * Filter the list of characters to remove from a filename.
-	 *
-	 * @since 2.8.0
-	 *
-	 * @param array  $special_chars Characters to remove.
-	 * @param string $filename_raw  Filename as it was passed into sanitize_file_name().
-	 */
+
 	$special_chars = apply_filters( 'sanitize_file_name_chars', $special_chars, $filename_raw );
 	$filename = preg_replace( "#\x{00a0}#siu", ' ', $filename );
 	$filename = str_replace( $special_chars, '', $filename );
@@ -1753,14 +1491,6 @@ function zeroise( $number, $threshold ) {
 	return sprintf( '%0' . $threshold . 's', $number );
 }
 
-/**
- * Adds backslashes before letters and before a number at the start of a string.
- *
- * @since 0.71
- *
- * @param string $string Value to which backslashes will be added.
- * @return string String with backslashes inserted.
- */
 function backslashit( $string ) {
 	if ( isset( $string[0] ) && $string[0] >= '0' && $string[0] <= '9' )
 		$string = '\\\\' . $string;
@@ -2009,45 +1739,6 @@ function translate_smiley( $matches ) {
 	return sprintf( '<img src="%s" alt="%s" class="wp-smiley" style="height: 1em; max-height: 1em;" />', esc_url( $src_url ), esc_attr( $smiley ) );
 }
 
-function convert_smilies( $text ) {
-	global $wp_smiliessearch;
-	$output = '';
-	if ( get_option( 'use_smilies' ) && ! empty( $wp_smiliessearch ) ) {
-		// HTML loop taken from texturize function, could possible be consolidated
-		$textarr = preg_split( '/(<.*>)/U', $text, -1, PREG_SPLIT_DELIM_CAPTURE ); // capture the tags as well as in between
-		$stop = count( $textarr );// loop stuff
-
-		// Ignore proessing of specific tags
-		$tags_to_ignore = 'code|pre|style|script|textarea';
-		$ignore_block_element = '';
-
-		for ( $i = 0; $i < $stop; $i++ ) {
-			$content = $textarr[$i];
-
-			// If we're in an ignore block, wait until we find its closing tag
-			if ( '' == $ignore_block_element && preg_match( '/^<(' . $tags_to_ignore . ')>/', $content, $matches ) )  {
-				$ignore_block_element = $matches[1];
-			}
-
-			// If it's not a tag and not in ignore block
-			if ( '' ==  $ignore_block_element && strlen( $content ) > 0 && '<' != $content[0] ) {
-				$content = preg_replace_callback( $wp_smiliessearch, 'translate_smiley', $content );
-			}
-
-			// did we exit ignore block
-			if ( '' != $ignore_block_element && '</' . $ignore_block_element . '>' == $content )  {
-				$ignore_block_element = '';
-			}
-
-			$output .= $content;
-		}
-	} else {
-		// return default text.
-		$output = $text;
-	}
-	return $output;
-}
-
 function is_email( $email, $deprecated = false ) {
 	if ( ! empty( $deprecated ) )
 		_deprecated_argument( __FUNCTION__, '3.0' );
@@ -2056,9 +1747,7 @@ function is_email( $email, $deprecated = false ) {
 		return apply_filters( 'is_email', false, $email, 'email_too_short' );
 	}
 
-	// Test for an @ character after the first position
 	if ( strpos( $email, '@', 1 ) === false ) {
-		/** This filter is documented in wp-includes/formatting.php */
 		return apply_filters( 'is_email', false, $email, 'email_no_at' );
 	}
 
@@ -2332,7 +2021,6 @@ function wp_trim_excerpt( $text = '' ) {
 	$raw_excerpt = $text;
 	if ( '' == $text ) {
 		$text = get_the_content('');
-
 		$text = strip_shortcodes( $text );
 
 		/** This filter is documented in wp-includes/post-template.php */
@@ -3047,9 +2735,6 @@ function map_deep( $value, $callback ) {
 
 function wp_parse_str( $string, &$array ) {
 	parse_str( $string, $array );
-	if ( get_magic_quotes_gpc() )
-		$array = stripslashes_deep( $array );
-
 	$array = apply_filters( 'wp_parse_str', $array );
 }
 

@@ -22,11 +22,6 @@ elseif ( isset( $_POST['post_ID'] ) )
 else
  	$post_id = $post_ID = 0;
 
-/**
- * @global string  $post_type
- * @global object  $post_type_object
- * @global WP_Post $post
- */
 global $post_type, $post_type_object, $post;
 
 if ( $post_id )
@@ -60,15 +55,11 @@ if ( ! $sendback ||
 
 switch($action) {
 case 'post-quickdraft-save':
-	// Check nonce and capabilities
 	$nonce = $_REQUEST['_wpnonce'];
 	$error_msg = false;
-
-	// For output of the quickdraft dashboard widget
 	require_once ABSPATH . 'wp-admin/includes/dashboard.php';
-
 	if ( ! wp_verify_nonce( $nonce, 'add-post' ) )
-		$error_msg = __( 'Unable to submit this form, please refresh and try again.' );
+		$error_msg = 'Unable to submit this form, please refresh and try again.';
 
 	if ( ! current_user_can( get_post_type_object( 'post' )->cap->create_posts ) ) {
 		exit;
@@ -96,35 +87,27 @@ case 'post':
 
 case 'edit':
 	$editing = true;
-
 	if ( empty( $post_id ) ) {
 		wp_redirect( admin_url('post.php') );
 		exit();
 	}
-
 	if ( ! $post )
 		wp_die( 'You attempted to edit an item that doesn&#8217;t exist. Perhaps it was deleted?' );
-
 	if ( ! $post_type_object )
 		wp_die( 'Unknown post type.' );
-
 	if ( ! in_array( $typenow, get_post_types( array( 'show_ui' => true ) ) ) ) {
 		wp_die( 'You are not allowed to edit posts in this post type.' );
 	}
-
 	if ( ! current_user_can( 'edit_post', $post_id ) )
 		wp_die( 'You are not allowed to edit this item.' );
-
 	if ( 'trash' == $post->post_status )
 		wp_die( 'You can&#8217;t edit this item because it is in the Trash. Please restore it and try again.' );
-
 	if ( ! empty( $_GET['get-post-lock'] ) ) {
 		check_admin_referer( 'lock-post_' . $post_id );
 		wp_set_post_lock( $post_id );
 		wp_redirect( get_edit_post_link( $post_id, 'url' ) );
 		exit();
 	}
-
 	$post_type = $post->post_type;
 	if ( 'post' == $post_type ) {
 		$parent_file = "edit.php";
@@ -171,84 +154,55 @@ case 'edit':
 
 case 'editattachment':
 	check_admin_referer('update-post_' . $post_id);
-
-	// Don't let these be changed
 	unset($_POST['guid']);
 	$_POST['post_type'] = 'attachment';
-
-	// Update the thumbnail filename
 	$newmeta = wp_get_attachment_metadata( $post_id, true );
 	$newmeta['thumb'] = $_POST['thumb'];
-
 	wp_update_attachment_metadata( $post_id, $newmeta );
-
 case 'editpost':
 	check_admin_referer('update-post_' . $post_id);
-
 	$post_id = edit_post();
-
-	// Session cookie flag that the post was saved
 	if ( isset( $_COOKIE['wp-saving-post'] ) && $_COOKIE['wp-saving-post'] === $post_id . '-check' ) {
 		setcookie( 'wp-saving-post', $post_id . '-saved', time() + DAY_IN_SECONDS, ADMIN_COOKIE_PATH, COOKIE_DOMAIN, is_ssl() );
 	}
-
-	redirect_post($post_id); // Send user on their way while we keep working
-
+	redirect_post($post_id);
 	exit();
-
 case 'trash':
 	check_admin_referer('trash-post_' . $post_id);
-
 	if ( ! $post )
 		wp_die( 'The item you are trying to move to the Trash no longer exists.' );
-
 	if ( ! $post_type_object )
 		wp_die( 'Unknown post type.' );
-
 	if ( ! current_user_can( 'delete_post', $post_id ) )
 		wp_die( 'You are not allowed to move this item to the Trash.' );
-
 	if ( $user_id = wp_check_post_lock( $post_id ) ) {
 		$user = get_user_by( 'id', $user_id );
 		wp_die( sprintf( 'You cannot move this item to the Trash. %s is currently editing.', $user->display_name ) );
 	}
-
 	if ( ! wp_trash_post( $post_id ) )
 		wp_die( 'Error in moving to Trash.' );
-
 	wp_redirect( add_query_arg( array('trashed' => 1, 'ids' => $post_id), $sendback ) );
 	exit();
-
 case 'untrash':
 	check_admin_referer('untrash-post_' . $post_id);
-
 	if ( ! $post )
 		wp_die( 'The item you are trying to restore from the Trash no longer exists.' );
-
 	if ( ! $post_type_object )
 		wp_die( 'Unknown post type.' );
-
 	if ( ! current_user_can( 'delete_post', $post_id ) )
 		wp_die( 'You are not allowed to restore this item from the Trash.' );
-
 	if ( ! wp_untrash_post( $post_id ) )
 		wp_die( 'Error in restoring from Trash.' );
-
 	wp_redirect( add_query_arg('untrashed', 1, $sendback) );
 	exit();
-
 case 'delete':
 	check_admin_referer('delete-post_' . $post_id);
-
 	if ( ! $post )
 		wp_die( 'This item has already been deleted.' );
-
 	if ( ! $post_type_object )
 		wp_die( 'Unknown post type.' );
-
 	if ( ! current_user_can( 'delete_post', $post_id ) )
 		wp_die( 'You are not allowed to delete this item.' );
-
 	if ( $post->post_type == 'attachment' ) {
 		$force = ( ! MEDIA_TRASH );
 		if ( ! wp_delete_attachment( $post_id, $force ) )
@@ -257,15 +211,11 @@ case 'delete':
 		if ( ! wp_delete_post( $post_id, true ) )
 			wp_die( 'Error in deleting.' );
 	}
-
 	wp_redirect( add_query_arg('deleted', 1, $sendback) );
 	exit();
-
 case 'preview':
 	check_admin_referer( 'update-post_' . $post_id );
-
 	$url = post_preview();
-
 	wp_redirect($url);
 	exit();
 

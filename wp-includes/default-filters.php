@@ -110,14 +110,12 @@ add_filter( 'the_title', 'convert_chars' );
 add_filter( 'the_title', 'trim'          );
 
 add_filter( 'the_content', 'wptexturize'                       );
-add_filter( 'the_content', 'convert_smilies'                   );
 add_filter( 'the_content', 'wpautop'                           );
 add_filter( 'the_content', 'shortcode_unautop'                 );
 add_filter( 'the_content', 'prepend_attachment'                );
 add_filter( 'the_content', 'wp_make_content_images_responsive' );
 
 add_filter( 'the_excerpt',     'wptexturize'      );
-add_filter( 'the_excerpt',     'convert_smilies'  );
 add_filter( 'the_excerpt',     'convert_chars'    );
 add_filter( 'the_excerpt',     'wpautop'          );
 add_filter( 'the_excerpt',     'shortcode_unautop');
@@ -127,7 +125,6 @@ add_filter( 'comment_text', 'wptexturize'            );
 add_filter( 'comment_text', 'convert_chars'          );
 add_filter( 'comment_text', 'make_clickable',      9 );
 add_filter( 'comment_text', 'force_balance_tags', 25 );
-add_filter( 'comment_text', 'convert_smilies',    20 );
 add_filter( 'comment_text', 'wpautop',            30 );
 
 add_filter( 'comment_excerpt', 'convert_chars' );

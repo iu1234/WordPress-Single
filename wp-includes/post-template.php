@@ -144,98 +144,36 @@ function the_guid( $post = 0 ) {
 	$guid = isset( $post->guid ) ? get_the_guid( $post ) : '';
 	$id   = isset( $post->ID ) ? $post->ID : 0;
 
-	/**
-	 * Filter the escaped Global Unique Identifier (guid) of the post.
-	 *
-	 * @since 4.2.0
-	 *
-	 * @see get_the_guid()
-	 *
-	 * @param string $guid Escaped Global Unique Identifier (guid) of the post.
-	 * @param int    $id   The post ID.
-	 */
 	echo apply_filters( 'the_guid', $guid, $id );
 }
 
-/**
- * Retrieve the Post Global Unique Identifier (guid).
- *
- * The guid will appear to be a link, but should not be used as an link to the
- * post. The reason you should not use it as a link, is because of moving the
- * blog across domains.
- *
- * @since 1.5.0
- *
- * @param int|WP_Post $post Optional. Post ID or post object. Default is global $post.
- * @return string
- */
 function get_the_guid( $post = 0 ) {
 	$post = get_post( $post );
 
 	$guid = isset( $post->guid ) ? $post->guid : '';
 	$id   = isset( $post->ID ) ? $post->ID : 0;
 
-	/**
-	 * Filter the Global Unique Identifier (guid) of the post.
-	 *
-	 * @since 1.5.0
-	 *
-	 * @param string $guid Global Unique Identifier (guid) of the post.
-	 * @param int    $id   The post ID.
-	 */
 	return apply_filters( 'get_the_guid', $guid, $id );
 }
 
-/**
- * Display the post content.
- *
- * @since 0.71
- *
- * @param string $more_link_text Optional. Content for when there is more text.
- * @param bool   $strip_teaser   Optional. Strip teaser content before the more text. Default is false.
- */
 function the_content( $more_link_text = null, $strip_teaser = false) {
 	$content = get_the_content( $more_link_text, $strip_teaser );
-
-	/**
-	 * Filter the post content.
-	 *
-	 * @since 0.71
-	 *
-	 * @param string $content Content of the current post.
-	 */
 	$content = apply_filters( 'the_content', $content );
 	$content = str_replace( ']]>', ']]&gt;', $content );
 	echo $content;
 }
 
-/**
- * Retrieve the post content.
- *
- * @since 0.71
- *
- * @global int   $page
- * @global int   $more
- * @global bool  $preview
- * @global array $pages
- * @global int   $multipage
- *
- * @param string $more_link_text Optional. Content for when there is more text.
- * @param bool   $strip_teaser   Optional. Strip teaser content before the more text. Default is false.
- * @return string
- */
 function get_the_content( $more_link_text = null, $strip_teaser = false ) {
 	global $page, $more, $preview, $pages, $multipage;
 
 	$post = get_post();
 
 	if ( null === $more_link_text )
-		$more_link_text = __( '(more&hellip;)' );
+		$more_link_text = '(more&hellip;)';
 
 	$output = '';
 	$has_teaser = false;
 
-	// If post password required and it doesn't match the cookie.
 	if ( post_password_required( $post ) )
 		return get_the_password_form( $post );
 
@@ -269,14 +207,6 @@ function get_the_content( $more_link_text = null, $strip_teaser = false ) {
 		} else {
 			if ( ! empty( $more_link_text ) )
 
-				/**
-				 * Filter the Read More link text.
-				 *
-				 * @since 2.8.0
-				 *
-				 * @param string $more_link_element Read More link element.
-				 * @param string $more_link_text    Read More text.
-				 */
 				$output .= apply_filters( 'the_content_more_link', ' <a href="' . get_permalink() . "#more-{$post->ID}\" class=\"more-link\">$more_link_text</a>", $more_link_text );
 			$output = force_balance_tags( $output );
 		}
@@ -293,19 +223,10 @@ function _convert_urlencoded_to_entities( $match ) {
 }
 
 function get_the_excerpt( $post = null ) {
-	if ( is_bool( $post ) ) {
-		_deprecated_argument( __FUNCTION__, '2.3' );
-	}
-
 	$post = get_post( $post );
 	if ( empty( $post ) ) {
 		return '';
 	}
-
-	if ( post_password_required( $post ) ) {
-		return __( 'There is no excerpt because this is a protected post.' );
-	}
-
 	return apply_filters( 'get_the_excerpt', $post->post_excerpt, $post );
 }
 

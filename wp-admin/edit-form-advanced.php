@@ -6,15 +6,9 @@
  * @subpackage Administration
  */
 
-// don't load directly
 if ( !defined('ABSPATH') )
 	die('-1');
 
-/**
- * @global string  $post_type
- * @global object  $post_type_object
- * @global WP_Post $post
- */
 global $post_type, $post_type_object, $post;
 
 wp_enqueue_script('post');
@@ -223,27 +217,26 @@ if ( post_type_supports($post_type, 'revisions') && 'auto-draft' != $post->post_
 	if ( count( $revisions ) > 1 ) {
 		reset( $revisions ); // Reset pointer for key()
 		$publish_callback_args = array( 'revisions_count' => count( $revisions ), 'revision_id' => key( $revisions ) );
-		add_meta_box('revisionsdiv', __('Revisions'), 'post_revisions_meta_box', null, 'normal', 'core');
+		add_meta_box('revisionsdiv', 'Revisions', 'post_revisions_meta_box', null, 'normal', 'core');
 	}
 }
 
 if ( 'attachment' == $post_type ) {
 	wp_enqueue_script( 'image-edit' );
 	wp_enqueue_style( 'imgareaselect' );
-	add_meta_box( 'submitdiv', __('Save'), 'attachment_submit_meta_box', null, 'side', 'core' );
+	add_meta_box( 'submitdiv', 'Save', 'attachment_submit_meta_box', null, 'side', 'core' );
 	add_action( 'edit_form_after_title', 'edit_form_image_editor' );
 
 	if ( wp_attachment_is( 'audio', $post ) ) {
-		add_meta_box( 'attachment-id3', __( 'Metadata' ), 'attachment_id3_data_meta_box', null, 'normal', 'core' );
+		add_meta_box( 'attachment-id3', 'Metadata', 'attachment_id3_data_meta_box', null, 'normal', 'core' );
 	}
 } else {
-	add_meta_box( 'submitdiv', __( 'Publish' ), 'post_submit_meta_box', null, 'side', 'core', $publish_callback_args );
+	add_meta_box( 'submitdiv', 'Publish', 'post_submit_meta_box', null, 'side', 'core', $publish_callback_args );
 }
 
 if ( current_theme_supports( 'post-formats' ) && post_type_supports( $post_type, 'post-formats' ) )
-	add_meta_box( 'formatdiv', _x( 'Format', 'post format' ), 'post_format_meta_box', null, 'side', 'core' );
+	add_meta_box( 'formatdiv', 'Format', 'post_format_meta_box', null, 'side', 'core' );
 
-// all taxonomies
 foreach ( get_object_taxonomies( $post ) as $tax_name ) {
 	$taxonomy = get_taxonomy( $tax_name );
 	if ( ! $taxonomy->show_ui || false === $taxonomy->meta_box_cb )
@@ -260,34 +253,21 @@ foreach ( get_object_taxonomies( $post ) as $tax_name ) {
 }
 
 if ( post_type_supports($post_type, 'page-attributes') )
-	add_meta_box('pageparentdiv', 'page' == $post_type ? __('Page Attributes') : __('Attributes'), 'page_attributes_meta_box', null, 'side', 'core');
+	add_meta_box('pageparentdiv', 'page' == $post_type ? 'Page Attributes' : 'Attributes', 'page_attributes_meta_box', null, 'side', 'core');
 
 if ( $thumbnail_support && current_user_can( 'upload_files' ) )
 	add_meta_box('postimagediv', esc_html( $post_type_object->labels->featured_image ), 'post_thumbnail_meta_box', null, 'side', 'low');
 
 if ( post_type_supports($post_type, 'excerpt') )
-	add_meta_box('postexcerpt', __('Excerpt'), 'post_excerpt_meta_box', null, 'normal', 'core');
-
-if ( post_type_supports($post_type, 'trackbacks') )
-	add_meta_box('trackbacksdiv', __('Send Trackbacks'), 'post_trackback_meta_box', null, 'normal', 'core');
+	add_meta_box('postexcerpt', 'Excerpt', 'post_excerpt_meta_box', null, 'normal', 'core');
 
 if ( post_type_supports($post_type, 'custom-fields') )
-	add_meta_box('postcustom', __('Custom Fields'), 'post_custom_meta_box', null, 'normal', 'core');
+	add_meta_box('postcustom', 'Custom Fields', 'post_custom_meta_box', null, 'normal', 'core');
 
-/**
- * Fires in the middle of built-in meta box registration.
- *
- * @since 2.1.0
- * @deprecated 3.7.0 Use 'add_meta_boxes' instead.
- *
- * @param WP_Post $post Post object.
- */
 do_action( 'dbx_post_advanced', $post );
 
-// Allow the Discussion meta box to show up if the post type supports comments,
-// or if comments or pings are open.
 if ( comments_open( $post ) || pings_open( $post ) || post_type_supports( $post_type, 'comments' ) ) {
-	add_meta_box( 'commentstatusdiv', __( 'Discussion' ), 'post_comment_status_meta_box', null, 'normal', 'core' );
+	add_meta_box( 'commentstatusdiv', 'Discussion', 'post_comment_status_meta_box', null, 'normal', 'core' );
 }
 
 $stati = get_post_stati( array( 'public' => true ) );
@@ -297,57 +277,23 @@ if ( empty( $stati ) ) {
 $stati[] = 'private';
 
 if ( in_array( get_post_status( $post ), $stati ) ) {
-	// If the post type support comments, or the post has comments, allow the
-	// Comments meta box.
 	if ( comments_open( $post ) || pings_open( $post ) || $post->comment_count > 0 || post_type_supports( $post_type, 'comments' ) ) {
-		add_meta_box( 'commentsdiv', __( 'Comments' ), 'post_comment_meta_box', null, 'normal', 'core' );
+		add_meta_box( 'commentsdiv', 'Comments', 'post_comment_meta_box', null, 'normal', 'core' );
 	}
 }
 
 if ( ! ( 'pending' == get_post_status( $post ) && ! current_user_can( $post_type_object->cap->publish_posts ) ) )
-	add_meta_box('slugdiv', __('Slug'), 'post_slug_meta_box', null, 'normal', 'core');
+	add_meta_box('slugdiv', 'Slug', 'post_slug_meta_box', null, 'normal', 'core');
 
 if ( post_type_supports($post_type, 'author') ) {
 	if ( is_super_admin() || current_user_can( $post_type_object->cap->edit_others_posts ) )
-		add_meta_box('authordiv', __('Author'), 'post_author_meta_box', null, 'normal', 'core');
+		add_meta_box('authordiv', 'Author', 'post_author_meta_box', null, 'normal', 'core');
 }
 
-/**
- * Fires after all built-in meta boxes have been added.
- *
- * @since 3.0.0
- *
- * @param string  $post_type Post type.
- * @param WP_Post $post      Post object.
- */
 do_action( 'add_meta_boxes', $post_type, $post );
-
-/**
- * Fires after all built-in meta boxes have been added, contextually for the given post type.
- *
- * The dynamic portion of the hook, `$post_type`, refers to the post type of the post.
- *
- * @since 3.0.0
- *
- * @param WP_Post $post Post object.
- */
 do_action( 'add_meta_boxes_' . $post_type, $post );
-
-/**
- * Fires after meta boxes have been added.
- *
- * Fires once for each of the default meta box contexts: normal, advanced, and side.
- *
- * @since 3.0.0
- *
- * @param string  $post_type Post type of the post.
- * @param string  $context   string  Meta box context.
- * @param WP_Post $post      Post object.
- */
 do_action( 'do_meta_boxes', $post_type, 'normal', $post );
-/** This action is documented in wp-admin/edit-form-advanced.php */
 do_action( 'do_meta_boxes', $post_type, 'advanced', $post );
-/** This action is documented in wp-admin/edit-form-advanced.php */
 do_action( 'do_meta_boxes', $post_type, 'side', $post );
 
 add_screen_option('layout_columns', array('max' => 2, 'default' => 2) );
@@ -357,62 +303,44 @@ if ( 'post' == $post_type ) {
 
 	get_current_screen()->add_help_tab( array(
 		'id'      => 'customize-display',
-		'title'   => __('Customizing This Display'),
+		'title'   => 'Customizing This Display',
 		'content' => $customize_display,
 	) );
 
-	$title_and_editor  = '<p>' . __('<strong>Title</strong> &mdash; Enter a title for your post. After you enter a title, you&#8217;ll see the permalink below, which you can edit.') . '</p>';
-	$title_and_editor .= '<p>' . __( '<strong>Post editor</strong> &mdash; Enter the text for your post. There are two modes of editing: Visual and Text. Choose the mode by clicking on the appropriate tab.' ) . '</p>';
-	$title_and_editor .= '<p>' . __( 'Visual mode gives you an editor that is similar to a word processor. Click the Toolbar Toggle button to get a second row of controls.' ) . '</p>';
-	$title_and_editor .= '<p>' . __( 'The Text mode allows you to enter HTML along with your post text. Note that &lt;p&gt; and &lt;br&gt; tags are converted to line breaks when switching to the Text editor to make it less cluttered. When you type, a single line break can be used instead of typing &lt;br&gt;, and two line breaks instead of paragraph tags. The line breaks are converted back to tags automatically.' ) . '</p>';
-	$title_and_editor .= '<p>' . __( 'You can insert media files by clicking the icons above the post editor and following the directions. You can align or edit images using the inline formatting toolbar available in Visual mode.' ) . '</p>';
-	$title_and_editor .= '<p>' . __( 'You can enable distraction-free writing mode using the icon to the right. This feature is not available for old browsers or devices with small screens, and requires that the full-height editor be enabled in Screen Options.' ) . '</p>';
-	$title_and_editor .= '<p>' . __( 'Keyboard users: When you&#8217;re working in the visual editor, you can use <kbd>Alt + F10</kbd> to access the toolbar.' ) . '</p>';
+	$title_and_editor  = '<p><strong>Title</strong> &mdash; Enter a title for your post. After you enter a title, you&#8217;ll see the permalink below, which you can edit.</p>';
+	$title_and_editor .= '<p><strong>Post editor</strong> &mdash; Enter the text for your post. There are two modes of editing: Visual and Text. Choose the mode by clicking on the appropriate tab.</p>';
+	$title_and_editor .= '<p>Visual mode gives you an editor that is similar to a word processor. Click the Toolbar Toggle button to get a second row of controls.</p>';
+	$title_and_editor .= '<p>The Text mode allows you to enter HTML along with your post text. Note that &lt;p&gt; and &lt;br&gt; tags are converted to line breaks when switching to the Text editor to make it less cluttered. When you type, a single line break can be used instead of typing &lt;br&gt;, and two line breaks instead of paragraph tags. The line breaks are converted back to tags automatically.</p>';
+	$title_and_editor .= '<p>You can insert media files by clicking the icons above the post editor and following the directions. You can align or edit images using the inline formatting toolbar available in Visual mode.</p>';
+	$title_and_editor .= '<p>You can enable distraction-free writing mode using the icon to the right. This feature is not available for old browsers or devices with small screens, and requires that the full-height editor be enabled in Screen Options.</p>';
+	$title_and_editor .= '<p>Keyboard users: When you&#8217;re working in the visual editor, you can use <kbd>Alt + F10</kbd> to access the toolbar.</p>';
 
 	get_current_screen()->add_help_tab( array(
 		'id'      => 'title-post-editor',
-		'title'   => __('Title and Post Editor'),
+		'title'   => 'Title and Post Editor',
 		'content' => $title_and_editor,
 	) );
 
-	get_current_screen()->set_help_sidebar(
-			'<p>' . sprintf(__('You can also create posts with the <a href="%s">Press This bookmarklet</a>.'), 'tools.php') . '</p>' .
-			'<p><strong>' . __('For more information:') . '</strong></p>' .
-			'<p>' . __('<a href="https://codex.wordpress.org/Posts_Add_New_Screen" target="_blank">Documentation on Writing and Editing Posts</a>') . '</p>' .
-			'<p>' . __('<a href="https://wordpress.org/support/" target="_blank">Support Forums</a>') . '</p>'
-	);
 } elseif ( 'page' == $post_type ) {
-	$about_pages = '<p>' . __('Pages are similar to posts in that they have a title, body text, and associated metadata, but they are different in that they are not part of the chronological blog stream, kind of like permanent posts. Pages are not categorized or tagged, but can have a hierarchy. You can nest pages under other pages by making one the &#8220;Parent&#8221; of the other, creating a group of pages.') . '</p>' .
-		'<p>' . __('Creating a Page is very similar to creating a Post, and the screens can be customized in the same way using drag and drop, the Screen Options tab, and expanding/collapsing boxes as you choose. This screen also has the distraction-free writing space, available in both the Visual and Text modes via the Fullscreen buttons. The Page editor mostly works the same as the Post editor, but there are some Page-specific features in the Page Attributes box.') . '</p>';
+	$about_pages = '<p>Pages are similar to posts in that they have a title, body text, and associated metadata, but they are different in that they are not part of the chronological blog stream, kind of like permanent posts. Pages are not categorized or tagged, but can have a hierarchy. You can nest pages under other pages by making one the &#8220;Parent&#8221; of the other, creating a group of pages.</p>' .
+		'<p>Creating a Page is very similar to creating a Post, and the screens can be customized in the same way using drag and drop, the Screen Options tab, and expanding/collapsing boxes as you choose. This screen also has the distraction-free writing space, available in both the Visual and Text modes via the Fullscreen buttons. The Page editor mostly works the same as the Post editor, but there are some Page-specific features in the Page Attributes box.</p>';
 
 	get_current_screen()->add_help_tab( array(
 		'id'      => 'about-pages',
-		'title'   => __('About Pages'),
+		'title'   => 'About Pages',
 		'content' => $about_pages,
 	) );
 
-	get_current_screen()->set_help_sidebar(
-			'<p><strong>' . __('For more information:') . '</strong></p>' .
-			'<p>' . __('<a href="https://codex.wordpress.org/Pages_Add_New_Screen" target="_blank">Documentation on Adding New Pages</a>') . '</p>' .
-			'<p>' . __('<a href="https://codex.wordpress.org/Pages_Screen#Editing_Individual_Pages" target="_blank">Documentation on Editing Pages</a>') . '</p>' .
-			'<p>' . __('<a href="https://wordpress.org/support/" target="_blank">Support Forums</a>') . '</p>'
-	);
 } elseif ( 'attachment' == $post_type ) {
 	get_current_screen()->add_help_tab( array(
 		'id'      => 'overview',
-		'title'   => __('Overview'),
+		'title'   => 'Overview',
 		'content' =>
-			'<p>' . __('This screen allows you to edit four fields for metadata in a file within the media library.') . '</p>' .
-			'<p>' . __('For images only, you can click on Edit Image under the thumbnail to expand out an inline image editor with icons for cropping, rotating, or flipping the image as well as for undoing and redoing. The boxes on the right give you more options for scaling the image, for cropping it, and for cropping the thumbnail in a different way than you crop the original image. You can click on Help in those boxes to get more information.') . '</p>' .
-			'<p>' . __('Note that you crop the image by clicking on it (the Crop icon is already selected) and dragging the cropping frame to select the desired part. Then click Save to retain the cropping.') . '</p>' .
-			'<p>' . __('Remember to click Update Media to save metadata entered or changed.') . '</p>'
+			'<p>This screen allows you to edit four fields for metadata in a file within the media library.</p>' .
+			'<p>For images only, you can click on Edit Image under the thumbnail to expand out an inline image editor with icons for cropping, rotating, or flipping the image as well as for undoing and redoing. The boxes on the right give you more options for scaling the image, for cropping it, and for cropping the thumbnail in a different way than you crop the original image. You can click on Help in those boxes to get more information.</p>' .
+			'<p>Note that you crop the image by clicking on it (the Crop icon is already selected) and dragging the cropping frame to select the desired part. Then click Save to retain the cropping.</p>' .
+			'<p>Remember to click Update Media to save metadata entered or changed.</p>'
 	) );
-
-	get_current_screen()->set_help_sidebar(
-	'<p><strong>' . __('For more information:') . '</strong></p>' .
-	'<p>' . __('<a href="https://codex.wordpress.org/Media_Add_New_Screen#Edit_Media" target="_blank">Documentation on Edit Media</a>') . '</p>' .
-	'<p>' . __('<a href="https://wordpress.org/support/" target="_blank">Support Forums</a>') . '</p>'
-	);
 }
 
 if ( 'post' == $post_type || 'page' == $post_type ) {
@@ -421,13 +349,13 @@ if ( 'post' == $post_type || 'page' == $post_type ) {
 
 	get_current_screen()->add_help_tab( array(
 		'id'		=> 'inserting-media',
-		'title'		=> __( 'Inserting Media' ),
+		'title'		=> 'Inserting Media',
 		'content' 	=> $inserting_media,
 	) );
 }
 
 if ( 'post' == $post_type ) {
-	$publish_box = '<p>' . __('Several boxes on this screen contain settings for how your content will be published, including:') . '</p>';
+	$publish_box = '<p>Several boxes on this screen contain settings for how your content will be published, including:</p>';
 	$publish_box .= '<ul><li>' .
 		__( '<strong>Publish</strong> &mdash; You can set the terms of publishing your post in the Publish box. For Status, Visibility, and Publish (immediately), click on the Edit link to reveal more options. Visibility includes options for password-protecting a post or making it stay at the top of your blog indefinitely (sticky). The Password protected option allows you to set an arbitrary password for each post. The Private option hides the post from everyone except editors and administrators. Publish (immediately) allows you to set a future or past date and time, so you can schedule a post to be published in the future or backdate a post.' ) .
 	'</li>';
@@ -437,7 +365,6 @@ if ( 'post' == $post_type ) {
 	}
 
 	if ( current_theme_supports( 'post-thumbnails' ) && post_type_supports( 'post', 'thumbnail' ) ) {
-		/* translators: %s: Featured Image */
 		$publish_box .= '<li>' . sprintf( __( '<strong>%s</strong> &mdash; This allows you to associate an image with your post without inserting it. This is usually useful only if your theme makes use of the image as a post thumbnail on the home page, a custom header, etc.' ), esc_html( $post_type_object->labels->featured_image ) ) . '</li>';
 	}
 
@@ -445,7 +372,7 @@ if ( 'post' == $post_type ) {
 
 	get_current_screen()->add_help_tab( array(
 		'id'      => 'publish-box',
-		'title'   => __('Publish Settings'),
+		'title'   => 'Publish Settings',
 		'content' => $publish_box,
 	) );
 
@@ -464,7 +391,7 @@ if ( 'post' == $post_type ) {
 
 	get_current_screen()->add_help_tab( array(
 		'id' => 'page-attributes',
-		'title' => __('Page Attributes'),
+		'title' => 'Page Attributes',
 		'content' => $page_attributes,
 	) );
 }
@@ -485,18 +412,11 @@ if ( isset( $post_new_file ) && current_user_can( $post_type_object->cap->create
 <div id="message" class="updated notice notice-success is-dismissible"><p><?php echo $message; ?></p></div>
 <?php endif; ?>
 <div id="lost-connection-notice" class="error hidden">
-	<p><span class="spinner"></span> <?php _e( '<strong>Connection lost.</strong> Saving has been disabled until you&#8217;re reconnected.' ); ?>
-	<span class="hide-if-no-sessionstorage"><?php _e( 'We&#8217;re backing up this post in your browser, just in case.' ); ?></span>
+	<p><span class="spinner"></span> <strong>Connection lost.</strong> Saving has been disabled until you&#8217;re reconnected.
+	<span class="hide-if-no-sessionstorage">We&#8217;re backing up this post in your browser, just in case.</span>
 	</p>
 </div>
 <form name="post" action="post.php" method="post" id="post"<?php
-/**
- * Fires inside the post editor form tag.
- *
- * @since 3.0.0
- *
- * @param WP_Post $post Post object.
- */
 do_action( 'post_edit_form_tag', $post );
 
 $referer = wp_get_referer();
@@ -523,15 +443,6 @@ wp_nonce_field( 'closedpostboxes', 'closedpostboxesnonce', false );
 ?>
 
 <?php
-/**
- * Fires at the beginning of the edit form.
- *
- * At this point, the required hidden fields and nonces have already been output.
- *
- * @since 3.7.0
- *
- * @param WP_Post $post Post object.
- */
 do_action( 'edit_form_top', $post ); ?>
 
 <div id="poststuff">
@@ -542,35 +453,18 @@ do_action( 'edit_form_top', $post ); ?>
 <div id="titlediv">
 <div id="titlewrap">
 	<?php
-	/**
-	 * Filter the title field placeholder text.
-	 *
-	 * @since 3.1.0
-	 *
-	 * @param string  $text Placeholder text. Default 'Enter title here'.
-	 * @param WP_Post $post Post object.
-	 */
-	$title_placeholder = apply_filters( 'enter_title_here', __( 'Enter title here' ), $post );
+	$title_placeholder = apply_filters( 'enter_title_here', 'Enter title here', $post );
 	?>
 	<label class="screen-reader-text" id="title-prompt-text" for="title"><?php echo $title_placeholder; ?></label>
 	<input type="text" name="post_title" size="30" value="<?php echo esc_attr( $post->post_title ); ?>" id="title" spellcheck="true" autocomplete="off" />
 </div>
 <?php
-/**
- * Fires before the permalink field in the edit form.
- *
- * @since 4.1.0
- *
- * @param WP_Post $post Post object.
- */
 do_action( 'edit_form_before_permalink', $post );
 ?>
 <div class="inside">
 <?php
 if ( $viewable ) :
 $sample_permalink_html = $post_type_object->public ? get_sample_permalink_html($post->ID) : '';
-
-// As of 4.4, the Get Shortlink button is hidden by default.
 if ( has_filter( 'pre_get_shortlink' ) || has_filter( 'get_shortlink' ) ) {
 	$shortlink = wp_get_shortlink($post->ID, 'post');
 
@@ -596,16 +490,9 @@ endif;
 <?php
 wp_nonce_field( 'samplepermalink', 'samplepermalinknonce', false );
 ?>
-</div><!-- /titlediv -->
+</div>
 <?php
 }
-/**
- * Fires after the title field.
- *
- * @since 3.5.0
- *
- * @param WP_Post $post Post object.
- */
 do_action( 'edit_form_after_title', $post );
 
 if ( post_type_supports($post_type, 'editor') ) {
@@ -624,7 +511,7 @@ if ( post_type_supports($post_type, 'editor') ) {
 	),
 ) ); ?>
 <table id="post-status-info"><tbody><tr>
-	<td id="wp-word-count" class="hide-if-no-js"><?php printf( __( 'Word count: %s' ), '<span class="word-count">0</span>' ); ?></td>
+	<td id="wp-word-count" class="hide-if-no-js"><?php printf( 'Word count: %s', '<span class="word-count">0</span>' ); ?></td>
 	<td class="autosave-info">
 	<span class="autosave-message">&nbsp;</span>
 <?php
@@ -643,45 +530,18 @@ if ( post_type_supports($post_type, 'editor') ) {
 
 </div>
 <?php }
-/**
- * Fires after the content editor.
- *
- * @since 3.5.0
- *
- * @param WP_Post $post Post object.
- */
 do_action( 'edit_form_after_editor', $post );
 ?>
-</div><!-- /post-body-content -->
+</div>
 
 <div id="postbox-container-1" class="postbox-container">
 <?php
 
 if ( 'page' == $post_type ) {
-	/**
-	 * Fires before meta boxes with 'side' context are output for the 'page' post type.
-	 *
-	 * The submitpage box is a meta box with 'side' context, so this hook fires just before it is output.
-	 *
-	 * @since 2.5.0
-	 *
-	 * @param WP_Post $post Post object.
-	 */
 	do_action( 'submitpage_box', $post );
-}
-else {
-	/**
-	 * Fires before meta boxes with 'side' context are output for all post types other than 'page'.
-	 *
-	 * The submitpost box is a meta box with 'side' context, so this hook fires just before it is output.
-	 *
-	 * @since 2.5.0
-	 *
-	 * @param WP_Post $post Post object.
-	 */
+} else {
 	do_action( 'submitpost_box', $post );
 }
-
 
 do_meta_boxes($post_type, 'side', $post);
 
@@ -693,23 +553,8 @@ do_meta_boxes($post_type, 'side', $post);
 do_meta_boxes(null, 'normal', $post);
 
 if ( 'page' == $post_type ) {
-	/**
-	 * Fires after 'normal' context meta boxes have been output for the 'page' post type.
-	 *
-	 * @since 1.5.0
-	 *
-	 * @param WP_Post $post Post object.
-	 */
 	do_action( 'edit_page_form', $post );
-}
-else {
-	/**
-	 * Fires after 'normal' context meta boxes have been output for all post types other than 'page'.
-	 *
-	 * @since 1.5.0
-	 *
-	 * @param WP_Post $post Post object.
-	 */
+} else {
 	do_action( 'edit_form_advanced', $post );
 }
 
@@ -719,19 +564,13 @@ do_meta_boxes(null, 'advanced', $post);
 ?>
 </div>
 <?php
-/**
- * Fires after all meta box sections have been output, before the closing #post-body div.
- *
- * @since 2.1.0
- *
- * @param WP_Post $post Post object.
- */
+
 do_action( 'dbx_post_sidebar', $post );
 
 ?>
-</div><!-- /post-body -->
+</div>
 <br class="clear" />
-</div><!-- /poststuff -->
+</div>
 </form>
 </div>
 

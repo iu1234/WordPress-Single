@@ -29,17 +29,6 @@ $capability = 'manage_options';
 if ( empty($option_page) ) {
 	$option_page = 'options';
 } else {
-
-	/**
-	 * Filter the capability required when using the Settings API.
-	 *
-	 * By default, the options groups for all registered settings require the manage_options capability.
-	 * This filter is required to change the capability required for a certain options page.
-	 *
-	 * @since 3.2.0
-	 *
-	 * @param string $capability The capability used for the page, which is manage_options by default.
-	 */
 	$capability = apply_filters( "option_page_capability_{$option_page}", $capability );
 }
 
@@ -66,7 +55,6 @@ if ( ! in_array( get_option( 'blog_charset' ), array( 'utf8', 'utf-8', 'UTF8', '
 	$whitelist_options['reading'][] = 'blog_charset';
 
 if ( get_site_option( 'initial_db_version' ) < 32453 ) {
-	$whitelist_options['writing'][] = 'use_smilies';
 	$whitelist_options['writing'][] = 'use_balanceTags';
 }
 

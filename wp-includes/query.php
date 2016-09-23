@@ -126,7 +126,6 @@ class WP_Query {
 		$this->is_month = false;
 		$this->is_day = false;
 		$this->is_time = false;
-		$this->is_author = false;
 		$this->is_category = false;
 		$this->is_tag = false;
 		$this->is_tax = false;
@@ -135,9 +134,7 @@ class WP_Query {
 		$this->is_404 = false;
 		$this->is_paged = false;
 		$this->is_admin = false;
-		$this->is_attachment = false;
 		$this->is_singular = false;
-		$this->is_robots = false;
 		$this->is_posts_page = false;
 		$this->is_post_type_archive = false;
 	}
@@ -160,7 +157,6 @@ class WP_Query {
 		$this->found_posts = 0;
 		$this->max_num_pages = 0;
 		$this->max_num_comment_pages = 0;
-
 		$this->init_query_flags();
 	}
 
@@ -169,55 +165,12 @@ class WP_Query {
 	}
 
 	public function fill_query_vars($array) {
-		$keys = array(
-			'error'
-			, 'm'
-			, 'p'
-			, 'post_parent'
-			, 'subpost'
-			, 'subpost_id'
-			, 'attachment'
-			, 'attachment_id'
-			, 'name'
-			, 'static'
-			, 'pagename'
-			, 'page_id'
-			, 'second'
-			, 'minute'
-			, 'hour'
-			, 'day'
-			, 'monthnum'
-			, 'year'
-			, 'w'
-			, 'category_name'
-			, 'tag'
-			, 'cat'
-			, 'tag_id'
-			, 'author'
-			, 'author_name'
-			, 'feed'
-			, 'tb'
-			, 'paged'
-			, 'meta_key'
-			, 'meta_value'
-			, 'preview'
-			, 's'
-			, 'sentence'
-			, 'title'
-			, 'fields'
-			, 'menu_order'
-			, 'embed'
-		);
-
+		$keys = array( 'error', 'm', 'p', 'post_parent', 'subpost', 'subpost_id', 'attachment', 'attachment_id', 'name', 'static', 'pagename', 'page_id', 'second', 'minute', 'hour', 'day', 'monthnum', 'year', 'w', 'category_name', 'tag', 'cat', 'tag_id', 'author', 'author_name', 'tb', 'paged', 'meta_key', 'meta_value', 'preview', 's', 'sentence', 'title', 'fields', 'menu_order' );
 		foreach ( $keys as $key ) {
 			if ( !isset($array[$key]) )
 				$array[$key] = '';
 		}
-
-		$array_keys = array( 'category__in', 'category__not_in', 'category__and', 'post__in', 'post__not_in', 'post_name__in',
-			'tag__in', 'tag__not_in', 'tag__and', 'tag_slug__in', 'tag_slug__and', 'post_parent__in', 'post_parent__not_in',
-			'author__in', 'author__not_in' );
-
+		$array_keys = array( 'category__in', 'category__not_in', 'category__and', 'post__in', 'post__not_in', 'post_name__in', 'tag__in', 'tag__not_in', 'tag__and', 'tag_slug__in', 'tag_slug__and', 'post_parent__in', 'post_parent__not_in', 'author__in', 'author__not_in' );
 		foreach ( $array_keys as $key ) {
 			if ( !isset($array[$key]) )
 				$array[$key] = array();
@@ -232,14 +185,9 @@ class WP_Query {
 		} elseif ( ! isset( $this->query ) ) {
 			$this->query = $this->query_vars;
 		}
-
 		$this->query_vars = $this->fill_query_vars($this->query_vars);
 		$qv = &$this->query_vars;
 		$this->query_vars_changed = true;
-
-		if ( ! empty($qv['robots']) )
-			$this->is_robots = true;
-
 		$qv['p'] =  absint($qv['p']);
 		$qv['page_id'] =  absint($qv['page_id']);
 		$qv['year'] = absint($qv['year']);
@@ -248,8 +196,8 @@ class WP_Query {
 		$qv['w'] = absint($qv['w']);
 		$qv['m'] = preg_replace( '|[^0-9]|', '', $qv['m'] );
 		$qv['paged'] = absint($qv['paged']);
-		$qv['cat'] = preg_replace( '|[^0-9,-]|', '', $qv['cat'] ); // comma separated list of positive or negative integers
-		$qv['author'] = preg_replace( '|[^0-9,-]|', '', $qv['author'] ); // comma separated list of positive or negative integers
+		$qv['cat'] = preg_replace( '|[^0-9,-]|', '', $qv['cat'] );
+		$qv['author'] = preg_replace( '|[^0-9,-]|', '', $qv['author'] );
 		$qv['pagename'] = trim( $qv['pagename'] );
 		$qv['name'] = trim( $qv['name'] );
 		$qv['title'] = trim( $qv['title'] );
@@ -257,20 +205,14 @@ class WP_Query {
 		if ( '' !== $qv['minute'] ) $qv['minute'] = absint($qv['minute']);
 		if ( '' !== $qv['second'] ) $qv['second'] = absint($qv['second']);
 		if ( '' !== $qv['menu_order'] ) $qv['menu_order'] = absint($qv['menu_order']);
-
-		// Fairly insane upper bound for search string lengths.
 		if ( ! is_scalar( $qv['s'] ) || ( ! empty( $qv['s'] ) && strlen( $qv['s'] ) > 1600 ) ) {
 			$qv['s'] = '';
 		}
-
-		// Compat. Map subpost to attachment.
 		if ( '' != $qv['subpost'] )
 			$qv['attachment'] = $qv['subpost'];
 		if ( '' != $qv['subpost_id'] )
 			$qv['attachment_id'] = $qv['subpost_id'];
-
 		$qv['attachment_id'] = absint($qv['attachment_id']);
-
 		if ( ('' != $qv['attachment']) || !empty($qv['attachment_id']) ) {
 			$this->is_single = true;
 			$this->is_attachment = true;
@@ -279,34 +221,26 @@ class WP_Query {
 		} elseif ( $qv['p'] ) {
 			$this->is_single = true;
 		} elseif ( ('' !== $qv['hour']) && ('' !== $qv['minute']) &&('' !== $qv['second']) && ('' != $qv['year']) && ('' != $qv['monthnum']) && ('' != $qv['day']) ) {
-			// If year, month, day, hour, minute, and second are set, a single
-			// post is being queried.
 			$this->is_single = true;
 		} elseif ( '' != $qv['static'] || '' != $qv['pagename'] || !empty($qv['page_id']) ) {
 			$this->is_page = true;
 			$this->is_single = false;
 		} else {
-			// Look for archive queries. Dates, categories, authors, search, post type archives.
-
 			if ( isset( $this->query['s'] ) ) {
 				$this->is_search = true;
 			}
-
 			if ( '' !== $qv['second'] ) {
 				$this->is_time = true;
 				$this->is_date = true;
 			}
-
 			if ( '' !== $qv['minute'] ) {
 				$this->is_time = true;
 				$this->is_date = true;
 			}
-
 			if ( '' !== $qv['hour'] ) {
 				$this->is_time = true;
 				$this->is_date = true;
 			}
-
 			if ( $qv['day'] ) {
 				if ( ! $this->is_date ) {
 					$date = sprintf( '%04d-%02d-%02d', $qv['year'], $qv['monthnum'], $qv['day'] );
@@ -361,7 +295,6 @@ class WP_Query {
 				if ( ! is_array( $tax_query ) ) {
 					continue;
 				}
-
 				if ( isset( $tax_query['operator'] ) && 'NOT IN' != $tax_query['operator'] ) {
 					switch ( $tax_query['taxonomy'] ) {
 						case 'category':
@@ -395,40 +328,20 @@ class WP_Query {
 			if ( $this->is_post_type_archive || $this->is_date || $this->is_author || $this->is_category || $this->is_tag || $this->is_tax )
 				$this->is_archive = true;
 		}
-
-		if ( '' != $qv['embed'] ) {
-			$this->is_embed = true;
-		}
-
 		if ( '' != $qv['paged'] && ( intval($qv['paged']) > 1 ) )
 			$this->is_paged = true;
-
-		// if we're previewing inside the write screen
 		if ( '' != $qv['preview'] )
 			$this->is_preview = true;
-
 		if ( is_admin() )
 			$this->is_admin = true;
-
-		if ( false !== strpos($qv['feed'], 'comments-') ) {
-			$qv['feed'] = str_replace('comments-', '', $qv['feed']);
-			$qv['withcomments'] = 1;
-		}
-
 		$this->is_singular = $this->is_single || $this->is_page || $this->is_attachment;
-
 		if ( !( $this->is_singular || $this->is_archive || $this->is_search || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) || $this->is_404 || $this->is_admin || $this->is_robots ) )
 			$this->is_home = true;
-
-		// Correct is_* for page_on_front and page_for_posts
 		if ( $this->is_home && 'page' == get_option('show_on_front') && get_option('page_on_front') ) {
 			$_query = wp_parse_args($this->query);
-			// pagename can be set and empty depending on matched rewrite rules. Ignore an empty pagename.
 			if ( isset($_query['pagename']) && '' == $_query['pagename'] )
 				unset($_query['pagename']);
-
 			unset( $_query['embed'] );
-
 			if ( empty($_query) || !array_diff( array_keys($_query), array('preview', 'page', 'paged', 'cpage') ) ) {
 				$this->is_page = true;
 				$this->is_home = false;
@@ -490,17 +403,11 @@ class WP_Query {
 			else
 				$qv['post_status'] = preg_replace('|[^a-z0-9_,-]|', '', $qv['post_status']);
 		}
-
-		$this->is_singular = $this->is_single || $this->is_page || $this->is_attachment;
-
+		$this->is_singular = $this->is_single || $this->is_page;
 		if ( '404' == $qv['error'] )
 			$this->set_404();
-
-		$this->is_embed = $this->is_embed && ( $this->is_singular || $this->is_404 );
-
 		$this->query_vars_hash = md5( serialize( $this->query_vars ) );
 		$this->query_vars_changed = false;
-
 		do_action_ref_array( 'parse_query', array( &$this ) );
 	}
 
@@ -554,12 +461,10 @@ class WP_Query {
 			}
 		}
 
-		// If querystring 'cat' is an array, implode it.
 		if ( is_array( $q['cat'] ) ) {
 			$q['cat'] = implode( ',', $q['cat'] );
 		}
 
-		// Category stuff
 		if ( ! empty( $q['cat'] ) && ! $this->is_singular ) {
 			$cat_in = $cat_not_in = array();
 
@@ -634,12 +539,10 @@ class WP_Query {
 			);
 		}
 
-		// If querystring 'tag' is array, implode it.
 		if ( is_array( $q['tag'] ) ) {
 			$q['tag'] = implode( ',', $q['tag'] );
 		}
 
-		// Tag stuff
 		if ( '' != $q['tag'] && !$this->is_singular && $this->query_vars_changed ) {
 			if ( strpos($q['tag'], ',') !== false ) {
 				$tags = preg_split('/[,\r\n\t ]+/', $q['tag']);
@@ -711,9 +614,7 @@ class WP_Query {
 				'operator' => 'AND'
 			);
 		}
-
 		$this->tax_query = new WP_Tax_Query( $tax_query );
-
 		do_action( 'parse_tax_query', $this );
 	}
 
@@ -988,21 +889,12 @@ class WP_Query {
 
 	public function get_posts() {
 		global $wpdb;
-
 		$this->parse_query();
-
 		do_action_ref_array( 'pre_get_posts', array( &$this ) );
-
 		$q = &$this->query_vars;
-
-		// Fill again in case pre_get_posts unset some vars.
 		$q = $this->fill_query_vars($q);
-
-		// Parse meta query
 		$this->meta_query = new WP_Meta_Query();
 		$this->meta_query->parse_query_vars( $q );
-
-		// Set a flag if a pre_get_posts hook changed the query vars.
 		$hash = md5( serialize( $this->query_vars ) );
 		if ( $hash != $this->query_vars_hash ) {
 			$this->query_vars_changed = true;
@@ -1010,7 +902,6 @@ class WP_Query {
 		}
 		unset($hash);
 
-		// First let's clear some variables
 		$distinct = '';
 		$whichauthor = '';
 		$whichmimetype = '';
@@ -1977,10 +1868,8 @@ class WP_Query {
 	public function get_queried_object() {
 		if ( isset($this->queried_object) )
 			return $this->queried_object;
-
 		$this->queried_object = null;
 		$this->queried_object_id = null;
-
 		if ( $this->is_category || $this->is_tag || $this->is_tax ) {
 			if ( $this->is_category ) {
 				if ( $this->get( 'cat' ) ) {
@@ -2000,7 +1889,6 @@ class WP_Query {
 					$queried_taxonomies = array_keys( $tax_query_in_and );
 					$matched_taxonomy = reset( $queried_taxonomies );
 					$query = $tax_query_in_and[ $matched_taxonomy ];
-
 					if ( $query['terms'] ) {
 						if ( 'term_id' == $query['field'] ) {
 							$term = get_term( reset( $query['terms'] ), $matched_taxonomy );
@@ -2010,11 +1898,9 @@ class WP_Query {
 					}
 				}
 			}
-
 			if ( ! empty( $term ) && ! is_wp_error( $term ) )  {
 				$this->queried_object = $term;
 				$this->queried_object_id = (int) $term->term_id;
-
 				if ( $this->is_category && 'category' === $this->queried_object->taxonomy )
 					_make_cat_compat( $this->queried_object );
 			}
@@ -2030,9 +1916,6 @@ class WP_Query {
 		} elseif ( $this->is_singular && ! empty( $this->post ) ) {
 			$this->queried_object = $this->post;
 			$this->queried_object_id = (int) $this->post->ID;
-		} elseif ( $this->is_author ) {
-			$this->queried_object_id = (int) $this->get('author');
-			$this->queried_object = get_user_id( 'id', $this->queried_object_id );
 		}
 		return $this->queried_object;
 	}
@@ -2127,21 +2010,16 @@ class WP_Query {
 	public function is_category( $category = '' ) {
 		if ( !$this->is_category )
 			return false;
-
 		if ( empty($category) )
 			return true;
-
 		$cat_obj = $this->get_queried_object();
-
 		$category = array_map( 'strval', (array) $category );
-
 		if ( in_array( (string) $cat_obj->term_id, $category ) )
 			return true;
 		elseif ( in_array( $cat_obj->name, $category ) )
 			return true;
 		elseif ( in_array( $cat_obj->slug, $category ) )
 			return true;
-
 		return false;
 	}
 

@@ -134,37 +134,29 @@ function get_object_taxonomies( $object, $output = 'names' ) {
 
 function get_taxonomy( $taxonomy ) {
 	global $wp_taxonomies;
-
 	if ( ! taxonomy_exists( $taxonomy ) )
 		return false;
-
 	return $wp_taxonomies[$taxonomy];
 }
 
 function taxonomy_exists( $taxonomy ) {
 	global $wp_taxonomies;
-
 	return isset( $wp_taxonomies[$taxonomy] );
 }
 
 function is_taxonomy_hierarchical($taxonomy) {
 	if ( ! taxonomy_exists($taxonomy) )
 		return false;
-
 	$taxonomy = get_taxonomy($taxonomy);
 	return $taxonomy->hierarchical;
 }
 
 function register_taxonomy( $taxonomy, $object_type, $args = array() ) {
 	global $wp_taxonomies, $wp;
-
 	if ( ! is_array( $wp_taxonomies ) )
 		$wp_taxonomies = array();
-
 	$args = wp_parse_args( $args );
-
 	$args = apply_filters( 'register_taxonomy_args', $args, $taxonomy, (array) $object_type );
-
 	$defaults = array(
 		'labels'                => array(),
 		'description'           => '',
@@ -185,16 +177,13 @@ function register_taxonomy( $taxonomy, $object_type, $args = array() ) {
 		'_builtin'              => false,
 	);
 	$args = array_merge( $defaults, $args );
-
 	if ( empty( $taxonomy ) || strlen( $taxonomy ) > 32 ) {
 		_doing_it_wrong( __FUNCTION__, 'Taxonomy names must be between 1 and 32 characters in length.', '4.2' );
 		return new WP_Error( 'taxonomy_length_invalid','Taxonomy names must be between 1 and 32 characters in length.' );
 	}
-
 	if ( null === $args['publicly_queryable'] ) {
 		$args['publicly_queryable'] = $args['public'];
 	}
-
 	if ( false !== $args['query_var'] && ( is_admin() || false !== $args['publicly_queryable'] ) && ! empty( $wp ) ) {
 		if ( true === $args['query_var'] )
 			$args['query_var'] = $taxonomy;
@@ -204,14 +193,12 @@ function register_taxonomy( $taxonomy, $object_type, $args = array() ) {
 	} else {
 		$args['query_var'] = false;
 	}
-
 	if ( false !== $args['rewrite'] && ( is_admin() || '' != get_option( 'permalink_structure' ) ) ) {
 		$args['rewrite'] = wp_parse_args( $args['rewrite'], array(
 			'with_front' => true,
 			'hierarchical' => false,
 			'ep_mask' => EP_NONE,
 		) );
-
 		if ( empty( $args['rewrite']['slug'] ) )
 			$args['rewrite']['slug'] = sanitize_title_with_dashes( $taxonomy );
 
@@ -223,23 +210,17 @@ function register_taxonomy( $taxonomy, $object_type, $args = array() ) {
 		add_rewrite_tag( "%$taxonomy%", $tag, $args['query_var'] ? "{$args['query_var']}=" : "taxonomy=$taxonomy&term=" );
 		add_permastruct( $taxonomy, "{$args['rewrite']['slug']}/%$taxonomy%", $args['rewrite'] );
 	}
-
 	if ( null === $args['show_ui'] )
 		$args['show_ui'] = $args['public'];
-
 	if ( null === $args['show_in_menu' ] || ! $args['show_ui'] )
 		$args['show_in_menu' ] = $args['show_ui'];
-
 	if ( null === $args['show_in_nav_menus'] )
 		$args['show_in_nav_menus'] = $args['public'];
-
 	if ( null === $args['show_tagcloud'] )
 		$args['show_tagcloud'] = $args['show_ui'];
-
 	if ( null === $args['show_in_quick_edit'] ) {
 		$args['show_in_quick_edit'] = $args['show_ui'];
 	}
-
 	$default_caps = array(
 		'manage_terms' => 'manage_categories',
 		'edit_terms'   => 'manage_categories',
@@ -248,25 +229,18 @@ function register_taxonomy( $taxonomy, $object_type, $args = array() ) {
 	);
 	$args['cap'] = (object) array_merge( $default_caps, $args['capabilities'] );
 	unset( $args['capabilities'] );
-
 	$args['name'] = $taxonomy;
 	$args['object_type'] = array_unique( (array) $object_type );
-
 	$args['labels'] = get_taxonomy_labels( (object) $args );
 	$args['label'] = $args['labels']->name;
-
-	// If not set, use the default meta box
 	if ( null === $args['meta_box_cb'] ) {
 		if ( $args['hierarchical'] )
 			$args['meta_box_cb'] = 'post_categories_meta_box';
 		else
 			$args['meta_box_cb'] = 'post_tags_meta_box';
 	}
-
 	$wp_taxonomies[ $taxonomy ] = (object) $args;
-
  	add_filter( 'wp_ajax_add-' . $taxonomy, '_wp_ajax_add_hierarchical_term' );
-
 	do_action( 'registered_taxonomy', $taxonomy, $object_type, $args );
 }
 
@@ -274,30 +248,21 @@ function unregister_taxonomy( $taxonomy ) {
 	if ( ! taxonomy_exists( $taxonomy ) ) {
 		return new WP_Error( 'invalid_taxonomy', 'Invalid taxonomy' );
 	}
-
 	$taxonomy_args = get_taxonomy( $taxonomy );
-
 	if ( $taxonomy_args->_builtin ) {
 		return new WP_Error( 'invalid_taxonomy', 'Unregistering a built-in taxonomy is not allowed' );
 	}
-
 	global $wp, $wp_taxonomies;
-
 	if ( false !== $taxonomy_args->query_var ) {
 		$wp->remove_query_var( $taxonomy_args->query_var );
 	}
-
 	if ( false !== $taxonomy_args->rewrite ) {
 		remove_rewrite_tag( "%$taxonomy%" );
 		remove_permastruct( $taxonomy );
 	}
-
 	remove_filter( 'wp_ajax_add-' . $taxonomy, '_wp_ajax_add_hierarchical_term' );
-
 	unset( $wp_taxonomies[ $taxonomy ] );
-
 	do_action( 'unregistered_taxonomy', $taxonomy );
-
 	return true;
 }
 
@@ -422,11 +387,9 @@ function get_term( $term, $taxonomy = '', $output = OBJECT, $filter = 'raw' ) {
 	if ( empty( $term ) ) {
 		return new WP_Error( 'invalid_term', 'Empty Term' );
 	}
-
 	if ( $taxonomy && ! taxonomy_exists( $taxonomy ) ) {
 		return new WP_Error( 'invalid_taxonomy', 'Invalid taxonomy' );
 	}
-
 	if ( $term instanceof WP_Term ) {
 		$_term = $term;
 	} elseif ( is_object( $term ) ) {
@@ -445,25 +408,17 @@ function get_term( $term, $taxonomy = '', $output = OBJECT, $filter = 'raw' ) {
 	} elseif ( ! $_term ) {
 		return null;
 	}
-
 	$_term = apply_filters( 'get_term', $_term, $taxonomy );
-
 	$_term = apply_filters( "get_$taxonomy", $_term, $taxonomy );
-
-	// Bail if a filter callback has changed the type of the `$_term` object.
 	if ( ! ( $_term instanceof WP_Term ) ) {
 		return $_term;
 	}
-
-	// Sanitize term, according to the specified filter.
 	$_term->filter( $filter );
-
 	if ( $output == ARRAY_A ) {
 		return $_term->to_array();
 	} elseif ( $output == ARRAY_N ) {
 		return array_values( $_term->to_array() );
 	}
-
 	return $_term;
 }
 
@@ -567,7 +522,6 @@ function get_term_to_edit( $id, $taxonomy ) {
 
 function get_terms( $args = array(), $deprecated = '' ) {
 	global $wpdb;
-
 	$defaults = array(
 		'taxonomy'               => null,
 		'orderby'                => 'name',
@@ -651,7 +605,6 @@ function get_terms( $args = array(), $deprecated = '' ) {
 
 	$args = apply_filters( 'get_terms_args', $args, $taxonomies );
 
-	// Avoid the query if the queried parent/child_of term has no descendants.
 	$child_of = $args['child_of'];
 	$parent   = $args['parent'];
 
@@ -672,7 +625,6 @@ function get_terms( $args = array(), $deprecated = '' ) {
 				$in_hierarchy = true;
 			}
 		}
-
 		if ( ! $in_hierarchy ) {
 			return $empty_array;
 		}
@@ -712,13 +664,10 @@ function get_terms( $args = array(), $deprecated = '' ) {
 	if ( '' !== $order && ! in_array( $order, array( 'ASC', 'DESC' ) ) ) {
 		$order = 'ASC';
 	}
-
 	$where_conditions = array();
-
 	if ( $taxonomies ) {
 		$where_conditions[] = "tt.taxonomy IN ('" . implode("', '", array_map( 'esc_sql', $taxonomies ) ) . "')";
 	}
-
 	$exclude = $args['exclude'];
 	$exclude_tree = $args['exclude_tree'];
 	$include = $args['include'];
@@ -733,7 +682,6 @@ function get_terms( $args = array(), $deprecated = '' ) {
 	if ( ! empty( $inclusions ) ) {
 		$where_conditions[] = 't.term_id IN ( ' . $inclusions . ' )';
 	}
-
 	$exclusions = array();
 	if ( ! empty( $exclude_tree ) ) {
 		$exclude_tree = wp_parse_id_list( $exclude_tree );
@@ -751,7 +699,6 @@ function get_terms( $args = array(), $deprecated = '' ) {
 		$exclusions = array_merge( wp_parse_id_list( $exclude ), $exclusions );
 	}
 
-	// 'childless' terms are those without an entry in the flattened term hierarchy.
 	$childless = (bool) $args['childless'];
 	if ( $childless ) {
 		foreach ( $taxonomies as $_tax ) {
