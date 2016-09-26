@@ -8,12 +8,11 @@
 
 function media_upload_tabs() {
 	$_default_tabs = array(
-		'type' => __('From Computer'), // handler action suffix => tab text
-		'type_url' => __('From URL'),
-		'gallery' => __('Gallery'),
-		'library' => __('Media Library')
+		'type' => 'From Computer',
+		'type_url' => 'From URL',
+		'gallery' => 'Gallery',
+		'library' => 'Media Library'
 	);
-
 	return apply_filters( 'media_upload_tabs', $_default_tabs );
 }
 
@@ -586,10 +585,8 @@ function media_upload_form_handler() {
 function wp_media_upload_handler() {
 	$errors = array();
 	$id = 0;
-
 	if ( isset($_POST['html-upload']) && !empty($_FILES) ) {
 		check_admin_referer('media-form');
-		// Upload File button was clicked
 		$id = media_handle_upload('async-upload', $_REQUEST['post_id']);
 		unset($_FILES);
 		if ( is_wp_error($id) ) {
@@ -597,7 +594,6 @@ function wp_media_upload_handler() {
 			$id = false;
 		}
 	}
-
 	if ( !empty($_POST['insertonlybutton']) ) {
 		$src = $_POST['src'];
 		if ( !empty($src) && !strpos($src, '://') )
@@ -632,12 +628,10 @@ function wp_media_upload_handler() {
 
 		return media_send_to_editor($html);
 	}
-
 	if ( isset( $_POST['save'] ) ) {
 		$errors['upload_notice'] = __('Saved.');
 		wp_enqueue_script( 'admin-gallery' );
  		return wp_iframe( 'media_upload_gallery_form', $errors );
-
 	} elseif ( ! empty( $_POST ) ) {
 		$return = media_upload_form_handler();
 
@@ -646,14 +640,12 @@ function wp_media_upload_handler() {
 		if ( is_array($return) )
 			$errors = $return;
 	}
-
 	if ( isset($_GET['tab']) && $_GET['tab'] == 'type_url' ) {
 		$type = 'image';
 		if ( isset( $_GET['type'] ) && in_array( $_GET['type'], array( 'video', 'audio', 'file' ) ) )
 			$type = $_GET['type'];
 		return wp_iframe( 'media_upload_type_url_form', $type, $errors, $id );
 	}
-
 	return wp_iframe( 'media_upload_type_form', 'image', $errors, $id );
 }
 

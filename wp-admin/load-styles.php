@@ -25,7 +25,6 @@ if ( empty($load) )
 
 $compress = ( isset($_GET['c']) && $_GET['c'] );
 $force_gzip = ( $compress && 'gzip' == $_GET['c'] );
-$rtl = ( isset($_GET['dir']) && 'rtl' == $_GET['dir'] );
 $expires_offset = 31536000;
 $out = '';
 
@@ -52,11 +51,6 @@ foreach ( $load as $handle ) {
 	}
 
 	$path = ABSPATH . $style->src;
-
-	if ( $rtl && ! empty( $style->extra['rtl'] ) ) {
-		// All default styles have fully independent RTL files.
-		$path = str_replace( '.min.css', '-rtl.min.css', $path );
-	}
 
 	$content = get_file( $path ) . "\n";
 

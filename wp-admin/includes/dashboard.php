@@ -10,9 +10,7 @@ function wp_dashboard_setup() {
 	global $wp_registered_widgets, $wp_registered_widget_controls, $wp_dashboard_control_callbacks;
 	$wp_dashboard_control_callbacks = array();
 	$screen = get_current_screen();
-
 	$response = wp_check_browser_version();
-
 	if ( $response && $response['upgrade'] ) {
 		add_filter( 'postbox_classes_dashboard_dashboard_browser_nag', 'dashboard_browser_nag_class' );
 		if ( $response['insecure'] )
@@ -20,43 +18,20 @@ function wp_dashboard_setup() {
 		else
 			wp_add_dashboard_widget( 'dashboard_browser_nag', 'Your browser is out of date!', 'wp_dashboard_browser_nag' );
 	}
-
-	// Right Now
 	if ( is_blog_admin() && current_user_can('edit_posts') )
 		wp_add_dashboard_widget( 'dashboard_right_now', 'At a Glance', 'wp_dashboard_right_now' );
-
-	if ( is_network_admin() )
-		wp_add_dashboard_widget( 'network_dashboard_right_now', 'Right Now', 'wp_network_dashboard_right_now' );
-
-	// Activity Widget
 	if ( is_blog_admin() ) {
 		wp_add_dashboard_widget( 'dashboard_activity', 'Activity', 'wp_dashboard_site_activity' );
 	}
-
-	// QuickPress Widget
 	if ( is_blog_admin() && current_user_can( get_post_type_object( 'post' )->cap->create_posts ) ) {
-		$quick_draft_title = sprintf( '<span class="hide-if-no-js">%1$s</span> <span class="hide-if-js">%2$s</span>', __( 'Quick Draft' ), __( 'Drafts' ) );
+		$quick_draft_title = sprintf( '<span class="hide-if-no-js">%1$s</span> <span class="hide-if-js">%2$s</span>', 'Quick Draft', 'Drafts' );
 		wp_add_dashboard_widget( 'dashboard_quick_press', $quick_draft_title, 'wp_dashboard_quick_press' );
 	}
 
 	//wp_add_dashboard_widget( 'dashboard_primary', __( 'WordPress News' ), 'wp_dashboard_primary' );
 
-	if ( is_network_admin() ) {
-
-		do_action( 'wp_network_dashboard_setup' );
-
-		$dashboard_widgets = apply_filters( 'wp_network_dashboard_widgets', array() );
-	} elseif ( is_user_admin() ) {
-
-		do_action( 'wp_user_dashboard_setup' );
-
-		$dashboard_widgets = apply_filters( 'wp_user_dashboard_widgets', array() );
-	} else {
-
-		do_action( 'wp_dashboard_setup' );
-
-		$dashboard_widgets = apply_filters( 'wp_dashboard_widgets', array() );
-	}
+	do_action( 'wp_dashboard_setup' );
+	$dashboard_widgets = apply_filters( 'wp_dashboard_widgets', array() );
 
 	foreach ( $dashboard_widgets as $widget_id ) {
 		$name = empty( $wp_registered_widgets[$widget_id]['all_link'] ) ? $wp_registered_widgets[$widget_id]['name'] : $wp_registered_widgets[$widget_id]['name'] . " <a href='{$wp_registered_widgets[$widget_id]['all_link']}' class='edit-box open-box'>" . __('View all') . '</a>';
@@ -65,17 +40,14 @@ function wp_dashboard_setup() {
 
 	if ( 'POST' == $_SERVER['REQUEST_METHOD'] && isset($_POST['widget_id']) ) {
 		check_admin_referer( 'edit-dashboard-widget_' . $_POST['widget_id'], 'dashboard-widget-nonce' );
-		ob_start(); // hack - but the same hack wp-admin/widgets.php uses
+		ob_start();
 		wp_dashboard_trigger_widget_control( $_POST['widget_id'] );
 		ob_end_clean();
 		wp_redirect( remove_query_arg( 'edit' ) );
 		exit;
 	}
 
-	/** This action is documented in wp-admin/edit-form-advanced.php */
 	do_action( 'do_meta_boxes', $screen->id, 'normal', '' );
-
-	/** This action is documented in wp-admin/edit-form-advanced.php */
 	do_action( 'do_meta_boxes', $screen->id, 'side', '' );
 }
 
@@ -87,11 +59,11 @@ function wp_add_dashboard_widget( $widget_id, $widget_name, $callback, $control_
 		$wp_dashboard_control_callbacks[$widget_id] = $control_callback;
 		if ( isset( $_GET['edit'] ) && $widget_id == $_GET['edit'] ) {
 			list($url) = explode( '#', add_query_arg( 'edit', false ), 2 );
-			$widget_name .= ' <span class="postbox-title-action"><a href="' . esc_url( $url ) . '">' . __( 'Cancel' ) . '</a></span>';
+			$widget_name .= ' <span class="postbox-title-action"><a href="' . esc_url( $url ) . '">Cancel</a></span>';
 			$callback = '_wp_dashboard_control_callback';
 		} else {
 			list($url) = explode( '#', add_query_arg( 'edit', $widget_id ), 2 );
-			$widget_name .= ' <span class="postbox-title-action"><a href="' . esc_url( "$url#$widget_id" ) . '" class="edit-box open-box">' . __( 'Configure' ) . '</a></span>';
+			$widget_name .= ' <span class="postbox-title-action"><a href="' . esc_url( "$url#$widget_id" ) . '" class="edit-box open-box">Configure</a></span>';
 		}
 	}
 
@@ -144,7 +116,6 @@ function wp_dashboard() {
 <?php
 	wp_nonce_field( 'closedpostboxes', 'closedpostboxesnonce', false );
 	wp_nonce_field( 'meta-box-order', 'meta-box-order-nonce', false );
-
 }
 
 function wp_dashboard_right_now() {
@@ -152,7 +123,6 @@ function wp_dashboard_right_now() {
 	<div class="main">
 	<ul>
 	<?php
-	// Posts and Pages
 	foreach ( array( 'post', 'page' ) as $post_type ) {
 		$num_posts = wp_count_posts( $post_type );
 		if ( $num_posts && $num_posts->publish ) {
@@ -203,12 +173,11 @@ function wp_dashboard_right_now() {
 	<?php
 	update_right_now_message();
 
-	// Check if search engines are asked not to index this site.
 	if ( ! is_network_admin() && ! is_user_admin() && current_user_can( 'manage_options' ) && '0' == get_option( 'blog_public' ) ) {
 
 		$title = apply_filters( 'privacy_on_link_title', '' );
 
-		$content = apply_filters( 'privacy_on_link_text' , __( 'Search Engines Discouraged' ) );
+		$content = apply_filters( 'privacy_on_link_text' , 'Search Engines Discouraged' );
 		$title_attr = '' === $title ? '' : " title='$title'";
 
 		echo "<p><a href='options-reading.php'$title_attr>$content</a></p>";
@@ -218,11 +187,8 @@ function wp_dashboard_right_now() {
 	<?php
 
 	ob_start();
-
 	do_action( 'rightnow_end' );
-
 	do_action( 'activity_box_end' );
-
 	$actions = ob_get_clean();
 
 	if ( !empty( $actions ) ) : ?>
@@ -230,60 +196,6 @@ function wp_dashboard_right_now() {
 		<?php echo $actions; ?>
 	</div>
 	<?php endif;
-}
-
-function wp_network_dashboard_right_now() {
-	$actions = array();
-	if ( current_user_can('create_sites') )
-		$actions['create-site'] = '<a href="' . network_admin_url('site-new.php') . '">' . __( 'Create a New Site' ) . '</a>';
-	if ( current_user_can('create_users') )
-		$actions['create-user'] = '<a href="' . network_admin_url('user-new.php') . '">' . __( 'Create a New User' ) . '</a>';
-
-	$c_users = get_user_count();
-	$c_blogs = get_blog_count();
-
-	$user_text = sprintf( _n( '%s user', '%s users', $c_users ), number_format_i18n( $c_users ) );
-	$blog_text = sprintf( _n( '%s site', '%s sites', $c_blogs ), number_format_i18n( $c_blogs ) );
-
-	$sentence = sprintf( __( 'You have %1$s and %2$s.' ), $blog_text, $user_text );
-
-	if ( $actions ) {
-		echo '<ul class="subsubsub">';
-		foreach ( $actions as $class => $action ) {
-			 $actions[ $class ] = "\t<li class='$class'>$action";
-		}
-		echo implode( " |</li>\n", $actions ) . "</li>\n";
-		echo '</ul>';
-	}
-?>
-	<br class="clear" />
-
-	<p class="youhave"><?php echo $sentence; ?></p>
-
-
-	<?php
-		do_action( 'wpmuadminresult', '' );
-	?>
-
-	<form action="<?php echo network_admin_url('users.php'); ?>" method="get">
-		<p>
-			<label class="screen-reader-text" for="search-users"><?php _e( 'Search Users' ); ?></label>
-			<input type="search" name="s" value="" size="30" autocomplete="off" id="search-users"/>
-			<?php submit_button( __( 'Search Users' ), 'button', false, false, array( 'id' => 'submit_users' ) ); ?>
-		</p>
-	</form>
-
-	<form action="<?php echo network_admin_url('sites.php'); ?>" method="get">
-		<p>
-			<label class="screen-reader-text" for="search-sites"><?php _e( 'Search Sites' ); ?></label>
-			<input type="search" name="s" value="" size="30" autocomplete="off" id="search-sites"/>
-			<?php submit_button( __( 'Search Sites' ), 'button', false, false, array( 'id' => 'submit_sites' ) ); ?>
-		</p>
-	</form>
-<?php
-	do_action( 'mu_rightnow_end' );
-
-	do_action( 'mu_activity_box_end' );
 }
 
 function wp_dashboard_quick_press( $error_msg = false ) {
@@ -487,22 +399,12 @@ function _wp_dashboard_recent_comments_row( &$comment, $show_date = true ) {
 
 			<?php
 			else :
-				switch ( $comment->comment_type ) {
-					case 'pingback' :
-						$type = __( 'Pingback' );
-						break;
-					case 'trackback' :
-						$type = __( 'Trackback' );
-						break;
-					default :
-						$type = ucwords( $comment->comment_type );
-				}
+				$type = ucwords( $comment->comment_type );
 				$type = esc_html( $type );
 			?>
 			<div class="dashboard-comment-wrap has-row-actions">
 			<p class="comment-meta">
 			<?php
-				// Pingbacks, Trackbacks or custom comment types might not have a post they relate to, e.g. programmatically created ones.
 				if ( $comment_post_link ) {
 					printf(
 						/* translators: 1: type of comment, 2: post link, 3: notification if the comment is pending */
@@ -523,7 +425,7 @@ function _wp_dashboard_recent_comments_row( &$comment, $show_date = true ) {
 			</p>
 			<p class="comment-author"><?php comment_author_link( $comment ); ?></p>
 
-			<?php endif; // comment_type ?>
+			<?php endif; ?>
 			<blockquote><p><?php comment_excerpt( $comment ); ?></p></blockquote>
 			<?php if ( $actions_string ) : ?>
 			<p class="row-actions"><?php echo $actions_string; ?></p>
@@ -596,15 +498,15 @@ function wp_dashboard_recent_posts( $args ) {
 
 			$time = get_the_time( 'U' );
 			if ( date( 'Y-m-d', $time ) == $today ) {
-				$relative = __( 'Today' );
+				$relative = 'Today';
 			} elseif ( date( 'Y-m-d', $time ) == $tomorrow ) {
-				$relative = __( 'Tomorrow' );
+				$relative = 'Tomorrow';
 			} elseif ( date( 'Y', $time ) !== date( 'Y', current_time( 'timestamp' ) ) ) {
 				/* translators: date and time format for recent posts on the dashboard, from a different calendar year, see http://php.net/date */
-				$relative = date_i18n( __( 'M jS Y' ), $time );
+				$relative = date_i18n( 'M jS Y', $time );
 			} else {
 				/* translators: date and time format for recent posts on the dashboard, see http://php.net/date */
-				$relative = date_i18n( __( 'M jS' ), $time );
+				$relative = date_i18n( 'M jS', $time );
 			}
 
 			// Use the post edit link for those who can edit, the permalink otherwise.
@@ -613,11 +515,9 @@ function wp_dashboard_recent_posts( $args ) {
 			$draft_or_post_title = _draft_or_post_title();
 			printf(
 				'<li><span>%1$s</span> <a href="%2$s" aria-label="%3$s">%4$s</a></li>',
-				/* translators: 1: relative date, 2: time */
-				sprintf( _x( '%1$s, %2$s', 'dashboard' ), $relative, get_the_time() ),
+				sprintf( '%1$s, %2$s', $relative, get_the_time() ),
 				$recent_post_link,
-				/* translators: %s: post title */
-				esc_attr( sprintf( __( 'Edit &#8220;%s&#8221;' ), $draft_or_post_title ) ),
+				esc_attr( sprintf( 'Edit &#8220;%s&#8221;', $draft_or_post_title ) ),
 				$draft_or_post_title
 			);
 		}
@@ -691,59 +591,7 @@ function wp_dashboard_trigger_widget_control( $widget_control_id = false ) {
 	}
 }
 
-function wp_dashboard_primary() {
-	$feeds = array(
-		'news' => array(
-			'link' => apply_filters( 'dashboard_primary_link', __( 'https://wordpress.org/news/' ) ),
-			'url' => apply_filters( 'dashboard_primary_feed', __( 'http://wordpress.org/news/feed/' ) ),
-			'title'        => apply_filters( 'dashboard_primary_title', __( 'WordPress Blog' ) ),
-			'items'        => 1,
-			'show_summary' => 1,
-			'show_author'  => 0,
-			'show_date'    => 1,
-		),
-		'planet' => array(
-			'link' => apply_filters( 'dashboard_secondary_link', __( 'https://planet.wordpress.org/' ) ),
-			'url' => apply_filters( 'dashboard_secondary_feed', __( 'https://planet.wordpress.org/feed/' ) ),
-			'title'        => apply_filters( 'dashboard_secondary_title', __( 'Other WordPress News' ) ),
-			'items'        => apply_filters( 'dashboard_secondary_items', 3 ),
-			'show_summary' => 0,
-			'show_author'  => 0,
-			'show_date'    => 0,
-		)
-	);
-
-	if ( ( ! is_multisite() && is_blog_admin() && current_user_can( 'install_plugins' ) ) || ( is_network_admin() && current_user_can( 'manage_network_plugins' ) && current_user_can( 'install_plugins' ) ) ) {
-		$feeds['plugins'] = array(
-			'link'         => '',
-			'url'          => array(
-				'popular' => 'http://wordpress.org/plugins/rss/browse/popular/',
-			),
-			'title'        => '',
-			'items'        => 1,
-			'show_summary' => 0,
-			'show_author'  => 0,
-			'show_date'    => 0,
-		);
-	}
-	wp_dashboard_cached_rss_widget( 'dashboard_primary', 'wp_dashboard_primary_output', $feeds );
-}
-
-function wp_dashboard_primary_output( $widget_id, $feeds ) {
-	foreach ( $feeds as $type => $args ) {
-		$args['type'] = $type;
-		echo '<div class="rss-widget">';
-		if ( $type === 'plugins' ) {
-			wp_dashboard_plugins_output( $args['url'], $args );
-		} else {
-			wp_widget_rss_output( $args['url'], $args );
-		}
-		echo "</div>";
-	}
-}
-
 function wp_dashboard_plugins_output( $rss, $args = array() ) {
-	// Plugin feeds plus link to install them
 	$popular = fetch_feed( $args['url']['popular'] );
 
 	if ( false === $plugin_slugs = get_transient( 'plugin_slugs' ) ) {
@@ -834,8 +682,7 @@ function wp_dashboard_quota() {
 	<ul>
 		<li class="storage-count">
 			<?php $text = sprintf(
-				/* translators: number of megabytes */
-				__( '%s MB Space Allowed' ),
+				'%s MB Space Allowed',
 				number_format_i18n( $quota )
 			);
 			printf(
@@ -869,13 +716,11 @@ function wp_dashboard_browser_nag() {
 
 	if ( $response ) {
 		if ( $response['insecure'] ) {
-			/* translators: %s: browser name and link */
-			$msg = sprintf( __( "It looks like you're using an insecure version of %s. Using an outdated browser makes your computer unsafe. For the best WordPress experience, please update your browser." ),
+			$msg = sprintf( "It looks like you're using an insecure version of %s. Using an outdated browser makes your computer unsafe. For the best WordPress experience, please update your browser.",
 				sprintf( '<a href="%s">%s</a>', esc_url( $response['update_url'] ), esc_html( $response['name'] ) )
 			);
 		} else {
-			/* translators: %s: browser name and link */
-			$msg = sprintf( __( "It looks like you're using an old version of %s. For the best WordPress experience, please update your browser." ),
+			$msg = sprintf( "It looks like you're using an old version of %s. For the best WordPress experience, please update your browser.",
 				sprintf( '<a href="%s">%s</a>', esc_url( $response['update_url'] ), esc_html( $response['name'] ) )
 			);
 		}
@@ -894,8 +739,8 @@ function wp_dashboard_browser_nag() {
 		if ( 'en_US' !== $locale )
 			$browsehappy = add_query_arg( 'locale', $locale, $browsehappy );
 
-		$notice .= '<p>' . sprintf( __( '<a href="%1$s" class="update-browser-link">Update %2$s</a> or learn how to <a href="%3$s" class="browse-happy-link">browse happy</a>' ), esc_attr( $response['update_url'] ), esc_html( $response['name'] ), esc_url( $browsehappy ) ) . '</p>';
-		$notice .= '<p class="hide-if-no-js"><a href="" class="dismiss" aria-label="' . esc_attr__( 'Dismiss the browser warning panel' ) . '">' . __( 'Dismiss' ) . '</a></p>';
+		$notice .= '<p>' . sprintf( '<a href="%1$s" class="update-browser-link">Update %2$s</a> or learn how to <a href="%3$s" class="browse-happy-link">browse happy</a>', esc_attr( $response['update_url'] ), esc_html( $response['name'] ), esc_url( $browsehappy ) ) . '</p>';
+		$notice .= '<p class="hide-if-no-js"><a href="" class="dismiss" aria-label="Dismiss the browser warning panel">Dismiss</a></p>';
 		$notice .= '<div class="clear"></div>';
 	}
 
@@ -914,30 +759,21 @@ function dashboard_browser_nag_class( $classes ) {
 function wp_check_browser_version() {
 	if ( empty( $_SERVER['HTTP_USER_AGENT'] ) )
 		return false;
-
 	$key = md5( $_SERVER['HTTP_USER_AGENT'] );
-
 	if ( false === ($response = get_site_transient('browser_' . $key) ) ) {
 		global $wp_version;
-
 		$options = array(
 			'body'			=> array( 'useragent' => $_SERVER['HTTP_USER_AGENT'] ),
 			'user-agent'	=> 'WordPress/' . $wp_version . '; ' . home_url()
 		);
-
 		$response = wp_remote_post( 'http://api.wordpress.org/core/browse-happy/1.1/', $options );
-
 		if ( is_wp_error( $response ) || 200 != wp_remote_retrieve_response_code( $response ) )
 			return false;
-
 		$response = json_decode( wp_remote_retrieve_body( $response ), true );
-
 		if ( ! is_array( $response ) )
 			return false;
-
 		set_site_transient( 'browser_' . $key, $response, WEEK_IN_SECONDS );
 	}
-
 	return $response;
 }
 

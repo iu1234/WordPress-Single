@@ -183,12 +183,12 @@ function wp_default_scripts( &$scripts ) {
 
 	$scripts->add( 'thickbox', "/wp-includes/js/thickbox/thickbox.js", array('jquery'), '3.1-20121105', 1 );
 	did_action( 'init' ) && $scripts->localize( 'thickbox', 'thickboxL10n', array(
-		'next' => __('Next &gt;'),
-		'prev' => __('&lt; Prev'),
-		'image' => __('Image'),
-		'of' => __('of'),
-		'close' => __('Close'),
-		'noiframes' => __('This feature requires inline frames. You have iframes disabled or your browser does not support them.'),
+		'next' => 'Next &gt;',
+		'prev' => '&lt; Prev',
+		'image' => 'Image',
+		'of' => 'of',
+		'close' => 'Close',
+		'noiframes' => 'This feature requires inline frames. You have iframes disabled or your browser does not support them.',
 		'loadingAnimation' => includes_url('js/thickbox/loadingAnimation.gif'),
 	) );
 
@@ -196,30 +196,29 @@ function wp_default_scripts( &$scripts ) {
 
 	$scripts->add( 'swfobject', "/wp-includes/js/swfobject.js", array(), '2.2-20120417');
 
-	// error message for both plupload and swfupload
 	$uploader_l10n = array(
-		'queue_limit_exceeded' => __('You have attempted to queue too many files.'),
-		'file_exceeds_size_limit' => __('%s exceeds the maximum upload size for this site.'),
-		'zero_byte_file' => __('This file is empty. Please try another.'),
-		'invalid_filetype' => __('This file type is not allowed. Please try another.'),
-		'not_an_image' => __('This file is not an image. Please try another.'),
-		'image_memory_exceeded' => __('Memory exceeded. Please try another smaller file.'),
-		'image_dimensions_exceeded' => __('This is larger than the maximum size. Please try another.'),
-		'default_error' => __('An error occurred in the upload. Please try again later.'),
-		'missing_upload_url' => __('There was a configuration error. Please contact the server administrator.'),
-		'upload_limit_exceeded' => __('You may only upload 1 file.'),
-		'http_error' => __('HTTP error.'),
-		'upload_failed' => __('Upload failed.'),
-		'big_upload_failed' => __('Please try uploading this file with the %1$sbrowser uploader%2$s.'),
-		'big_upload_queued' => __('%s exceeds the maximum upload size for the multi-file uploader when used in your browser.'),
-		'io_error' => __('IO error.'),
-		'security_error' => __('Security error.'),
-		'file_cancelled' => __('File canceled.'),
-		'upload_stopped' => __('Upload stopped.'),
-		'dismiss' => __('Dismiss'),
-		'crunching' => __('Crunching&hellip;'),
-		'deleted' => __('moved to the trash.'),
-		'error_uploading' => __('&#8220;%s&#8221; has failed to upload.')
+		'queue_limit_exceeded' => 'You have attempted to queue too many files.',
+		'file_exceeds_size_limit' => '%s exceeds the maximum upload size for this site.',
+		'zero_byte_file' => 'This file is empty. Please try another.',
+		'invalid_filetype' => 'This file type is not allowed. Please try another.',
+		'not_an_image' => 'This file is not an image. Please try another.',
+		'image_memory_exceeded' => 'Memory exceeded. Please try another smaller file.',
+		'image_dimensions_exceeded' => 'This is larger than the maximum size. Please try another.',
+		'default_error' => 'An error occurred in the upload. Please try again later.',
+		'missing_upload_url' => 'There was a configuration error. Please contact the server administrator.',
+		'upload_limit_exceeded' => 'You may only upload 1 file.',
+		'http_error' => 'HTTP error.',
+		'upload_failed' => 'Upload failed.',
+		'big_upload_failed' => 'Please try uploading this file with the %1$sbrowser uploader%2$s.',
+		'big_upload_queued' => '%s exceeds the maximum upload size for the multi-file uploader when used in your browser.',
+		'io_error' => 'IO error.',
+		'security_error' => 'Security error.',
+		'file_cancelled' => 'File canceled.',
+		'upload_stopped' => 'Upload stopped.',
+		'dismiss' => 'Dismiss',
+		'crunching' => 'Crunching&hellip;',
+		'deleted' => 'moved to the trash.',
+		'error_uploading' => '&#8220;%s&#8221; has failed to upload.'
 	);
 
 	$scripts->add( 'plupload', '/wp-includes/js/plupload/plupload.full.min.js', array(), '2.1.8' );
@@ -267,18 +266,18 @@ function wp_default_scripts( &$scripts ) {
 	did_action( 'init' ) && $scripts->localize( 'mediaelement', 'mejsL10n', array(
 		'language' => get_bloginfo( 'language' ),
 		'strings'  => array(
-			'Close'               => __( 'Close' ),
-			'Fullscreen'          => __( 'Fullscreen' ),
-			'Download File'       => __( 'Download File' ),
-			'Download Video'      => __( 'Download Video' ),
-			'Play/Pause'          => __( 'Play/Pause' ),
-			'Mute Toggle'         => __( 'Mute Toggle' ),
-			'None'                => __( 'None' ),
-			'Turn off Fullscreen' => __( 'Turn off Fullscreen' ),
-			'Go Fullscreen'       => __( 'Go Fullscreen' ),
-			'Unmute'              => __( 'Unmute' ),
-			'Mute'                => __( 'Mute' ),
-			'Captions/Subtitles'  => __( 'Captions/Subtitles' )
+			'Close'               => 'Close',
+			'Fullscreen'          => 'Fullscreen',
+			'Download File'       => 'Download File',
+			'Download Video'      => 'Download Video',
+			'Play/Pause'          => 'Play/Pause',
+			'Mute Toggle'         => 'Mute Toggle',
+			'None'                => 'None',
+			'Turn off Fullscreen' => 'Turn off Fullscreen',
+			'Go Fullscreen'       => 'Go Fullscreen',
+			'Unmute'              => 'Unmute',
+			'Mute'                => 'Mute',
+			'Captions/Subtitles'  => 'Captions/Subtitles'
 		),
 	) );
 
@@ -301,11 +300,11 @@ function wp_default_scripts( &$scripts ) {
 
 	$scripts->add( 'password-strength-meter', "/wp-admin/js/password-strength-meter.js", array( 'jquery', 'zxcvbn-async' ), false, 1 );
 	did_action( 'init' ) && $scripts->localize( 'password-strength-meter', 'pwsL10n', array(
-		'short'    => _x( 'Very weak', 'password strength' ),
-		'bad'      => _x( 'Weak', 'password strength' ),
-		'good'     => _x( 'Medium', 'password strength' ),
-		'strong'   => _x( 'Strong', 'password strength' ),
-		'mismatch' => _x( 'Mismatch', 'password mismatch' ),
+		'short'    => 'Very weak',
+		'bad'      => 'Weak',
+		'good'     => 'Medium',
+		'strong'   => 'Strong',
+		'mismatch' => 'Mismatch',
 	) );
 
 	$scripts->add( 'user-profile', "/wp-admin/js/user-profile.js", array( 'jquery', 'password-strength-meter', 'wp-util' ), false, 1 );
@@ -575,18 +574,16 @@ function wp_default_styles( &$styles ) {
 	$styles->add( 'dashboard',           "/wp-admin/css/dashboard.css" );
 	$styles->add( 'list-tables',         "/wp-admin/css/list-tables.css" );
 	$styles->add( 'edit',                "/wp-admin/css/edit.css" );
-	$styles->add( 'revisions',           "/wp-admin/css/revisions.css" );
 	$styles->add( 'media',               "/wp-admin/css/media.css" );
 	$styles->add( 'themes',              "/wp-admin/css/themes.css" );
 	$styles->add( 'nav-menus',           "/wp-admin/css/nav-menus.css" );
 	$styles->add( 'widgets',             "/wp-admin/css/widgets.css" );
 	$styles->add( 'site-icon',           "/wp-admin/css/site-icon.css" );
-	$styles->add( 'l10n',                "/wp-admin/css/l10n.css" );
 
-	$styles->add( 'wp-admin', false, array( 'open-sans', 'dashicons', 'common', 'forms', 'admin-menu', 'dashboard', 'list-tables', 'edit', 'revisions', 'media', 'themes', 'about', 'nav-menus', 'widgets', 'site-icon', 'l10n' ) );
+	$styles->add( 'wp-admin', false, array( 'dashicons', 'common', 'forms', 'admin-menu', 'dashboard', 'list-tables', 'edit', 'media', 'themes', 'nav-menus', 'widgets', 'site-icon' ) );
 
-	$styles->add( 'login',               "/wp-admin/css/login.css", array( 'open-sans', 'dashicons', 'buttons', 'forms', 'l10n' ) );
-	$styles->add( 'install',             "/wp-admin/css/install.css", array( 'open-sans', 'buttons' ) );
+	$styles->add( 'login',               "/wp-admin/css/login.css", array( 'dashicons', 'buttons', 'forms' ) );
+	$styles->add( 'install',             "/wp-admin/css/install.css", array( 'buttons' ) );
 	$styles->add( 'wp-color-picker',     "/wp-admin/css/color-picker.css" );
 	$styles->add( 'customize-controls',  "/wp-admin/css/customize-controls.css", array( 'wp-admin', 'colors', 'ie', 'imgareaselect' ) );
 	$styles->add( 'customize-widgets',   "/wp-admin/css/customize-widgets.css", array( 'wp-admin', 'colors' ) );
@@ -643,9 +640,6 @@ function wp_just_in_time_script_localization() {
 function wp_style_loader_src( $src, $handle ) {
 	global $_wp_admin_css_colors;
 
-	if ( wp_installing() )
-		return preg_replace( '#^wp-admin/#', './', $src );
-
 	if ( 'colors' == $handle ) {
 		$color = get_user_option('admin_color');
 
@@ -675,7 +669,6 @@ function print_head_scripts() {
 	global $concatenate_scripts;
 
 	if ( ! did_action('wp_print_scripts') ) {
-		/** This action is documented in wp-includes/functions.wp-scripts.php */
 		do_action( 'wp_print_scripts' );
 	}
 
@@ -685,13 +678,6 @@ function print_head_scripts() {
 	$wp_scripts->do_concat = $concatenate_scripts;
 	$wp_scripts->do_head_items();
 
-	/**
-	 * Filter whether to print the head scripts.
-	 *
-	 * @since 2.8.0
-	 *
-	 * @param bool $print Whether to print the head scripts. Default true.
-	 */
 	if ( apply_filters( 'print_head_scripts', true ) ) {
 		_print_scripts();
 	}
@@ -704,19 +690,12 @@ function print_footer_scripts() {
 	global $wp_scripts, $concatenate_scripts;
 
 	if ( ! ( $wp_scripts instanceof WP_Scripts ) ) {
-		return array(); // No need to run if not instantiated.
+		return array();
 	}
 	script_concat_settings();
 	$wp_scripts->do_concat = $concatenate_scripts;
 	$wp_scripts->do_footer_items();
 
-	/**
-	 * Filter whether to print the footer scripts.
-	 *
-	 * @since 2.8.0
-	 *
-	 * @param bool $print Whether to print the footer scripts. Default true.
-	 */
 	if ( apply_filters( 'print_footer_scripts', true ) ) {
 		_print_scripts();
 	}
@@ -755,7 +734,6 @@ function _print_scripts() {
 
 function wp_print_head_scripts() {
 	if ( ! did_action('wp_print_scripts') ) {
-		/** This action is documented in wp-includes/functions.wp-scripts.php */
 		do_action( 'wp_print_scripts' );
 	}
 
@@ -770,14 +748,6 @@ function wp_print_head_scripts() {
 function _wp_footer_scripts() {
 	print_late_styles();
 	print_footer_scripts();
-}
-
-function wp_print_footer_scripts() {
-	do_action( 'wp_print_footer_scripts' );
-}
-
-function wp_enqueue_scripts() {
-	do_action( 'wp_enqueue_scripts' );
 }
 
 function print_admin_styles() {
@@ -818,21 +788,15 @@ function print_late_styles() {
 
 function _print_styles() {
 	global $compress_css;
-
 	$wp_styles = wp_styles();
-
 	$zip = $compress_css ? 1 : 0;
 	if ( $zip && defined('ENFORCE_GZIP') && ENFORCE_GZIP )
 		$zip = 'gzip';
-
 	if ( $concat = trim( $wp_styles->concat, ', ' ) ) {
-		$dir = $wp_styles->text_direction;
 		$ver = $wp_styles->default_version;
-
 		$concat = str_split( $concat, 128 );
 		$concat = 'load%5B%5D=' . implode( '&load%5B%5D=', $concat );
-
-		$href = $wp_styles->base_url . "/wp-admin/load-styles.php?c={$zip}&dir={$dir}&" . $concat . '&ver=' . $ver;
+		$href = $wp_styles->base_url . "/wp-admin/load-styles.php?c={$zip}&" . $concat . '&ver=' . $ver;
 		echo "<link rel='stylesheet' href='" . esc_attr($href) . "' type='text/css' media='all' />\n";
 
 		if ( !empty($wp_styles->print_code) ) {
@@ -841,7 +805,6 @@ function _print_styles() {
 			echo "\n</style>\n";
 		}
 	}
-
 	if ( !empty($wp_styles->print_html) )
 		echo $wp_styles->print_html;
 }

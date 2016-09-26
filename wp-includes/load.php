@@ -192,7 +192,6 @@ function is_blog_admin() {
 		return $GLOBALS['current_screen']->in_admin( 'site' );
 	elseif ( defined( 'WP_BLOG_ADMIN' ) )
 		return WP_BLOG_ADMIN;
-
 	return false;
 }
 
