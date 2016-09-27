@@ -1039,35 +1039,20 @@ function wp_set_comment_status($comment_id, $comment_status, $wp_error = false) 
 
 function wp_update_comment($commentarr) {
 	global $wpdb;
-
-	// First, get all of the original fields
 	$comment = get_comment($commentarr['comment_ID'], ARRAY_A);
 	if ( empty( $comment ) ) {
 		return 0;
 	}
-
-	// Make sure that the comment post ID is valid (if specified).
 	if ( ! empty( $commentarr['comment_post_ID'] ) && ! get_post( $commentarr['comment_post_ID'] ) ) {
 		return 0;
 	}
-
-	// Escape data pulled from DB.
 	$comment = wp_slash($comment);
-
 	$old_status = $comment['comment_approved'];
-
-	// Merge old and new fields with new fields overwriting old ones.
 	$commentarr = array_merge($comment, $commentarr);
-
 	$commentarr = wp_filter_comment( $commentarr );
-
-	// Now extract the merged array.
 	$data = wp_unslash( $commentarr );
-
 	$data['comment_content'] = apply_filters( 'comment_save_pre', $data['comment_content'] );
-
 	$data['comment_date_gmt'] = get_gmt_from_date( $data['comment_date'] );
-
 	if ( ! isset( $data['comment_approved'] ) ) {
 		$data['comment_approved'] = 1;
 	} elseif ( 'hold' == $data['comment_approved'] ) {
@@ -1075,13 +1060,11 @@ function wp_update_comment($commentarr) {
 	} elseif ( 'approve' == $data['comment_approved'] ) {
 		$data['comment_approved'] = 1;
 	}
-
 	$comment_ID = $data['comment_ID'];
 	$comment_post_ID = $data['comment_post_ID'];
 	$keys = array( 'comment_post_ID', 'comment_content', 'comment_author', 'comment_author_email', 'comment_approved', 'comment_karma', 'comment_author_url', 'comment_date', 'comment_date_gmt', 'comment_type', 'comment_parent', 'user_id', 'comment_agent', 'comment_author_IP' );
 	$data = wp_array_slice_assoc( $data, $keys );
 	$rval = $wpdb->update( $wpdb->comments, $data, compact( 'comment_ID' ) );
-
 	clean_comment_cache( $comment_ID );
 	wp_update_comment_count( $comment_post_ID );
 	do_action( 'edit_comment', $comment_ID );

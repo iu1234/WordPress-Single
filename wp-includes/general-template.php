@@ -49,14 +49,11 @@ function get_sidebar( $name = null ) {
 
 function get_template_part( $slug, $name = null ) {
 	do_action( "get_template_part_{$slug}", $slug, $name );
-
 	$templates = array();
 	$name = (string) $name;
 	if ( '' !== $name )
 		$templates[] = "{$slug}-{$name}.php";
-
 	$templates[] = "{$slug}.php";
-
 	locate_template($templates, true, false);
 }
 

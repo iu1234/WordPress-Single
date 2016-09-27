@@ -110,7 +110,6 @@ function get_taxonomies( $args = array(), $output = 'names', $operator = 'and' )
 
 function get_object_taxonomies( $object, $output = 'names' ) {
 	global $wp_taxonomies;
-
 	if ( is_object($object) ) {
 		if ( $object->post_type == 'attachment' )
 			return get_attachment_taxonomies($object);

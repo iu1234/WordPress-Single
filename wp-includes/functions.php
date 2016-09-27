@@ -1826,42 +1826,31 @@ function wp_is_numeric_array( $data ) {
 function wp_filter_object_list( $list, $args = array(), $operator = 'and', $field = false ) {
 	if ( ! is_array( $list ) )
 		return array();
-
 	$list = wp_list_filter( $list, $args, $operator );
-
 	if ( $field )
 		$list = wp_list_pluck( $list, $field );
-
 	return $list;
 }
 
 function wp_list_filter( $list, $args = array(), $operator = 'AND' ) {
 	if ( ! is_array( $list ) )
 		return array();
-
 	if ( empty( $args ) )
 		return $list;
-
 	$operator = strtoupper( $operator );
 	$count = count( $args );
 	$filtered = array();
-
 	foreach ( $list as $key => $obj ) {
 		$to_match = (array) $obj;
-
 		$matched = 0;
 		foreach ( $args as $m_key => $m_value ) {
 			if ( array_key_exists( $m_key, $to_match ) && $m_value == $to_match[ $m_key ] )
 				$matched++;
 		}
-
-		if ( ( 'AND' == $operator && $matched == $count )
-		  || ( 'OR' == $operator && $matched > 0 )
-		  || ( 'NOT' == $operator && 0 == $matched ) ) {
+		if ( ( 'AND' == $operator && $matched == $count ) || ( 'OR' == $operator && $matched > 0 ) || ( 'NOT' == $operator && 0 == $matched ) ) {
 			$filtered[$key] = $obj;
 		}
 	}
-
 	return $filtered;
 }
 

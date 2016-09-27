@@ -182,7 +182,7 @@ function _wp_handle_upload( &$file, $overrides, $time, $action ) {
 	$test_type = isset( $overrides['test_type'] ) ? $overrides['test_type'] : true;
 	$mimes = isset( $overrides['mimes'] ) ? $overrides['mimes'] : false;
 	if ( $test_form && ( ! isset( $_POST['action'] ) || ( $_POST['action'] != $action ) ) ) {
-		return call_user_func( $upload_error_handler, $file, __( 'Invalid form submission.' ) );
+		return call_user_func( $upload_error_handler, $file, 'Invalid form submission.' );
 	}
 	if ( isset( $file['error'] ) && $file['error'] > 0 ) {
 		return call_user_func( $upload_error_handler, $file, $upload_error_strings[ $file['error'] ] );
@@ -234,21 +234,12 @@ function _wp_handle_upload( &$file, $overrides, $time, $action ) {
 		} else {
 			$error_path = basename( $uploads['basedir'] ) . $uploads['subdir'];
 		}
-		return $upload_error_handler( $file, sprintf( __('The uploaded file could not be moved to %s.' ), $error_path ) );
+		return $upload_error_handler( $file, sprintf( 'The uploaded file could not be moved to %s.', $error_path ) );
 	}
-
-	// Set correct file permissions.
 	$stat = stat( dirname( $new_file ));
 	$perms = $stat['mode'] & 0000666;
 	@ chmod( $new_file, $perms );
-
-	// Compute the URL.
 	$url = $uploads['url'] . "/$filename";
-
-	if ( is_multisite() ) {
-		delete_transient( 'dirsize_cache' );
-	}
-
 	return apply_filters( 'wp_handle_upload', array(
 		'file' => $new_file,
 		'url'  => $url,
@@ -257,17 +248,14 @@ function _wp_handle_upload( &$file, $overrides, $time, $action ) {
 }
 
 function wp_handle_upload( &$file, $overrides = false, $time = null ) {
-
 	$action = 'wp_handle_upload';
 	if ( isset( $overrides['action'] ) ) {
 		$action = $overrides['action'];
 	}
-
 	return _wp_handle_upload( $file, $overrides, $time, $action );
 }
 
 function wp_handle_sideload( &$file, $overrides = false, $time = null ) {
-
 	$action = 'wp_handle_sideload';
 	if ( isset( $overrides['action'] ) ) {
 		$action = $overrides['action'];
@@ -276,26 +264,20 @@ function wp_handle_sideload( &$file, $overrides = false, $time = null ) {
 }
 
 function download_url( $url, $timeout = 300 ) {
-	//WARNING: The file is not automatically deleted, The script must unlink() the file.
 	if ( ! $url )
 		return new WP_Error('http_no_url', 'Invalid URL Provided.');
-
 	$tmpfname = wp_tempnam($url);
 	if ( ! $tmpfname )
 		return new WP_Error('http_no_file', 'Could not create Temporary file.');
-
 	$response = wp_safe_remote_get( $url, array( 'timeout' => $timeout, 'stream' => true, 'filename' => $tmpfname ) );
-
 	if ( is_wp_error( $response ) ) {
 		unlink( $tmpfname );
 		return $response;
 	}
-
 	if ( 200 != wp_remote_retrieve_response_code( $response ) ){
 		unlink( $tmpfname );
 		return new WP_Error( 'http_404', trim( wp_remote_retrieve_response_message( $response ) ) );
 	}
-
 	$content_md5 = wp_remote_retrieve_header( $response, 'content-md5' );
 	if ( $content_md5 ) {
 		$md5_check = verify_file_md5( $tmpfname, $content_md5 );
@@ -304,7 +286,6 @@ function download_url( $url, $timeout = 300 ) {
 			return $md5_check;
 		}
 	}
-
 	return $tmpfname;
 }
 
@@ -314,28 +295,22 @@ function verify_file_md5( $filename, $expected_md5 ) {
 	elseif ( 24 == strlen( $expected_md5 ) )
 		$expected_raw_md5 = base64_decode( $expected_md5 );
 	else
-		return false; // unknown format
-
+		return false;
 	$file_md5 = md5_file( $filename, true );
-
 	if ( $file_md5 === $expected_raw_md5 )
 		return true;
-
-	return new WP_Error( 'md5_mismatch', sprintf( __( 'The checksum of the file (%1$s) does not match the expected checksum value (%2$s).' ), bin2hex( $file_md5 ), bin2hex( $expected_raw_md5 ) ) );
+	return new WP_Error( 'md5_mismatch', sprintf( 'The checksum of the file (%1$s) does not match the expected checksum value (%2$s).', bin2hex( $file_md5 ), bin2hex( $expected_raw_md5 ) ) );
 }
 
 function unzip_file($file, $to) {
 	global $wp_filesystem;
-
 	if ( ! $wp_filesystem || !is_object($wp_filesystem) )
-		return new WP_Error('fs_unavailable', __('Could not access filesystem.'));
+		return new WP_Error('fs_unavailable', 'Could not access filesystem.');
 
 	@ini_set( 'memory_limit', apply_filters( 'admin_memory_limit', WP_MAX_MEMORY_LIMIT ) );
 
 	$needed_dirs = array();
 	$to = trailingslashit($to);
-
-	// Determine any parent dir's needed (of the upgrade directory)
 	if ( ! $wp_filesystem->is_dir($to) ) { //Only do parents if no children exist
 		$path = preg_split('![/\\\]!', untrailingslashit($to));
 		for ( $i = count($path); $i >= 0; $i-- ) {
@@ -353,13 +328,6 @@ function unzip_file($file, $to) {
 		}
 	}
 
-	/**
-	 * Filter whether to use ZipArchive to unzip archives.
-	 *
-	 * @since 3.0.0
-	 *
-	 * @param bool $ziparchive Whether to use ZipArchive. Default true.
-	 */
 	if ( class_exists( 'ZipArchive', false ) && apply_filters( 'unzip_file_use_ziparchive', true ) ) {
 		$result = _unzip_file_ziparchive($file, $to, $needed_dirs);
 		if ( true === $result ) {
@@ -369,15 +337,12 @@ function unzip_file($file, $to) {
 				return $result;
 		}
 	}
-	// Fall through to PclZip if ZipArchive is not available, or encountered an error opening the file.
 	return _unzip_file_pclzip($file, $to, $needed_dirs);
 }
 
 function _unzip_file_ziparchive($file, $to, $needed_dirs = array() ) {
 	global $wp_filesystem;
-
 	$z = new ZipArchive();
-
 	$zopen = $z->open( $file, ZIPARCHIVE::CHECKCONS );
 	if ( true !== $zopen )
 		return new WP_Error( 'incompatible_archive', 'Incompatible Archive.', array( 'ziparchive_error' => $zopen ) );
@@ -446,27 +411,16 @@ function _unzip_file_ziparchive($file, $to, $needed_dirs = array() ) {
 
 function _unzip_file_pclzip($file, $to, $needed_dirs = array()) {
 	global $wp_filesystem;
-
 	mbstring_binary_safe_encoding();
-
 	require_once(ABSPATH . 'wp-admin/includes/class-pclzip.php');
-
 	$archive = new PclZip($file);
-
 	$archive_files = $archive->extract(PCLZIP_OPT_EXTRACT_AS_STRING);
-
 	reset_mbstring_encoding();
-
-	// Is the archive valid?
 	if ( !is_array($archive_files) )
 		return new WP_Error('incompatible_archive', 'Incompatible Archive.', $archive->errorInfo(true));
-
 	if ( 0 == count($archive_files) )
 		return new WP_Error( 'empty_archive_pclzip', 'Empty archive.' );
-
 	$uncompressed_size = 0;
-
-	// Determine any children directories needed (From within the archive)
 	foreach ( $archive_files as $file ) {
 		if ( '__MACOSX/' === substr($file['filename'], 0, 9) ) // Skip the OS X-created __MACOSX directory
 			continue;

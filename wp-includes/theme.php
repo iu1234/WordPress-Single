@@ -854,37 +854,28 @@ function get_editor_stylesheets() {
 
 function add_theme_support( $feature ) {
 	global $_wp_theme_features;
-
 	if ( func_num_args() == 1 )
 		$args = true;
 	else
 		$args = array_slice( func_get_args(), 1 );
-
 	switch ( $feature ) {
 		case 'post-formats' :
 			if ( is_array( $args[0] ) ) {
 				$post_formats = get_post_format_slugs();
 				unset( $post_formats['standard'] );
-
 				$args[0] = array_intersect( $args[0], array_keys( $post_formats ) );
 			}
 			break;
-
 		case 'html5' :
-			// You can't just pass 'html5', you need to pass an array of types.
 			if ( empty( $args[0] ) ) {
-				// Build an array of types for back-compat.
 				$args = array( 0 => array( 'comment-list', 'comment-form', 'search-form' ) );
 			} elseif ( ! is_array( $args[0] ) ) {
-				_doing_it_wrong( "add_theme_support( 'html5' )", __( 'You need to pass an array of types.' ), '3.6.1' );
+				_doing_it_wrong( "add_theme_support( 'html5' )", 'You need to pass an array of types.', '3.6.1' );
 				return false;
 			}
-
-			// Calling 'html5' again merges, rather than overwrites.
 			if ( isset( $_wp_theme_features['html5'] ) )
 				$args[0] = array_merge( $_wp_theme_features['html5'][0], $args[0] );
 			break;
-
 		case 'custom-logo':
 			if ( ! is_array( $args ) ) {
 				$args = array( 0 => array() );
@@ -897,21 +888,16 @@ function add_theme_support( $feature ) {
 				'header-text' => '',
 			);
 			$args[0] = wp_parse_args( array_intersect_key( $args[0], $defaults ), $defaults );
-
-			// Allow full flexibility if no size is specified.
 			if ( is_null( $args[0]['width'] ) && is_null( $args[0]['height'] ) ) {
 				$args[0]['flex-width']  = true;
 				$args[0]['flex-height'] = true;
 			}
 			break;
-
 		case 'custom-header-uploads' :
 			return add_theme_support( 'custom-header', array( 'uploads' => true ) );
-
 		case 'custom-header' :
 			if ( ! is_array( $args ) )
 				$args = array( 0 => array() );
-
 			$defaults = array(
 				'default-image' => '',
 				'random-default' => false,
@@ -926,7 +912,6 @@ function add_theme_support( $feature ) {
 				'admin-head-callback' => '',
 				'admin-preview-callback' => '',
 			);
-
 			$jit = isset( $args[0]['__jit'] );
 			unset( $args[0]['__jit'] );
 			if ( isset( $_wp_theme_features['custom-header'] ) )
@@ -967,13 +952,10 @@ function add_theme_support( $feature ) {
 				if ( empty( $args[0]['height'] ) && empty( $args[0]['flex-height'] ) )
 					$args[0]['flex-height'] = true;
 			}
-
 			break;
-
 		case 'custom-background' :
 			if ( ! is_array( $args ) )
 				$args = array( 0 => array() );
-
 			$defaults = array(
 				'default-image'          => '',
 				'default-repeat'         => 'repeat',
@@ -984,38 +966,28 @@ function add_theme_support( $feature ) {
 				'admin-head-callback'    => '',
 				'admin-preview-callback' => '',
 			);
-
 			$jit = isset( $args[0]['__jit'] );
 			unset( $args[0]['__jit'] );
-
-			// Merge in data from previous add_theme_support() calls. The first value registered wins.
 			if ( isset( $_wp_theme_features['custom-background'] ) )
 				$args[0] = wp_parse_args( $_wp_theme_features['custom-background'][0], $args[0] );
-
 			if ( $jit )
 				$args[0] = wp_parse_args( $args[0], $defaults );
-
 			if ( defined( 'BACKGROUND_COLOR' ) )
 				$args[0]['default-color'] = BACKGROUND_COLOR;
 			elseif ( isset( $args[0]['default-color'] ) || $jit )
 				define( 'BACKGROUND_COLOR', $args[0]['default-color'] );
-
 			if ( defined( 'BACKGROUND_IMAGE' ) )
 				$args[0]['default-image'] = BACKGROUND_IMAGE;
 			elseif ( isset( $args[0]['default-image'] ) || $jit )
 				define( 'BACKGROUND_IMAGE', $args[0]['default-image'] );
-
 			break;
-
 		case 'title-tag' :
 			if ( did_action( 'wp_loaded' ) ) {
 				_doing_it_wrong( "add_theme_support( 'title-tag' )", sprintf( 'Theme support for %1$s should be registered before the %2$s hook.',
 					'<code>title-tag</code>', '<code>wp_loaded</code>' ), '4.1' );
-
 				return false;
 			}
 	}
-
 	$_wp_theme_features[ $feature ] = $args;
 }
 
