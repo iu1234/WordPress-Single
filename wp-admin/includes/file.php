@@ -111,7 +111,7 @@ function wp_tempnam( $filename = '', $dir = '' ) {
 	if ( ! $temp_filename ) {
 		return wp_tempnam( dirname( $filename ), $dir );
 	}
-	$temp_filename .= '-' . wp_generate_password( 6, false );
+	$temp_filename .= '-123456';
 	$temp_filename .= '.tmp';
 	$temp_filename = $dir . wp_unique_filename( $dir, $temp_filename );
 

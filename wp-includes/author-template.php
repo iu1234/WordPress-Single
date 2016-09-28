@@ -10,19 +10,14 @@
  * @subpackage Template
  */
 
-function get_the_author($deprecated = '') {
+function get_the_author() {
 	global $authordata;
-
-	if ( !empty( $deprecated ) )
-		_deprecated_argument( __FUNCTION__, '2.1' );
-
 	return apply_filters('the_author', is_object($authordata) ? $authordata->display_name : null);
 }
 
 function get_the_modified_author() {
 	if ( $last_id = get_post_meta( get_post()->ID, '_edit_last', true) ) {
 		$last_user = get_user_by('id', $last_id);
-
 		return apply_filters('the_modified_author', $last_user->display_name);
 	}
 }
@@ -47,7 +42,7 @@ function get_the_author_meta( $field = '', $user_id = false ) {
 
 function get_the_author_link() {
 	if ( get_the_author_meta('url') ) {
-		return '<a href="' . esc_url( get_the_author_meta('url') ) . '" title="' . esc_attr( sprintf(__("Visit %s&#8217;s website"), get_the_author()) ) . '" rel="author external">' . get_the_author() . '</a>';
+		return '<a href="' . esc_url( get_the_author_meta('url') ) . '" title="' . esc_attr( sprintf("Visit %s&#8217;s website", get_the_author()) ) . '" rel="author external">' . get_the_author() . '</a>';
 	} else {
 		return get_the_author();
 	}
@@ -70,17 +65,14 @@ function get_the_author_posts_link() {
 	$link = sprintf(
 		'<a href="%1$s" title="%2$s" rel="author">%3$s</a>',
 		esc_url( get_author_posts_url( $authordata->ID, $authordata->user_nicename ) ),
-		esc_attr( sprintf( __( 'Posts by %s' ), get_the_author() ) ),
+		esc_attr( sprintf( 'Posts by %s', get_the_author() ) ),
 		get_the_author()
 	);
 
 	return apply_filters( 'the_author_posts_link', $link );
 }
 
-function the_author_posts_link( $deprecated = '' ) {
-	if ( ! empty( $deprecated ) ) {
-		_deprecated_argument( __FUNCTION__, '2.1' );
-	}
+function the_author_posts_link() {
 	echo get_the_author_posts_link();
 }
 
@@ -103,13 +95,11 @@ function get_author_posts_url( $author_id, $author_nicename = '' ) {
 	}
 
 	$link = apply_filters( 'author_link', $link, $author_id, $author_nicename );
-
 	return $link;
 }
 
 function wp_list_authors( $args = '' ) {
 	global $wpdb;
-
 	$defaults = array(
 		'orderby' => 'name', 'order' => 'ASC', 'number' => '',
 		'optioncount' => false, 'exclude_admin' => true,

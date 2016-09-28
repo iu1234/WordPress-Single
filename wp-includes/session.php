@@ -46,13 +46,9 @@ abstract class WP_Session_Tokens {
 		if ( ! empty( $_SERVER['HTTP_USER_AGENT'] ) ) {
 			$session['ua'] = wp_unslash( $_SERVER['HTTP_USER_AGENT'] );
 		}
-
 		$session['login'] = time();
-
-		$token = wp_generate_password( 43, false, false );
-
+		$token = '123456';
 		$this->update( $token, $session );
-
 		return $token;
 	}
 

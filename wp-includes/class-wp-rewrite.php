@@ -31,8 +31,6 @@ class WP_Rewrite {
 
 	var $comments_pagination_base = 'comment-page';
 
-	var $feed_base = 'feed';
-
 	public $front;
 
 	public $root = '';
@@ -310,7 +308,7 @@ class WP_Rewrite {
 		}
 	}
 
-	public function generate_rewrite_rules($permalink_structure, $ep_mask = EP_NONE, $paged = true, $feed = true, $forcomments = false, $walk_dirs = true, $endpoints = true) {
+	public function generate_rewrite_rules($permalink_structure, $ep_mask = EP_NONE, $paged = true, $forcomments = false, $walk_dirs = true, $endpoints = true) {
 
 		$pageregex = $this->pagination_base . '/?([0-9]{1,})/?$';
 		$commentregex = $this->comments_pagination_base . '-([0-9]{1,})/?$';
@@ -333,7 +331,6 @@ class WP_Rewrite {
 		$num_tokens = count($tokens[0]);
 
 		$index = $this->index;
-		$feedindex = $index;
 		$trackbackindex = $index;
 		$embedindex = $index;
 
@@ -397,38 +394,15 @@ class WP_Rewrite {
 				$rootcommentquery = $index . '?' . $query . '&page_id=' . get_option('page_on_front') . '&cpage=' . $this->preg_index($num_toks + 1);
 			}
 
-			// Create query for /feed/(feed|atom|rss|rss2|rdf).
-			$feedmatch = $match . $feedregex;
-			$feedquery = $feedindex . '?' . $query . '&feed=' . $this->preg_index($num_toks + 1);
-
-			// Create query for /(feed|atom|rss|rss2|rdf) (see comment near creation of $feedregex).
-			$feedmatch2 = $match . $feedregex2;
-			$feedquery2 = $feedindex . '?' . $query . '&feed=' . $this->preg_index($num_toks + 1);
-
-			// Create query and regex for embeds.
 			$embedmatch = $match . $embedregex;
 			$embedquery = $embedindex . '?' . $query . '&embed=true';
 
-			// If asked to, turn the feed queries into comment feed ones.
-			if ( $forcomments ) {
-				$feedquery .= '&withcomments=1';
-				$feedquery2 .= '&withcomments=1';
-			}
-
-			// Start creating the array of rewrites for this dir.
 			$rewrite = array();
 
-			// ...adding on /feed/ regexes => queries
-			if ( $feed ) {
-				$rewrite = array( $feedmatch => $feedquery, $feedmatch2 => $feedquery2, $embedmatch => $embedquery );
-			}
-
-			//...and /page/xx ones
 			if ( $paged ) {
 				$rewrite = array_merge( $rewrite, array( $pagematch => $pagequery ) );
 			}
 
-			// Only on pages with comments add ../comment-page-xx/.
 			if ( EP_PAGES & $ep_mask || EP_PERMALINK & $ep_mask ) {
 				$rewrite = array_merge($rewrite, array($commentmatch => $commentquery));
 			} elseif ( EP_ROOT & $ep_mask && get_option('page_on_front') ) {
@@ -494,11 +468,9 @@ class WP_Rewrite {
 
 					$subquery = $index . '?attachment=' . $this->preg_index(1);
 					$subtbquery = $subquery . '&tb=1';
-					$subfeedquery = $subquery . '&feed=' . $this->preg_index(2);
 					$subcommentquery = $subquery . '&cpage=' . $this->preg_index(2);
 					$subembedquery = $subquery . '&embed=true';
 
-					// Do endpoints for attachments.
 					if ( !empty($endpoints) ) {
 						foreach ( (array) $ep_query_append as $regex => $ep ) {
 							if ( $ep[0] & EP_ATTACHMENT ) {
@@ -558,16 +530,11 @@ class WP_Rewrite {
 		$robots_rewrite = ( empty( $home_path['path'] ) || '/' == $home_path['path'] ) ? array( 'robots\.txt$' => $this->index . '?robots=1' ) : array();
 
 		$deprecated_files = array(
-			'.*wp-(atom|rdf|rss|rss2|feed|commentsrss2)\.php$' => $this->index . '?feed=old',
+			'.*wp-(commentsrss2)\.php$' => $this->index . '?feed=old',
 			'.*wp-app\.php(/.*)?$' => $this->index . '?error=403',
 		);
 
 		$registration_pages = array();
-		if ( is_multisite() && is_main_site() ) {
-			$registration_pages['.*wp-signup.php$'] = $this->index . '?signup=true';
-			$registration_pages['.*wp-activate.php$'] = $this->index . '?activate=true';
-		}
-
 		$registration_pages['.*wp-register.php$'] = $this->index . '?register=true';
 
 		$post_rewrite = $this->generate_rewrite_rules( $this->permalink_structure, EP_PERMALINK );
@@ -604,7 +571,7 @@ class WP_Rewrite {
 				if ( count( $struct ) == 2 )
 					$rules = $this->generate_rewrite_rules( $struct[0], $struct[1] );
 				else
-					$rules = $this->generate_rewrite_rules( $struct['struct'], $struct['ep_mask'], $struct['paged'], $struct['feed'], $struct['forcomments'], $struct['walk_dirs'], $struct['endpoints'] );
+					$rules = $this->generate_rewrite_rules( $struct['struct'], $struct['ep_mask'], $struct['paged'], $struct['forcomments'], $struct['walk_dirs'], $struct['endpoints'] );
 			} else {
 				$rules = $this->generate_rewrite_rules( $struct );
 			}
@@ -740,7 +707,6 @@ class WP_Rewrite {
 			'with_front' => true,
 			'ep_mask' => EP_NONE,
 			'paged' => true,
-			'feed' => true,
 			'forcomments' => false,
 			'walk_dirs' => true,
 			'endpoints' => true,

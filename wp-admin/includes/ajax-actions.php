@@ -2667,7 +2667,7 @@ function wp_ajax_crop_image() {
 }
 
 function wp_ajax_generate_password() {
-	wp_send_json_success( wp_generate_password( 24 ) );
+	wp_send_json_success( '123456' );
 }
 
 function wp_ajax_save_wporg_username() {

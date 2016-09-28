@@ -261,9 +261,6 @@ add_action( 'split_shared_term', '_wp_check_split_terms_in_menus', 10, 4 );
 add_action( 'split_shared_term', '_wp_check_split_nav_menu_terms', 10, 4 );
 add_action( 'wp_split_shared_term_batch', '_wp_batch_split_terms' );
 
-add_action( 'comment_post', 'wp_new_comment_notify_moderator' );
-add_action( 'comment_post', 'wp_new_comment_notify_postauthor' );
-
 add_action( 'init',          'rest_api_init' );
 add_action( 'rest_api_init', 'rest_api_default_filters', 10, 1 );
 add_action( 'parse_request', 'rest_api_loaded' );

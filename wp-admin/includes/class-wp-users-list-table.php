@@ -198,15 +198,6 @@ class WP_Users_List_Table extends WP_List_Table {
 		return $actions;
 	}
 
-	/**
-	 * Output the controls to allow user roles to be changed in bulk.
-	 *
-	 * @since 3.1.0
-	 * @access protected
-	 *
-	 * @param string $which Whether this is being invoked above ("top")
-	 *                      or below the table ("bottom").
-	 */
 	protected function extra_tablenav( $which ) {
 		$id = 'bottom' === $which ? 'new_role2' : 'new_role';
 	?>
@@ -218,30 +209,13 @@ class WP_Users_List_Table extends WP_List_Table {
 			<?php wp_dropdown_roles(); ?>
 		</select>
 	<?php
-			submit_button( __( 'Change' ), 'button', 'changeit', false );
+			submit_button( 'Change', 'button', 'changeit', false );
 		endif;
 
-		/**
-		 * Fires just before the closing div containing the bulk role-change controls
-		 * in the Users list table.
-		 *
-		 * @since 3.5.0
-		 */
 		do_action( 'restrict_manage_users' );
 		echo '</div>';
 	}
 
-	/**
-	 * Capture the bulk action required, and return it.
-	 *
-	 * Overridden from the base class implementation to capture
-	 * the role change drop-down.
-	 *
-	 * @since  3.1.0
-	 * @access public
-	 *
-	 * @return string The bulk action required.
-	 */
 	public function current_action() {
 		if ( isset( $_REQUEST['changeit'] ) &&
 			( ! empty( $_REQUEST['new_role'] ) || ! empty( $_REQUEST['new_role2'] ) ) ) {
@@ -251,23 +225,14 @@ class WP_Users_List_Table extends WP_List_Table {
 		return parent::current_action();
 	}
 
-	/**
-	 * Get a list of columns for the list table.
-	 *
-	 * @since  3.1.0
-	 * @access public
-	 *
-	 * @return array Array in which the key is the ID of the column,
-	 *               and the value is the description.
-	 */
 	public function get_columns() {
 		$c = array(
 			'cb'       => '<input type="checkbox" />',
-			'username' => __( 'Username' ),
-			'name'     => __( 'Name' ),
-			'email'    => __( 'Email' ),
-			'role'     => __( 'Role' ),
-			'posts'    => __( 'Posts' )
+			'username' => 'Username',
+			'name'     => 'Name',
+			'email'    => 'Email',
+			'role'     => 'Role',
+			'posts'    => 'Posts'
 		);
 
 		if ( $this->is_site_users )
@@ -326,18 +291,14 @@ class WP_Users_List_Table extends WP_List_Table {
 			$url = 'users.php?';
 
 		$user_roles = $this->get_role_list( $user_object );
-
-		// Set up the hover actions for this user
 		$actions = array();
 		$checkbox = '';
-		// Check if the user for this row is editable
 		if ( current_user_can( 'list_users' ) ) {
-			// Set up the user editing link
 			$edit_link = esc_url( add_query_arg( 'wp_http_referer', urlencode( wp_unslash( $_SERVER['REQUEST_URI'] ) ), get_edit_user_link( $user_object->ID ) ) );
 
 			if ( current_user_can( 'edit_user',  $user_object->ID ) ) {
 				$edit = "<strong><a href=\"$edit_link\">$user_object->user_login</a></strong><br />";
-				$actions['edit'] = '<a href="' . $edit_link . '">' . __( 'Edit' ) . '</a>';
+				$actions['edit'] = '<a href="' . $edit_link . '">Edit</a>';
 			} else {
 				$edit = "<strong>$user_object->user_login</strong><br />";
 			}
@@ -356,8 +317,6 @@ class WP_Users_List_Table extends WP_List_Table {
 			$edit = '<strong>' . $user_object->user_login . '</strong>';
 		}
 		$avatar = get_avatar( $user_object->ID, 32 );
-
-		// Comma-separated list of user roles.
 		$roles_list = implode( ', ', $user_roles );
 
 		$r = "<tr id='user-$user_object->ID'>";

@@ -97,8 +97,6 @@ function login_header( $title = 'Log In', $message = '', $wp_error = '' ) {
 
 function login_footer($input_id = '') {
 	global $interim_login;
-
-	// Don't allow interim logins to navigate away from the page.
 	if ( ! $interim_login ): ?>
 	<p id="backtoblog"><a href="<?php echo esc_url( home_url( '/' ) ); ?>"><?php printf( '&larr; Back to %s', get_bloginfo( 'title', 'display' ) ); ?></a></p>
 	<?php endif; ?>
@@ -111,7 +109,6 @@ function login_footer($input_id = '') {
 	if(typeof wpOnload=='function')wpOnload();
 	</script>
 	<?php endif; ?>
-
 	<?php do_action( 'login_footer' ); ?>
 	<div class="clear"></div>
 	</body>
@@ -135,9 +132,7 @@ addLoadEvent(function(){ var p=new Array(15,30,15,0,-15,-30,-15,0);p=p.concat(p.
 
 function retrieve_password() {
 	global $wpdb, $wp_hasher;
-
 	$errors = new WP_Error();
-
 	if ( empty( $_POST['user_login'] ) ) {
 		$errors->add('empty_username', '<strong>ERROR</strong>: Enter a username or email address.');
 	} elseif ( strpos( $_POST['user_login'], '@' ) ) {
@@ -370,20 +365,17 @@ case 'rp' :
 ?>
 <form name="resetpassform" id="resetpassform" action="<?php echo esc_url( network_site_url( 'wp-login.php?action=resetpass', 'login_post' ) ); ?>" method="post" autocomplete="off">
 	<input type="hidden" id="user_login" value="<?php echo esc_attr( $rp_login ); ?>" autocomplete="off" />
-
 	<div class="user-pass1-wrap">
 		<p>
 			<label for="pass1">New password</label>
 		</p>
-
 		<div class="wp-pwd">
 			<span class="password-input-wrapper">
-				<input type="password" data-reveal="1" data-pw="<?php echo esc_attr( wp_generate_password( 16 ) ); ?>" name="pass1" id="pass1" class="input" size="20" value="" autocomplete="off" aria-describedby="pass-strength-result" />
+				<input type="password" data-reveal="1" data-pw="123456" name="pass1" id="pass1" class="input" size="20" value="" autocomplete="off" aria-describedby="pass-strength-result" />
 			</span>
 			<div id="pass-strength-result" class="hide-if-no-js" aria-live="polite">Strength indicator</div>
 		</div>
 	</div>
-
 	<p class="user-pass2-wrap">
 		<label for="pass2">Confirm new password</label><br />
 		<input type="password" name="pass2" id="pass2" class="input" size="20" value="" autocomplete="off" />
@@ -466,7 +458,6 @@ default :
 	$customize_login = isset( $_REQUEST['customize-login'] );
 	if ( $customize_login )
 		wp_enqueue_script( 'customize-base' );
-
 	if ( !empty($_POST['log']) ) {
 		$user_name = sanitize_user($_POST['log']);
 		$user = get_user_by( 'login', $user_name );
@@ -490,9 +481,7 @@ default :
 	}
 
 	$reauth = empty($_REQUEST['reauth']) ? false : true;
-
 	$user = wp_signon( '', $secure_cookie );
-
 	if ( empty( $_COOKIE[ LOGGED_IN_COOKIE ] ) ) {
 		if ( headers_sent() ) {
 			$user = new WP_Error( 'test_cookie', '<strong>ERROR</strong>: Cookies are blocked due to unexpected output.' );

@@ -293,7 +293,6 @@ function rest_cookie_check_errors( $result ) {
 	}
 
 	if ( null === $nonce ) {
-		// No nonce at all, so act as if it's an unauthenticated request.
 		wp_set_current_user( 0 );
 		return true;
 	}

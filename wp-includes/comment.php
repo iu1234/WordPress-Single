@@ -959,42 +959,8 @@ function wp_new_comment( $commentdata ) {
 	return $comment_ID;
 }
 
-function wp_new_comment_notify_moderator( $comment_ID ) {
-	$comment = get_comment( $comment_ID );
-
-	$maybe_notify = ( '0' == $comment->comment_approved );
-
-	/** This filter is documented in wp-includes/comment.php */
-	$maybe_notify = apply_filters( 'notify_moderator', $maybe_notify, $comment_ID );
-
-	if ( ! $maybe_notify ) {
-		return false;
-	}
-
-	return wp_notify_moderator( $comment_ID );
-}
-
-function wp_new_comment_notify_postauthor( $comment_ID ) {
-	$comment = get_comment( $comment_ID );
-
-	$maybe_notify = get_option( 'comments_notify' );
-
-	$maybe_notify = apply_filters( 'notify_post_author', $maybe_notify, $comment_ID );
-
-	if ( ! $maybe_notify ) {
-		return false;
-	}
-
-	if ( ! isset( $comment->comment_approved ) || '1' != $comment->comment_approved ) {
-		return false;
-	}
-
-	return wp_notify_postauthor( $comment_ID );
-}
-
 function wp_set_comment_status($comment_id, $comment_status, $wp_error = false) {
 	global $wpdb;
-
 	switch ( $comment_status ) {
 		case 'hold':
 		case '0':
