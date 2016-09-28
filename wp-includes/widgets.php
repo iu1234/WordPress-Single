@@ -224,40 +224,32 @@ function wp_register_widget_control( $id, $name, $control_callback, $options = a
 
 function _register_widget_update_callback( $id_base, $update_callback, $options = array() ) {
 	global $wp_registered_widget_updates;
-
 	if ( isset($wp_registered_widget_updates[$id_base]) ) {
 		if ( empty($update_callback) )
 			unset($wp_registered_widget_updates[$id_base]);
 		return;
 	}
-
 	$widget = array(
 		'callback' => $update_callback,
 		'params' => array_slice(func_get_args(), 3)
 	);
-
-	$widget = array_merge($widget, $options);
+ 	$widget = array_merge($widget, $options);
 	$wp_registered_widget_updates[$id_base] = $widget;
 }
 
 function _register_widget_form_callback($id, $name, $form_callback, $options = array()) {
 	global $wp_registered_widget_controls;
-
 	$id = strtolower($id);
-
 	if ( empty($form_callback) ) {
 		unset($wp_registered_widget_controls[$id]);
 		return;
 	}
-
 	if ( isset($wp_registered_widget_controls[$id]) && !did_action( 'widgets_init' ) )
 		return;
-
 	$defaults = array('width' => 250, 'height' => 200 );
 	$options = wp_parse_args($options, $defaults);
 	$options['width'] = (int) $options['width'];
 	$options['height'] = (int) $options['height'];
-
 	$widget = array(
 		'name' => $name,
 		'id' => $id,
@@ -275,7 +267,6 @@ function wp_unregister_widget_control($id) {
 
 function dynamic_sidebar( $index = 1 ) {
 	global $wp_registered_sidebars, $wp_registered_widgets;
-
 	if ( is_int( $index ) ) {
 		$index = "sidebar-$index";
 	} else {
@@ -287,17 +278,14 @@ function dynamic_sidebar( $index = 1 ) {
 			}
 		}
 	}
-
 	$sidebars_widgets = wp_get_sidebars_widgets();
 	if ( empty( $wp_registered_sidebars[ $index ] ) || empty( $sidebars_widgets[ $index ] ) || ! is_array( $sidebars_widgets[ $index ] ) ) {
 		do_action( 'dynamic_sidebar_before', $index, false );
 		do_action( 'dynamic_sidebar_after',  $index, false );
 		return apply_filters( 'dynamic_sidebar_has_widgets', false, $index );
 	}
-
 	do_action( 'dynamic_sidebar_before', $index, true );
 	$sidebar = $wp_registered_sidebars[$index];
-
 	$did_one = false;
 	foreach ( (array) $sidebars_widgets[$index] as $id ) {
 
@@ -307,8 +295,6 @@ function dynamic_sidebar( $index = 1 ) {
 			array( array_merge( $sidebar, array('widget_id' => $id, 'widget_name' => $wp_registered_widgets[$id]['name']) ) ),
 			(array) $wp_registered_widgets[$id]['params']
 		);
-
-		// Substitute HTML id and class attributes into before_widget
 		$classname_ = '';
 		foreach ( (array) $wp_registered_widgets[$id]['classname'] as $cn ) {
 			if ( is_string($cn) )
@@ -330,23 +316,18 @@ function dynamic_sidebar( $index = 1 ) {
 			$did_one = true;
 		}
 	}
-
 	do_action( 'dynamic_sidebar_after', $index, true );
-
 	return apply_filters( 'dynamic_sidebar_has_widgets', $did_one, $index );
 }
 
 function is_active_widget( $callback = false, $widget_id = false, $id_base = false, $skip_inactive = true ) {
 	global $wp_registered_widgets;
-
 	$sidebars_widgets = wp_get_sidebars_widgets();
-
 	if ( is_array($sidebars_widgets) ) {
 		foreach ( $sidebars_widgets as $sidebar => $widgets ) {
 			if ( $skip_inactive && ( 'wp_inactive_widgets' === $sidebar || 'orphaned_widgets' === substr( $sidebar, 0, 16 ) ) ) {
 				continue;
 			}
-
 			if ( is_array($widgets) ) {
 				foreach ( $widgets as $widget ) {
 					if ( ( $callback && isset($wp_registered_widgets[$widget]['callback']) && $wp_registered_widgets[$widget]['callback'] == $callback ) || ( $id_base && _get_widget_id_base($widget) == $id_base ) ) {
@@ -383,9 +364,7 @@ function is_active_sidebar( $index ) {
 function wp_get_sidebars_widgets( $deprecated = true ) {
 	if ( $deprecated !== true )
 		_deprecated_argument( __FUNCTION__, '2.8.1' );
-
 	global $_wp_sidebars_widgets, $sidebars_widgets;
-
 	if ( !is_admin() ) {
 		if ( empty($_wp_sidebars_widgets) )
 			$_wp_sidebars_widgets = get_option('sidebars_widgets', array());
@@ -394,10 +373,8 @@ function wp_get_sidebars_widgets( $deprecated = true ) {
 	} else {
 		$sidebars_widgets = get_option('sidebars_widgets', array());
 	}
-
 	if ( is_array( $sidebars_widgets ) && isset($sidebars_widgets['array_version']) )
 		unset($sidebars_widgets['array_version']);
-
 	return apply_filters( 'sidebars_widgets', $sidebars_widgets );
 }
 
@@ -429,7 +406,6 @@ function wp_convert_widget_settings($base_name, $option_name, $settings) {
 			}
 		}
 	}
-
 	if ( $single ) {
 		$settings = array( 2 => $settings );
 		if ( is_admin() ) {
@@ -451,21 +427,17 @@ function wp_convert_widget_settings($base_name, $option_name, $settings) {
 				}
 			}
 		}
-
 		if ( is_admin() && $changed )
 			update_option('sidebars_widgets', $sidebars_widgets);
 	}
-
 	$settings['_multiwidget'] = 1;
 	if ( is_admin() )
 		update_option( $option_name, $settings );
-
 	return $settings;
 }
 
 function the_widget( $widget, $instance = array(), $args = array() ) {
 	global $wp_widget_factory;
-
 	$widget_obj = $wp_widget_factory->widgets[$widget];
 	if ( ! ( $widget_obj instanceof WP_Widget ) ) {
 		return;
@@ -478,11 +450,8 @@ function the_widget( $widget, $instance = array(), $args = array() ) {
 	);
 	$args = wp_parse_args( $args, $default_args );
 	$args['before_widget'] = sprintf( $args['before_widget'], $widget_obj->widget_options['classname'] );
-
 	$instance = wp_parse_args($instance);
-
 	do_action( 'the_widget', $widget, $instance, $args );
-
 	$widget_obj->_set(-1);
 	$widget_obj->widget($args, $instance);
 }
@@ -493,33 +462,25 @@ function _get_widget_id_base( $id ) {
 
 function _wp_sidebars_changed() {
 	global $sidebars_widgets;
-
 	if ( ! is_array( $sidebars_widgets ) )
 		$sidebars_widgets = wp_get_sidebars_widgets();
-
 	retrieve_widgets(true);
 }
 
 function retrieve_widgets( $theme_changed = false ) {
 	global $wp_registered_sidebars, $sidebars_widgets, $wp_registered_widgets;
-
 	$registered_sidebar_keys = array_keys( $wp_registered_sidebars );
 	$orphaned = 0;
-
 	$old_sidebars_widgets = get_theme_mod( 'sidebars_widgets' );
 	if ( is_array( $old_sidebars_widgets ) ) {
-		// time() that sidebars were stored is in $old_sidebars_widgets['time']
 		$_sidebars_widgets = $old_sidebars_widgets['data'];
-
 		if ( 'customize' !== $theme_changed ) {
 			remove_theme_mod( 'sidebars_widgets' );
 		}
-
 		foreach ( $_sidebars_widgets as $sidebar => $widgets ) {
 			if ( 'wp_inactive_widgets' === $sidebar || 'orphaned_widgets' === substr( $sidebar, 0, 16 ) ) {
 				continue;
 			}
-
 			if ( !in_array( $sidebar, $registered_sidebar_keys ) ) {
 				$_sidebars_widgets['orphaned_widgets_' . ++$orphaned] = $widgets;
 				unset( $_sidebars_widgets[$sidebar] );
@@ -541,60 +502,45 @@ function retrieve_widgets( $theme_changed = false ) {
 		$_sidebars_widgets = array(
 			'wp_inactive_widgets' => !empty( $sidebars_widgets['wp_inactive_widgets'] ) ? $sidebars_widgets['wp_inactive_widgets'] : array()
 		);
-
 		unset( $sidebars_widgets['wp_inactive_widgets'] );
-
 		foreach ( $wp_registered_sidebars as $id => $settings ) {
 			if ( $theme_changed ) {
 				$_sidebars_widgets[$id] = array_shift( $sidebars_widgets );
 			} else {
-				// no theme change, grab only sidebars that are currently registered
 				if ( isset( $sidebars_widgets[$id] ) ) {
 					$_sidebars_widgets[$id] = $sidebars_widgets[$id];
 					unset( $sidebars_widgets[$id] );
 				}
 			}
 		}
-
 		foreach ( $sidebars_widgets as $val ) {
 			if ( is_array($val) && ! empty( $val ) )
 				$_sidebars_widgets['orphaned_widgets_' . ++$orphaned] = $val;
 		}
 	}
-
-	// discard invalid, theme-specific widgets from sidebars
 	$shown_widgets = array();
-
 	foreach ( $_sidebars_widgets as $sidebar => $widgets ) {
 		if ( !is_array($widgets) )
 			continue;
-
 		$_widgets = array();
 		foreach ( $widgets as $widget ) {
 			if ( isset($wp_registered_widgets[$widget]) )
 				$_widgets[] = $widget;
 		}
-
 		$_sidebars_widgets[$sidebar] = $_widgets;
 		$shown_widgets = array_merge($shown_widgets, $_widgets);
 	}
-
 	$sidebars_widgets = $_sidebars_widgets;
 	unset($_sidebars_widgets, $_widgets);
-
 	$lost_widgets = array();
 	foreach ( $wp_registered_widgets as $key => $val ) {
 		if ( in_array($key, $shown_widgets, true) )
 			continue;
-
 		$number = preg_replace('/.+?-([0-9]+)$/', '$1', $key);
-
 		if ( 2 > (int) $number )
 			continue;
-
 		$lost_widgets[] = $key;
 	}
-
 	$sidebars_widgets['wp_inactive_widgets'] = array_merge($lost_widgets, (array) $sidebars_widgets['wp_inactive_widgets']);
 	if ( 'customize' !== $theme_changed ) {
 		wp_set_sidebars_widgets( $sidebars_widgets );
@@ -603,10 +549,6 @@ function retrieve_widgets( $theme_changed = false ) {
 }
 
 function wp_widgets_init() {
-	register_widget('WP_Widget_Pages');
-	register_widget('WP_Widget_Archives');
-	register_widget('WP_Widget_Links');
-	register_widget('WP_Widget_Meta');
 	register_widget('WP_Widget_Search');
 	register_widget('WP_Widget_Text');
 	register_widget('WP_Widget_Categories');

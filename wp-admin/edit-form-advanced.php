@@ -14,15 +14,6 @@ global $post_type, $post_type_object, $post;
 wp_enqueue_script('post');
 $_wp_editor_expand = $_content_editor_dfw = false;
 
-/**
- * Filter whether to enable the 'expand' functionality in the post editor.
- *
- * @since 4.0.0
- * @since 4.1.0 Added the `$post_type` parameter.
- *
- * @param bool   $expand    Whether to enable the 'expand' functionality. Default true.
- * @param string $post_type Post type.
- */
 if ( post_type_supports( $post_type, 'editor' ) && ! wp_is_mobile() &&
 	 ! ( $is_IE && preg_match( '/MSIE [5678]/', $_SERVER['HTTP_USER_AGENT'] ) ) &&
 	 apply_filters( 'wp_editor_expand', true, $post_type ) ) {
@@ -35,11 +26,6 @@ if ( post_type_supports( $post_type, 'editor' ) && ! wp_is_mobile() &&
 if ( wp_is_mobile() )
 	wp_enqueue_script( 'jquery-touch-punch' );
 
-/**
- * Post ID global
- * @name $post_ID
- * @var int
- */
 $post_ID = isset($post_ID) ? (int) $post_ID : 0;
 $user_ID = isset($user_ID) ? (int) $user_ID : 0;
 $action = isset($action) ? $action : '';
@@ -63,12 +49,8 @@ if ( $thumbnail_support ) {
 	wp_enqueue_media( array( 'post' => $post_ID ) );
 }
 
-// Add the local autosave notice HTML
 add_action( 'admin_footer', '_local_storage_notice' );
 
-/*
- * @todo Document the $messages array(s).
- */
 $permalink = get_permalink( $post_ID );
 if ( ! $permalink ) {
 	$permalink = '';
@@ -84,85 +66,63 @@ $preview_url = get_preview_post_link( $post );
 $viewable = is_post_type_viewable( $post_type_object );
 
 if ( $viewable ) {
-
-	// Preview post link.
 	$preview_post_link_html = sprintf( ' <a target="_blank" href="%1$s">%2$s</a>',
 		esc_url( $preview_url ),
-		__( 'Preview post' )
+		'Preview post'
 	);
-
-	// Scheduled post preview link.
 	$scheduled_post_link_html = sprintf( ' <a target="_blank" href="%1$s">%2$s</a>',
 		esc_url( $permalink ),
-		__( 'Preview post' )
+		'Preview post'
 	);
-
-	// View post link.
 	$view_post_link_html = sprintf( ' <a href="%1$s">%2$s</a>',
 		esc_url( $permalink ),
-		__( 'View post' )
+		'View post'
 	);
-
-	// Preview page link.
 	$preview_page_link_html = sprintf( ' <a target="_blank" href="%1$s">%2$s</a>',
 		esc_url( $preview_url ),
-		__( 'Preview page' )
+		'Preview page'
 	);
-
-	// Scheduled page preview link.
 	$scheduled_page_link_html = sprintf( ' <a target="_blank" href="%1$s">%2$s</a>',
 		esc_url( $permalink ),
-		__( 'Preview page' )
+		'Preview page'
 	);
-
-	// View page link.
 	$view_page_link_html = sprintf( ' <a href="%1$s">%2$s</a>',
 		esc_url( $permalink ),
-		__( 'View page' )
+		'View page'
 	);
 
 }
 
-/* translators: Publish box date format, see http://php.net/date */
-$scheduled_date = date_i18n( __( 'M j, Y @ H:i' ), strtotime( $post->post_date ) );
+$scheduled_date = date_i18n( 'M j, Y @ H:i', strtotime( $post->post_date ) );
 
 $messages['post'] = array(
-	 0 => '', // Unused. Messages start at index 1.
-	 1 => __( 'Post updated.' ) . $view_post_link_html,
-	 2 => __( 'Custom field updated.' ),
-	 3 => __( 'Custom field deleted.' ),
-	 4 => __( 'Post updated.' ),
-	/* translators: %s: date and time of the revision */
-	 5 => isset($_GET['revision']) ? sprintf( __( 'Post restored to revision from %s.' ), wp_post_revision_title( (int) $_GET['revision'], false ) ) : false,
-	 6 => __( 'Post published.' ) . $view_post_link_html,
-	 7 => __( 'Post saved.' ),
-	 8 => __( 'Post submitted.' ) . $preview_post_link_html,
-	 9 => sprintf( __( 'Post scheduled for: %s.' ), '<strong>' . $scheduled_date . '</strong>' ) . $scheduled_post_link_html,
-	10 => __( 'Post draft updated.' ) . $preview_post_link_html,
+	 0 => '',
+	 1 => 'Post updated.' . $view_post_link_html,
+	 2 => 'Custom field updated.',
+	 3 => 'Custom field deleted.',
+	 4 => 'Post updated.',
+	 5 => isset($_GET['revision']) ? sprintf( 'Post restored to revision from %s.', wp_post_revision_title( (int) $_GET['revision'], false ) ) : false,
+	 6 => 'Post published.' . $view_post_link_html,
+	 7 => 'Post saved.',
+	 8 => 'Post submitted.' . $preview_post_link_html,
+	 9 => sprintf( 'Post scheduled for: %s.', '<strong>' . $scheduled_date . '</strong>' ) . $scheduled_post_link_html,
+	10 => 'Post draft updated.' . $preview_post_link_html,
 );
 $messages['page'] = array(
-	 0 => '', // Unused. Messages start at index 1.
-	 1 => __( 'Page updated.' ) . $view_page_link_html,
-	 2 => __( 'Custom field updated.' ),
-	 3 => __( 'Custom field deleted.' ),
-	 4 => __( 'Page updated.' ),
-	/* translators: %s: date and time of the revision */
-	 5 => isset($_GET['revision']) ? sprintf( __( 'Page restored to revision from %s.' ), wp_post_revision_title( (int) $_GET['revision'], false ) ) : false,
-	 6 => __( 'Page published.' ) . $view_page_link_html,
-	 7 => __( 'Page saved.' ),
-	 8 => __( 'Page submitted.' ) . $preview_page_link_html,
-	 9 => sprintf( __( 'Page scheduled for: %s.' ), '<strong>' . $scheduled_date . '</strong>' ) . $scheduled_page_link_html,
-	10 => __( 'Page draft updated.' ) . $preview_page_link_html,
+	 0 => '',
+	 1 => 'Page updated.' . $view_page_link_html,
+	 2 => 'Custom field updated.',
+	 3 => 'Custom field deleted.',
+	 4 => 'Page updated.',
+	 5 => isset($_GET['revision']) ? sprintf( 'Page restored to revision from %s.', wp_post_revision_title( (int) $_GET['revision'], false ) ) : false,
+	 6 => 'Page published.' . $view_page_link_html,
+	 7 => 'Page saved.',
+	 8 => 'Page submitted.' . $preview_page_link_html,
+	 9 => sprintf( 'Page scheduled for: %s.', '<strong>' . $scheduled_date . '</strong>' ) . $scheduled_page_link_html,
+	10 => 'Page draft updated.' . $preview_page_link_html,
 );
-$messages['attachment'] = array_fill( 1, 10, __( 'Media file updated.' ) ); // Hack, for now.
+$messages['attachment'] = array_fill( 1, 10, 'Media file updated.' );
 
-/**
- * Filter the post updated messages.
- *
- * @since 3.0.0
- *
- * @param array $messages Post updated messages. For defaults @see $messages declarations above.
- */
 $messages = apply_filters( 'post_updated_messages', $messages );
 
 $message = false;
@@ -197,7 +157,7 @@ if ( $autosave && mysql2date( 'U', $autosave->post_modified_gmt, false ) > mysql
 			break;
 		}
 	}
-	// If this autosave isn't different from the current post, begone.
+
 	if ( ! $notice )
 		wp_delete_post_revision( $autosave->ID );
 	unset($autosave_field, $_autosave_field);
@@ -205,9 +165,7 @@ if ( $autosave && mysql2date( 'U', $autosave->post_modified_gmt, false ) > mysql
 
 $post_type_object = get_post_type_object($post_type);
 
-// All meta boxes should be defined and added before the first do_meta_boxes() call (or potentially during the do_meta_boxes action).
 require_once( ABSPATH . 'wp-admin/includes/meta-boxes.php' );
-
 
 $publish_callback_args = null;
 if ( post_type_supports($post_type, 'revisions') && 'auto-draft' != $post->post_status ) {

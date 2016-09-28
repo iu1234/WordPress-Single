@@ -7,26 +7,8 @@
  * @since 4.4.0
  */
 
-/**
- * Core class used to integrate PHP Streams as an HTTP transport.
- *
- * @since 2.7.0
- * @since 3.7.0 Combined with the fsockopen transport and switched to `stream_socket_client()`.
- */
 class WP_Http_Streams {
-	/**
-	 * Send a HTTP request to a URI using PHP Streams.
-	 *
-	 * @see WP_Http::request For default options descriptions.
-	 *
-	 * @since 2.7.0
-	 * @since 3.7.0 Combined with the fsockopen transport and switched to stream_socket_client().
-	 *
-	 * @access public
-	 * @param string $url The request URL.
-	 * @param string|array $args Optional. Override the defaults.
-	 * @return array|WP_Error Array containing 'headers', 'body', 'response', 'cookies', 'filename'. A WP_Error instance upon error
-	 */
+
 	public function request($url, $args = array()) {
 		$defaults = array(
 			'method' => 'GET', 'timeout' => 5,
@@ -75,11 +57,6 @@ class WP_Http_Streams {
 			unset( $r['headers']['Host'], $r['headers']['host'] );
 		}
 
-		/*
-		 * Certain versions of PHP have issues with 'localhost' and IPv6, It attempts to connect
-		 * to ::1, which fails when the server is not set up for it. For compatibility, always
-		 * connect to the IPv4 address.
-		 */
 		if ( 'localhost' == strtolower( $connect_host ) )
 			$connect_host = '127.0.0.1';
 
@@ -88,22 +65,8 @@ class WP_Http_Streams {
 		$is_local = isset( $r['local'] ) && $r['local'];
 		$ssl_verify = isset( $r['sslverify'] ) && $r['sslverify'];
 		if ( $is_local ) {
-			/**
-			 * Filter whether SSL should be verified for local requests.
-			 *
-			 * @since 2.8.0
-			 *
-			 * @param bool $ssl_verify Whether to verify the SSL connection. Default true.
-			 */
 			$ssl_verify = apply_filters( 'https_local_ssl_verify', $ssl_verify );
 		} elseif ( ! $is_local ) {
-			/**
-			 * Filter whether SSL should be verified for non-local requests.
-			 *
-			 * @since 2.8.0
-			 *
-			 * @param bool $ssl_verify Whether to verify the SSL connection. Default true.
-			 */
 			$ssl_verify = apply_filters( 'https_ssl_verify', $ssl_verify );
 		}
 
@@ -124,14 +87,11 @@ class WP_Http_Streams {
 		$utimeout = $timeout == $r['timeout'] ? 0 : 1000000 * $r['timeout'] % 1000000;
 		$connect_timeout = max( $timeout, 1 );
 
-		// Store error number.
 		$connection_error = null;
 
-		// Store error string.
 		$connection_error_str = null;
 
 		if ( !WP_DEBUG ) {
-			// In the event that the SSL connection fails, silence the many PHP Warnings.
 			if ( $secure_transport )
 				$error_reporting = error_reporting(0);
 
@@ -151,17 +111,15 @@ class WP_Http_Streams {
 		}
 
 		if ( false === $handle ) {
-			// SSL connection failed due to expired/invalid cert, or, OpenSSL configuration is broken.
 			if ( $secure_transport && 0 === $connection_error && '' === $connection_error_str )
-				return new WP_Error( 'http_request_failed', __( 'The SSL certificate for the host could not be verified.' ) );
+				return new WP_Error( 'http_request_failed', 'The SSL certificate for the host could not be verified.' );
 
 			return new WP_Error('http_request_failed', $connection_error . ': ' . $connection_error_str );
 		}
 
-		// Verify that the SSL certificate is valid for this request.
 		if ( $secure_transport && $ssl_verify && ! $proxy->is_enabled() ) {
 			if ( ! self::verify_ssl_certificate( $handle, $arrURL['host'] ) )
-				return new WP_Error( 'http_request_failed', __( 'The SSL certificate for the host could not be verified.' ) );
+				return new WP_Error( 'http_request_failed', 'The SSL certificate for the host could not be verified.' );
 		}
 
 		stream_set_timeout( $handle, $timeout, $utimeout );
@@ -218,14 +176,13 @@ class WP_Http_Streams {
 		if ( isset( $r['limit_response_size'] ) )
 			$block_size = min( $block_size, $r['limit_response_size'] );
 
-		// If streaming to a file setup the file handle.
 		if ( $r['stream'] ) {
 			if ( ! WP_DEBUG )
 				$stream_handle = @fopen( $r['filename'], 'w+' );
 			else
 				$stream_handle = fopen( $r['filename'], 'w+' );
 			if ( ! $stream_handle )
-				return new WP_Error( 'http_request_failed', sprintf( __( 'Could not open handle for fopen() to %s' ), $r['filename'] ) );
+				return new WP_Error( 'http_request_failed', sprintf( 'Could not open handle for fopen() to %s', $r['filename'] ) );
 
 			$bytes_written = 0;
 			while ( ! feof($handle) && $keep_reading ) {
@@ -253,7 +210,7 @@ class WP_Http_Streams {
 				if ( $bytes_written_to_file != $this_block_size ) {
 					fclose( $handle );
 					fclose( $stream_handle );
-					return new WP_Error( 'http_request_failed', __( 'Failed to write request to temporary file.' ) );
+					return new WP_Error( 'http_request_failed', 'Failed to write request to temporary file.' );
 				}
 
 				$bytes_written += $bytes_written_to_file;
@@ -312,23 +269,6 @@ class WP_Http_Streams {
 		return $response;
 	}
 
-	/**
-	 * Verifies the received SSL certificate against its Common Names and subjectAltName fields.
-	 *
-	 * PHP's SSL verifications only verify that it's a valid Certificate, it doesn't verify if
-	 * the certificate is valid for the hostname which was requested.
-	 * This function verifies the requested hostname against certificate's subjectAltName field,
-	 * if that is empty, or contains no DNS entries, a fallback to the Common Name field is used.
-	 *
-	 * IP Address support is included if the request is being made to an IP address.
-	 *
-	 * @since 3.7.0
-	 * @static
-	 *
-	 * @param stream $stream The PHP Stream which the SSL request is being made over
-	 * @param string $host The hostname being requested
-	 * @return bool If the cerficiate presented in $stream is valid for $host
-	 */
 	public static function verify_ssl_certificate( $stream, $host ) {
 		$context_options = stream_context_get_options( $stream );
 
@@ -376,17 +316,6 @@ class WP_Http_Streams {
 		return in_array( strtolower( $wildcard_host ), $certificate_hostnames );
 	}
 
-	/**
-	 * Determines whether this class can be used for retrieving a URL.
-	 *
-	 * @static
-	 * @access public
-	 * @since 2.7.0
-	 * @since 3.7.0 Combined with the fsockopen transport and switched to stream_socket_client().
-	 *
-	 * @param array $args Optional. Array of request arguments. Default empty array.
-	 * @return bool False means this class can not be used, true means it can.
-	 */
 	public static function test( $args = array() ) {
 		if ( ! function_exists( 'stream_socket_client' ) )
 			return false;
@@ -400,29 +329,10 @@ class WP_Http_Streams {
 				return false;
 		}
 
-		/**
-		 * Filter whether streams can be used as a transport for retrieving a URL.
-		 *
-		 * @since 2.7.0
-		 *
-		 * @param bool  $use_class Whether the class can be used. Default true.
-		 * @param array $args      Request arguments.
-		 */
 		return apply_filters( 'use_streams_transport', true, $args );
 	}
 }
 
-/**
- * Deprecated HTTP Transport method which used fsockopen.
- *
- * This class is not used, and is included for backwards compatibility only.
- * All code should make use of WP_Http directly through its API.
- *
- * @see WP_HTTP::request
- *
- * @since 2.7.0
- * @deprecated 3.7.0 Please use WP_HTTP::request() directly
- */
 class WP_HTTP_Fsockopen extends WP_HTTP_Streams {
 	// For backwards compatibility for users who are using the class directly.
 }

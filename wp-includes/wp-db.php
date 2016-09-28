@@ -373,7 +373,6 @@ class wpdb {
 		if ( is_null( $query ) )
 			return;
 
-		// This is not meant to be foolproof -- but it will catch obviously incorrect usage.
 		if ( strpos( $query, '%' ) === false ) {
 			_doing_it_wrong( 'wpdb::prepare', sprintf( 'The query argument of %s must have a placeholder.', 'wpdb::prepare()' ), '3.9' );
 		}
@@ -857,12 +856,10 @@ class wpdb {
 			$this->query( $query );
 		}
 
-		// Extract var out of cached results based x,y vals
 		if ( !empty( $this->last_result[$y] ) ) {
 			$values = array_values( get_object_vars( $this->last_result[$y] ) );
 		}
 
-		// If there is a value return it else return null
 		return ( isset( $values[$x] ) && $values[$x] !== '' ) ? $values[$x] : null;
 	}
 
@@ -889,7 +886,6 @@ class wpdb {
 		} elseif ( $output == ARRAY_N ) {
 			return $this->last_result[$y] ? array_values( get_object_vars( $this->last_result[$y] ) ) : null;
 		} elseif ( strtoupper( $output ) === OBJECT ) {
-			// Back compat for OBJECT being previously case insensitive.
 			return $this->last_result[$y] ? $this->last_result[$y] : null;
 		} else {
 			$this->print_error( " \$db->get_row(string query, output type, int offset) -- Output type must be one of: OBJECT, ARRAY_A, ARRAY_N" );
@@ -957,17 +953,6 @@ class wpdb {
 	protected function get_table_charset( $table ) {
 		$tablekey = strtolower( $table );
 
-		/**
-		 * Filter the table charset value before the DB is checked.
-		 *
-		 * Passing a non-null value to the filter will effectively short-circuit
-		 * checking the DB for the charset, returning that value instead.
-		 *
-		 * @since 4.2.0
-		 *
-		 * @param string $charset The character set to use. Default null.
-		 * @param string $table   The name of the table being checked.
-		 */
 		$charset = apply_filters( 'pre_get_table_charset', null, $table );
 		if ( null !== $charset ) {
 			return $charset;
@@ -1050,47 +1035,30 @@ class wpdb {
 		$tablekey = strtolower( $table );
 		$columnkey = strtolower( $column );
 
-		/**
-		 * Filter the column charset value before the DB is checked.
-		 *
-		 * Passing a non-null value to the filter will short-circuit
-		 * checking the DB for the charset, returning that value instead.
-		 *
-		 * @since 4.2.0
-		 *
-		 * @param string $charset The character set to use. Default null.
-		 * @param string $table   The name of the table being checked.
-		 * @param string $column  The name of the column being checked.
-		 */
 		$charset = apply_filters( 'pre_get_col_charset', null, $table, $column );
 		if ( null !== $charset ) {
 			return $charset;
 		}
 
-		// Skip this entirely if this isn't a MySQL database.
 		if ( empty( $this->is_mysql ) ) {
 			return false;
 		}
 
 		if ( empty( $this->table_charset[ $tablekey ] ) ) {
-			// This primes column information for us.
 			$table_charset = $this->get_table_charset( $table );
 			if ( is_wp_error( $table_charset ) ) {
 				return $table_charset;
 			}
 		}
 
-		// If still no column information, return the table charset.
 		if ( empty( $this->col_meta[ $tablekey ] ) ) {
 			return $this->table_charset[ $tablekey ];
 		}
 
-		// If this column doesn't exist, return the table charset.
 		if ( empty( $this->col_meta[ $tablekey ][ $columnkey ] ) ) {
 			return $this->table_charset[ $tablekey ];
 		}
 
-		// Return false when it's not a string column.
 		if ( empty( $this->col_meta[ $tablekey ][ $columnkey ]->Collation ) ) {
 			return false;
 		}
@@ -1103,13 +1071,11 @@ class wpdb {
 		$tablekey = strtolower( $table );
 		$columnkey = strtolower( $column );
 
-		// Skip this entirely if this isn't a MySQL database.
 		if ( empty( $this->is_mysql ) ) {
 			return false;
 		}
 
 		if ( empty( $this->col_meta[ $tablekey ] ) ) {
-			// This primes column information for us.
 			$table_charset = $this->get_table_charset( $table );
 			if ( is_wp_error( $table_charset ) ) {
 				return $table_charset;
@@ -1435,16 +1401,9 @@ class wpdb {
 	}
 
 	protected function get_table_from_query( $query ) {
-		// Remove characters that can legally trail the table name.
 		$query = rtrim( $query, ';/-#' );
-
-		// Allow (select...) union [...] style queries. Use the first query's table name.
 		$query = ltrim( $query, "\r\n\t (" );
-
-		// Strip everything between parentheses except nested selects.
 		$query = preg_replace( '/\((?!\s*select)[^(]*?\)/is', '()', $query );
-
-		// Quickly match most common queries.
 		if ( preg_match( '/^\s*(?:'
 				. 'SELECT.*?\s+FROM'
 				. '|INSERT(?:\s+LOW_PRIORITY|\s+DELAYED|\s+HIGH_PRIORITY)?(?:\s+IGNORE)?(?:\s+INTO)?'
@@ -1454,16 +1413,12 @@ class wpdb {
 				. ')\s+((?:[0-9a-zA-Z$_.`-]|[\xC2-\xDF][\x80-\xBF])+)/is', $query, $maybe ) ) {
 			return str_replace( '`', '', $maybe[1] );
 		}
-
-		// SHOW TABLE STATUS and SHOW TABLES
 		if ( preg_match( '/^\s*(?:'
 				. 'SHOW\s+TABLE\s+STATUS.+(?:LIKE\s+|WHERE\s+Name\s*=\s*)'
 				. '|SHOW\s+(?:FULL\s+)?TABLES.+(?:LIKE\s+|WHERE\s+Name\s*=\s*)'
 				. ')\W((?:[0-9a-zA-Z$_.`-]|[\xC2-\xDF][\x80-\xBF])+)\W/is', $query, $maybe ) ) {
 			return str_replace( '`', '', $maybe[1] );
 		}
-
-		// Big pattern for the rest of the table-related queries.
 		if ( preg_match( '/^\s*(?:'
 				. '(?:EXPLAIN\s+(?:EXTENDED\s+)?)?SELECT.*?\s+FROM'
 				. '|DESCRIBE|DESC|EXPLAIN|HANDLER'
@@ -1481,14 +1436,12 @@ class wpdb {
 				. ')\s+\(*\s*((?:[0-9a-zA-Z$_.`-]|[\xC2-\xDF][\x80-\xBF])+)\s*\)*/is', $query, $maybe ) ) {
 			return str_replace( '`', '', $maybe[1] );
 		}
-
 		return false;
 	}
 
 	protected function load_col_info() {
 		if ( $this->col_info )
 			return;
-
 		$num_fields = mysqli_num_fields( $this->result );
 		for ( $i = 0; $i < $num_fields; $i++ ) {
 			$this->col_info[ $i ] = mysqli_fetch_field( $this->result );
@@ -1497,7 +1450,6 @@ class wpdb {
 
 	public function get_col_info( $info_type = 'name', $col_offset = -1 ) {
 		$this->load_col_info();
-
 		if ( $this->col_info ) {
 			if ( $col_offset == -1 ) {
 				$i = 0;

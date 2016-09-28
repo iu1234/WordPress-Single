@@ -91,7 +91,6 @@ final class _WP_Editors {
 			return $set;
 
 		if ( 'content' === $editor_id && empty( $set['tinymce']['wp_autoresize_on'] ) ) {
-			// A cookie (set when a user resizes the editor) overrides the height.
 			$cookie = (int) get_user_setting( 'ed_size' );
 
 			if ( $cookie )
@@ -133,7 +132,6 @@ final class _WP_Editors {
 
 			if ( self::$this_quicktags ) {
 				$default_editor = $set['default_editor'] ? $set['default_editor'] : wp_default_editor();
-				// 'html' is used for the "Text" editor tab.
 				if ( 'html' !== $default_editor ) {
 					$default_editor = 'tinymce';
 				}
@@ -738,15 +736,15 @@ final class _WP_Editors {
 			'Cell properties' =>'Table cell properties',
 			'Border color' => 'Border color',
 
-			'Row' => __( 'Row' ),
-			'Rows' => __( 'Rows' ),
-			'Column' => _x( 'Column', 'table column' ),
-			'Cols' => _x( 'Cols', 'table columns' ),
-			'Cell' => _x( 'Cell', 'table cell' ),
-			'Header cell' => __( 'Header cell' ),
-			'Header' => _x( 'Header', 'table header' ),
-			'Body' => _x( 'Body', 'table body' ),
-			'Footer' => _x( 'Footer', 'table footer' ),
+			'Row' => 'Row',
+			'Rows' => 'Rows',
+			'Column' => 'Column',
+			'Cols' => 'Cols',
+			'Cell' => 'Cell',
+			'Header cell' => 'Header cell',
+			'Header' => 'Header',
+			'Body' => 'Body',
+			'Footer' => 'Footer',
 
 			'Insert row before' => 'Insert row before',
 			'Insert row after' => 'Insert row after',
@@ -765,34 +763,33 @@ final class _WP_Editors {
 			'Width' => 'Width',
 			'Caption' => 'Caption',
 			'Alignment' => 'Alignment',
-			'H Align' => _x( 'H Align', 'horizontal table cell alignment' ),
-			'Left' => __( 'Left' ),
-			'Center' => __( 'Center' ),
-			'Right' => __( 'Right' ),
-			'None' => _x( 'None', 'table cell alignment attribute' ),
-			'V Align' => _x( 'V Align', 'vertical table cell alignment' ),
-			'Top' => __( 'Top' ),
-			'Middle' => __( 'Middle' ),
-			'Bottom' => __( 'Bottom' ),
+			'H Align' => 'H Align',
+			'Left' => 'Left',
+			'Center' => 'Center',
+			'Right' => 'Right',
+			'None' => 'None',
+			'V Align' => 'V Align',
+			'Top' => 'Top',
+			'Middle' => 'Middle',
+			'Bottom' => 'Bottom',
 
-			'Row group' => __( 'Row group' ),
-			'Column group' => __( 'Column group' ),
-			'Row type' => __( 'Row type' ),
-			'Cell type' => __( 'Cell type' ),
-			'Cell padding' => __( 'Cell padding' ),
-			'Cell spacing' => __( 'Cell spacing' ),
-			'Scope' => _x( 'Scope', 'table cell scope attribute' ),
+			'Row group' => 'Row group',
+			'Column group' => 'Column group',
+			'Row type' => 'Row type',
+			'Cell type' => 'Cell type',
+			'Cell padding' => 'Cell padding',
+			'Cell spacing' => 'Cell spacing',
+			'Scope' => 'Scope',
 
-			'Insert template' => _x( 'Insert template', 'TinyMCE' ),
-			'Templates' => _x( 'Templates', 'TinyMCE' ),
+			'Insert template' => 'Insert template',
+			'Templates' => 'Templates',
 
-			'Background color' => __( 'Background color' ),
-			'Text color' => __( 'Text color' ),
-			'Show blocks' => _x( 'Show blocks', 'editor button' ),
-			'Show invisible characters' => __( 'Show invisible characters' ),
+			'Background color' => 'Background color',
+			'Text color' => 'Text color',
+			'Show blocks' => 'Show blocks',
+			'Show invisible characters' => 'Show invisible characters',
 
-			/* translators: word count */
-			'Words: {0}' => sprintf( __( 'Words: %s' ), '{0}' ),
+			'Words: {0}' => sprintf( 'Words: %s', '{0}' ),
 			'Paste is now in plain text mode. Contents will now be pasted as plain text until you toggle this option off.' => __( 'Paste is now in plain text mode. Contents will now be pasted as plain text until you toggle this option off.' ) . "\n\n" . __( 'If you&#8217;re looking to paste rich content from Microsoft Word, try turning this option off. The editor will clean up text pasted from Word automatically.' ),
 			'Rich Text Area. Press ALT-F9 for menu. Press ALT-F10 for toolbar. Press ALT-0 for help' => __( 'Rich Text Area. Press Alt-Shift-H for help' ),
 			'You have unsaved changes are you sure you want to navigate away?' => __( 'The changes you made will be lost if you navigate away from this page.' ),
@@ -822,8 +819,8 @@ final class _WP_Editors {
 			'Default shortcuts,' => 'Default shortcuts,',
 			'Additional shortcuts,' => 'Additional shortcuts,',
 			'Focus shortcuts:' => 'Focus shortcuts:',
-			'Inline toolbar (when an image, link or preview is selected)' => __( 'Inline toolbar (when an image, link or preview is selected)' ),
-			'Editor menu (when enabled)' => __( 'Editor menu (when enabled)' ),
+			'Inline toolbar (when an image, link or preview is selected)' => 'Inline toolbar (when an image, link or preview is selected)',
+			'Editor menu (when enabled)' => 'Editor menu (when enabled)',
 			'Editor toolbar' => 'Editor toolbar',
 			'Elements path' => 'Elements path',
 			'Ctrl + Alt + letter:' => 'Ctrl + Alt + letter:',
@@ -850,7 +847,6 @@ final class _WP_Editors {
 		$mce_translation = apply_filters( 'wp_mce_translation', $mce_translation, $mce_locale );
 
 		foreach ( $mce_translation as $key => $value ) {
-			// Remove strings that are not translated.
 			if ( $key === $value ) {
 				unset( $mce_translation[$key] );
 				continue;
@@ -1035,7 +1031,7 @@ final class _WP_Editors {
 		$results = array();
 		foreach ( $posts as $post ) {
 			if ( 'post' == $post->post_type )
-				$info = mysql2date( __( 'Y/m/d' ), $post->post_date );
+				$info = mysql2date( 'Y/m/d', $post->post_date );
 			else
 				$info = $pts[ $post->post_type ]->labels->singular_name;
 

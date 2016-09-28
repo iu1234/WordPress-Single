@@ -7,63 +7,40 @@
  */
 
 function get_header( $name = null ) {
-	do_action( 'get_header', $name );
-
 	$templates = array();
 	$name = (string) $name;
-	if ( '' !== $name ) {
-		$templates[] = "header-{$name}.php";
-	}
-
+	if ( '' !== $name ) { $templates[] = "header-{$name}.php"; }
 	$templates[] = 'header.php';
-
 	locate_template( $templates, true );
 }
 
 function get_footer( $name = null ) {
-	do_action( 'get_footer', $name );
-
 	$templates = array();
 	$name = (string) $name;
-	if ( '' !== $name ) {
-		$templates[] = "footer-{$name}.php";
-	}
-
+	if ( '' !== $name ) { $templates[] = "footer-{$name}.php"; }
 	$templates[]    = 'footer.php';
-
 	locate_template( $templates, true );
 }
 
 function get_sidebar( $name = null ) {
-	do_action( 'get_sidebar', $name );
-
 	$templates = array();
 	$name = (string) $name;
-	if ( '' !== $name )
-		$templates[] = "sidebar-{$name}.php";
-
+	if ( '' !== $name ) { $templates[] = "sidebar-{$name}.php"; }
 	$templates[] = 'sidebar.php';
-
 	locate_template( $templates, true );
 }
 
 function get_template_part( $slug, $name = null ) {
-	do_action( "get_template_part_{$slug}", $slug, $name );
 	$templates = array();
 	$name = (string) $name;
-	if ( '' !== $name )
-		$templates[] = "{$slug}-{$name}.php";
+	if ( '' !== $name )	{ $templates[] = "{$slug}-{$name}.php"; }
 	$templates[] = "{$slug}.php";
 	locate_template($templates, true, false);
 }
 
 function get_search_form( $echo = true ) {
-	do_action( 'pre_get_search_form' );
-
 	$format = current_theme_supports( 'html5', 'search-form' ) ? 'html5' : 'xhtml';
-
 	$format = apply_filters( 'search_form_format', $format );
-
 	$search_form_template = locate_template( 'searchform.php' );
 	if ( '' != $search_form_template ) {
 		ob_start();
@@ -73,27 +50,24 @@ function get_search_form( $echo = true ) {
 		if ( 'html5' == $format ) {
 			$form = '<form role="search" method="get" class="search-form" action="' . esc_url( home_url( '/' ) ) . '">
 				<label>
-					<span class="screen-reader-text">' . _x( 'Search for:', 'label' ) . '</span>
-					<input type="search" class="search-field" placeholder="' . esc_attr_x( 'Search &hellip;', 'placeholder' ) . '" value="' . get_search_query() . '" name="s" />
+					<span class="screen-reader-text">Search for:</span>
+					<input type="search" class="search-field" placeholder="Search &hellip;" value="' . get_search_query() . '" name="s" />
 				</label>
-				<input type="submit" class="search-submit" value="'. esc_attr_x( 'Search', 'submit button' ) .'" />
+				<input type="submit" class="search-submit" value="搜索" />
 			</form>';
 		} else {
 			$form = '<form role="search" method="get" id="searchform" class="searchform" action="' . esc_url( home_url( '/' ) ) . '">
 				<div>
-					<label class="screen-reader-text" for="s">' . _x( 'Search for:', 'label' ) . '</label>
+					<label class="screen-reader-text" for="s">Search for:</label>
 					<input type="text" value="' . get_search_query() . '" name="s" id="s" />
-					<input type="submit" id="searchsubmit" value="'. esc_attr_x( 'Search', 'submit button' ) .'" />
+					<input type="submit" id="searchsubmit" value="搜索" />
 				</div>
 			</form>';
 		}
 	}
-
 	$result = apply_filters( 'get_search_form', $form );
-
 	if ( null === $result )
 		$result = $form;
-
 	if ( $echo )
 		echo $result;
 	else
@@ -102,10 +76,9 @@ function get_search_form( $echo = true ) {
 
 function wp_loginout($redirect = '', $echo = true) {
 	if ( ! is_user_logged_in() )
-		$link = '<a href="' . esc_url( wp_login_url($redirect) ) . '">Log in</a>';
+		$link = '<a href="' . esc_url( wp_login_url($redirect) ) . '">登录</a>';
 	else
-		$link = '<a href="' . esc_url( wp_logout_url($redirect) ) . '">Log out</a>';
-
+		$link = '<a href="' . esc_url( wp_logout_url($redirect) ) . '">退出</a>';
 	if ( $echo ) {
 		echo apply_filters( 'loginout', $link );
 	} else {
@@ -118,22 +91,17 @@ function wp_logout_url($redirect = '') {
 	if ( !empty($redirect) ) {
 		$args['redirect_to'] = urlencode( $redirect );
 	}
-
 	$logout_url = add_query_arg($args, site_url('wp-login.php', 'login'));
 	$logout_url = wp_nonce_url( $logout_url, 'log-out' );
-
 	return apply_filters( 'logout_url', $logout_url, $redirect );
 }
 
 function wp_login_url($redirect = '', $force_reauth = false) {
 	$login_url = site_url('wp-login.php', 'login');
-
 	if ( !empty($redirect) )
 		$login_url = add_query_arg('redirect_to', urlencode($redirect), $login_url);
-
 	if ( $force_reauth )
 		$login_url = add_query_arg('reauth', '1', $login_url);
-
 	return apply_filters( 'login_url', $login_url, $redirect, $force_reauth );
 }
 
@@ -144,31 +112,24 @@ function wp_registration_url() {
 function wp_login_form( $args = array() ) {
 	$defaults = array(
 		'echo' => true,
-		// Default 'redirect' value takes the user back to the request URI.
-		'redirect' => ( is_ssl() ? 'https://' : 'http://' ) . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'],
+		'redirect' => 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'],
 		'form_id' => 'loginform',
-		'label_username' => __( 'Username or Email' ),
-		'label_password' => __( 'Password' ),
-		'label_remember' => __( 'Remember Me' ),
-		'label_log_in' => __( 'Log In' ),
+		'label_username' => 'Username or Email',
+		'label_password' => 'Password',
+		'label_remember' => 'Remember Me',
+		'label_log_in' => 'Log In',
 		'id_username' => 'user_login',
 		'id_password' => 'user_pass',
 		'id_remember' => 'rememberme',
 		'id_submit' => 'wp-submit',
 		'remember' => true,
 		'value_username' => '',
-		// Set 'value_remember' to true to default the "Remember me" checkbox to checked.
 		'value_remember' => false,
 	);
-
 	$args = wp_parse_args( $args, apply_filters( 'login_form_defaults', $defaults ) );
-
 	$login_form_top = apply_filters( 'login_form_top', '', $args );
-
 	$login_form_middle = apply_filters( 'login_form_middle', '', $args );
-
 	$login_form_bottom = apply_filters( 'login_form_bottom', '', $args );
-
 	$form = '
 		<form name="' . $args['form_id'] . '" id="' . $args['form_id'] . '" action="' . esc_url( site_url( 'wp-login.php', 'login_post' ) ) . '" method="post">
 			' . $login_form_top . '
@@ -188,7 +149,6 @@ function wp_login_form( $args = array() ) {
 			</p>
 			' . $login_form_bottom . '
 		</form>';
-
 	if ( $args['echo'] )
 		echo $form;
 	else
@@ -200,26 +160,22 @@ function wp_lostpassword_url( $redirect = '' ) {
 	if ( !empty($redirect) ) {
 		$args['redirect_to'] = $redirect;
 	}
-
 	$lostpassword_url = add_query_arg( $args, network_site_url('wp-login.php', 'login') );
-
 	return apply_filters( 'lostpassword_url', $lostpassword_url, $redirect );
 }
 
 function wp_register( $before = '<li>', $after = '</li>', $echo = true ) {
 	if ( ! is_user_logged_in() ) {
 		if ( get_option('users_can_register') )
-			$link = $before . '<a href="' . esc_url( wp_registration_url() ) . '">' . __('Register') . '</a>' . $after;
+			$link = $before . '<a href="' . esc_url( wp_registration_url() ) . '">Register</a>' . $after;
 		else
 			$link = '';
 	} elseif ( current_user_can( 'read' ) ) {
-		$link = $before . '<a href="' . admin_url() . '">' . __('Site Admin') . '</a>' . $after;
+		$link = $before . '<a href="' . admin_url() . '">Site Admin</a>' . $after;
 	} else {
 		$link = '';
 	}
-
 	$link = apply_filters( 'register', $link );
-
 	if ( $echo ) {
 		echo $link;
 	} else {
@@ -237,14 +193,6 @@ function bloginfo( $show = '' ) {
 
 function get_bloginfo( $show = '', $filter = 'raw' ) {
 	switch( $show ) {
-		case 'home' :
-		case 'siteurl' :
-			_deprecated_argument( __FUNCTION__, '2.2', sprintf(
-				'The %1$s option is deprecated for the family of %2$s functions. Use the %3$s option instead.',
-				'<code>' . $show . '</code>',
-				'<code>bloginfo()</code>',
-				'<code>url</code>'
-			) );
 		case 'url' :
 			$output = home_url();
 			break;
@@ -253,24 +201,6 @@ function get_bloginfo( $show = '', $filter = 'raw' ) {
 			break;
 		case 'description':
 			$output = get_option('blogdescription');
-			break;
-		case 'rdf_url':
-			$output = get_feed_link('rdf');
-			break;
-		case 'rss_url':
-			$output = get_feed_link('rss');
-			break;
-		case 'rss2_url':
-			$output = get_feed_link('rss2');
-			break;
-		case 'atom_url':
-			$output = get_feed_link('atom');
-			break;
-		case 'comments_atom_url':
-			$output = get_feed_link('comments_atom');
-			break;
-		case 'comments_rss2_url':
-			$output = get_feed_link('comments_rss2');
 			break;
 		case 'stylesheet_url':
 			$output = get_stylesheet_uri();
@@ -296,25 +226,16 @@ function get_bloginfo( $show = '', $filter = 'raw' ) {
 			global $wp_version;
 			$output = $wp_version;
 			break;
-		case 'language':
-			$output = 'html_lang_attribute';
-			if ( 'html_lang_attribute' === $output || preg_match( '/[^a-zA-Z0-9-]/', $output ) ) {
-				$output = get_locale();
-				$output = str_replace( '_', '-', $output );
-			}
-			break;
 		case 'name':
 		default:
 			$output = get_option('blogname');
 			break;
 	}
-
 	$url = true;
 	if (strpos($show, 'url') === false &&
 		strpos($show, 'directory') === false &&
 		strpos($show, 'home') === false)
 		$url = false;
-
 	if ( 'display' == $filter ) {
 		if ( $url ) {
 			$output = apply_filters( 'bloginfo_url', $output, $show );
@@ -322,17 +243,11 @@ function get_bloginfo( $show = '', $filter = 'raw' ) {
 			$output = apply_filters( 'bloginfo', $output, $show );
 		}
 	}
-
 	return $output;
 }
 
 function get_site_icon_url( $size = 512, $url = '', $blog_id = 0 ) {
-	if ( is_multisite() && (int) $blog_id !== get_current_blog_id() ) {
-		switch_to_blog( $blog_id );
-	}
-
 	$site_icon_id = get_option( 'site_icon' );
-
 	if ( $site_icon_id ) {
 		if ( $size >= 512 ) {
 			$size_data = 'full';
@@ -353,12 +268,7 @@ function has_site_icon( $blog_id = 0 ) {
 }
 
 function has_custom_logo( $blog_id = 0 ) {
-	if ( is_multisite() && (int) $blog_id !== get_current_blog_id() ) {
-		switch_to_blog( $blog_id );
-	}
-
 	$custom_logo_id = get_theme_mod( 'custom_logo' );
-
 	return (bool) $custom_logo_id;
 }
 
@@ -382,26 +292,16 @@ function get_custom_logo( $blog_id = 0 ) {
 	return apply_filters( 'get_custom_logo', $html );
 }
 
-function the_custom_logo( $blog_id = 0 ) {
-	echo get_custom_logo( $blog_id );
-}
-
 function wp_get_document_title() {
 	$title = apply_filters( 'pre_get_document_title', '' );
-	if ( ! empty( $title ) ) {
-		return $title;
-	}
-
+	if ( ! empty( $title ) ) { return $title; }
 	global $page, $paged;
-
-	$title = array(
-		'title' => '',
-	);
+	$title = array(	'title' => '' );
 
 	if ( is_404() ) {
 		$title['title'] = 'Page not found';
 	} elseif ( is_search() ) {
-		$title['title'] = sprintf( __( 'Search Results for &#8220;%s&#8221;' ), get_search_query() );
+		$title['title'] = sprintf( 'Search Results for &#8220;%s&#8221;', get_search_query() );
 	} elseif ( is_front_page() ) {
 		$title['title'] = get_bloginfo( 'name', 'display' );
 	} elseif ( is_post_type_archive() ) {
@@ -415,9 +315,9 @@ function wp_get_document_title() {
 	} elseif ( is_author() && $author = get_queried_object() ) {
 		$title['title'] = $author->display_name;
 	} elseif ( is_year() ) {
-		$title['title'] = get_the_date( _x( 'Y', 'yearly archives date format' ) );
+		$title['title'] = get_the_date( 'Y' );
 	} elseif ( is_month() ) {
-		$title['title'] = get_the_date( _x( 'F Y', 'monthly archives date format' ) );
+		$title['title'] = get_the_date( 'F Y' );
 	} elseif ( is_day() ) {
 		$title['title'] = get_the_date();
 	}
@@ -429,17 +329,13 @@ function wp_get_document_title() {
 	} else {
 		$title['site'] = get_bloginfo( 'name', 'display' );
 	}
-
 	$sep = apply_filters( 'document_title_separator', '-' );
-
 	$title = apply_filters( 'document_title_parts', $title );
-
 	$title = implode( " $sep ", array_filter( $title ) );
 	$title = wptexturize( $title );
 	$title = convert_chars( $title );
 	$title = esc_html( $title );
 	$title = capital_P_dangit( $title );
-
 	return $title;
 }
 
@@ -452,7 +348,6 @@ function _wp_render_title_tag() {
 
 function wp_title( $sep = '&raquo;', $display = true, $seplocation = '' ) {
 	global $wp_locale;
-
 	$m        = get_query_var( 'm' );
 	$year     = get_query_var( 'year' );
 	$monthnum = get_query_var( 'monthnum' );
@@ -460,14 +355,10 @@ function wp_title( $sep = '&raquo;', $display = true, $seplocation = '' ) {
 	$search   = get_query_var( 's' );
 	$title    = '';
 
-	$t_sep = '%WP_TITLE_SEP%'; // Temporary separator, for accurate flipping, if necessary
-
-	// If there is a post
+	$t_sep = '%WP_TITLE_SEP%';
 	if ( is_single() || ( is_home() && ! is_front_page() ) || ( is_page() && ! is_front_page() ) ) {
 		$title = single_post_title( '', false );
 	}
-
-	// If there's a post type archive
 	if ( is_post_type_archive() ) {
 		$post_type = get_query_var( 'post_type' );
 		if ( is_array( $post_type ) ) {
@@ -478,13 +369,9 @@ function wp_title( $sep = '&raquo;', $display = true, $seplocation = '' ) {
 			$title = post_type_archive_title( '', false );
 		}
 	}
-
-	// If there's a category or tag
 	if ( is_category() || is_tag() ) {
 		$title = single_term_title( '', false );
 	}
-
-	// If there's a taxonomy
 	if ( is_tax() ) {
 		$term = get_queried_object();
 		if ( $term ) {
@@ -492,8 +379,6 @@ function wp_title( $sep = '&raquo;', $display = true, $seplocation = '' ) {
 			$title = single_term_title( $tax->labels->name . $t_sep, false );
 		}
 	}
-
-	// If there's an author
 	if ( is_author() && ! is_post_type_archive() ) {
 		$author = get_queried_object();
 		if ( $author ) {
@@ -501,12 +386,10 @@ function wp_title( $sep = '&raquo;', $display = true, $seplocation = '' ) {
 		}
 	}
 
-	// Post type archives with has_archive should override terms.
 	if ( is_post_type_archive() && $post_type_object->has_archive ) {
 		$title = post_type_archive_title( '', false );
 	}
 
-	// If there's a month
 	if ( is_archive() && ! empty( $m ) ) {
 		$my_year  = substr( $m, 0, 4 );
 		$my_month = $wp_locale->get_month( substr( $m, 4, 2 ) );
@@ -514,7 +397,6 @@ function wp_title( $sep = '&raquo;', $display = true, $seplocation = '' ) {
 		$title    = $my_year . ( $my_month ? $t_sep . $my_month : '' ) . ( $my_day ? $t_sep . $my_day : '' );
 	}
 
-	// If there's a year
 	if ( is_archive() && ! empty( $year ) ) {
 		$title = $year;
 		if ( ! empty( $monthnum ) ) {
@@ -524,34 +406,18 @@ function wp_title( $sep = '&raquo;', $display = true, $seplocation = '' ) {
 			$title .= $t_sep . zeroise( $day, 2 );
 		}
 	}
-
-	// If it's a search
-	if ( is_search() ) {
-		/* translators: 1: separator, 2: search phrase */
-		$title = sprintf( __( 'Search Results %1$s %2$s' ), $t_sep, strip_tags( $search ) );
-	}
-
-	// If it's a 404 page
-	if ( is_404() ) {
-		$title = 'Page not found';
-	}
-
+	if ( is_search() ) { $title = sprintf( 'Search Results %1$s %2$s', $t_sep, strip_tags( $search ) ); }
+	if ( is_404() ) { $title = 'Page not found'; }
 	$prefix = '';
-	if ( ! empty( $title ) ) {
-		$prefix = " $sep ";
-	}
-
+	if ( ! empty( $title ) ) { $prefix = " $sep "; }
 	$title_array = apply_filters( 'wp_title_parts', explode( $t_sep, $title ) );
-
-	if ( 'right' == $seplocation ) { // sep on right, so reverse the order
+	if ( 'right' == $seplocation ) {
 		$title_array = array_reverse( $title_array );
 		$title       = implode( " $sep ", $title_array ) . $prefix;
 	} else {
 		$title = $prefix . implode( " $sep ", $title_array );
 	}
-
 	$title = apply_filters( 'wp_title', $title, $sep, $seplocation );
-
 	if ( $display ) {
 		echo $title;
 	} else {
@@ -561,10 +427,8 @@ function wp_title( $sep = '&raquo;', $display = true, $seplocation = '' ) {
 
 function single_post_title( $prefix = '', $display = true ) {
 	$_post = get_queried_object();
-
 	if ( !isset($_post->post_title) )
 		return;
-
 	$title = apply_filters( 'single_post_title', $_post->post_title, $_post );
 	if ( $display )
 		echo $prefix . $title;
@@ -575,15 +439,11 @@ function single_post_title( $prefix = '', $display = true ) {
 function post_type_archive_title( $prefix = '', $display = true ) {
 	if ( ! is_post_type_archive() )
 		return;
-
 	$post_type = get_query_var( 'post_type' );
 	if ( is_array( $post_type ) )
 		$post_type = reset( $post_type );
-
 	$post_type_obj = get_post_type_object( $post_type );
-
 	$title = apply_filters( 'post_type_archive_title', $post_type_obj->labels->name, $post_type );
-
 	if ( $display )
 		echo $prefix . $title;
 	else
@@ -660,45 +520,43 @@ function get_the_archive_title() {
 	if ( is_category() ) {
 		$title = sprintf( 'Category: %s', single_cat_title( '', false ) );
 	} elseif ( is_tag() ) {
-		$title = sprintf( __( 'Tag: %s' ), single_tag_title( '', false ) );
+		$title = sprintf( 'Tag: %s', single_tag_title( '', false ) );
 	} elseif ( is_author() ) {
-		$title = sprintf( __( 'Author: %s' ), '<span class="vcard">' . get_the_author() . '</span>' );
+		$title = sprintf( 'Author: %s', '<span class="vcard">' . get_the_author() . '</span>' );
 	} elseif ( is_year() ) {
-		$title = sprintf( __( 'Year: %s' ), get_the_date( _x( 'Y', 'yearly archives date format' ) ) );
+		$title = sprintf( 'Year: %s', get_the_date( 'Y' ) );
 	} elseif ( is_month() ) {
-		$title = sprintf( __( 'Month: %s' ), get_the_date( _x( 'F Y', 'monthly archives date format' ) ) );
+		$title = sprintf( 'Month: %s', get_the_date( 'F Y' ) );
 	} elseif ( is_day() ) {
-		$title = sprintf( __( 'Day: %s' ), get_the_date( _x( 'F j, Y', 'daily archives date format' ) ) );
+		$title = sprintf( 'Day: %s', get_the_date( 'F j, Y' ) );
 	} elseif ( is_tax( 'post_format' ) ) {
 		if ( is_tax( 'post_format', 'post-format-aside' ) ) {
-			$title = _x( 'Asides', 'post format archive title' );
+			$title = 'Asides';
 		} elseif ( is_tax( 'post_format', 'post-format-gallery' ) ) {
-			$title = _x( 'Galleries', 'post format archive title' );
+			$title = 'Galleries';
 		} elseif ( is_tax( 'post_format', 'post-format-image' ) ) {
-			$title = _x( 'Images', 'post format archive title' );
+			$title = 'Images';
 		} elseif ( is_tax( 'post_format', 'post-format-video' ) ) {
-			$title = _x( 'Videos', 'post format archive title' );
+			$title = 'Videos';
 		} elseif ( is_tax( 'post_format', 'post-format-quote' ) ) {
-			$title = _x( 'Quotes', 'post format archive title' );
+			$title = 'Quotes';
 		} elseif ( is_tax( 'post_format', 'post-format-link' ) ) {
-			$title = _x( 'Links', 'post format archive title' );
+			$title = 'Links';
 		} elseif ( is_tax( 'post_format', 'post-format-status' ) ) {
-			$title = _x( 'Statuses', 'post format archive title' );
+			$title = 'Statuses';
 		} elseif ( is_tax( 'post_format', 'post-format-audio' ) ) {
-			$title = _x( 'Audio', 'post format archive title' );
+			$title = 'Audio';
 		} elseif ( is_tax( 'post_format', 'post-format-chat' ) ) {
-			$title = _x( 'Chats', 'post format archive title' );
+			$title = 'Chats';
 		}
 	} elseif ( is_post_type_archive() ) {
-		$title = sprintf( __( 'Archives: %s' ), post_type_archive_title( '', false ) );
+		$title = sprintf( 'Archives: %s', post_type_archive_title( '', false ) );
 	} elseif ( is_tax() ) {
 		$tax = get_taxonomy( get_queried_object()->taxonomy );
-		/* translators: 1: Taxonomy singular name, 2: Current taxonomy term */
-		$title = sprintf( __( '%1$s: %2$s' ), $tax->labels->singular_name, single_term_title( '', false ) );
+		$title = sprintf( '%1$s: %2$s', $tax->labels->singular_name, single_term_title( '', false ) );
 	} else {
 		$title = 'Archives';
 	}
-
 	return apply_filters( 'get_the_archive_title', $title );
 }
 
@@ -716,22 +574,19 @@ function get_the_archive_description() {
 function get_archives_link($url, $text, $format = 'html', $before = '', $after = '') {
 	$text = wptexturize($text);
 	$url = esc_url($url);
-
 	if ('link' == $format)
 		$link_html = "\t<link rel='archives' title='" . esc_attr( $text ) . "' href='$url' />\n";
 	elseif ('option' == $format)
 		$link_html = "\t<option value='$url'>$before $text $after</option>\n";
 	elseif ('html' == $format)
 		$link_html = "\t<li>$before<a href='$url'>$text</a>$after</li>\n";
-	else // custom
+	else
 		$link_html = "\t$before<a href='$url'>$text</a>$after\n";
-
 	return apply_filters( 'get_archives_link', $link_html, $url, $text, $format, $before, $after );
 }
 
 function wp_get_archives( $args = '' ) {
 	global $wpdb, $wp_locale;
-
 	$defaults = array(
 		'type' => 'monthly', 'limit' => '',
 		'format' => 'html', 'before' => '',
@@ -761,8 +616,6 @@ function wp_get_archives( $args = '' ) {
 	if ( $order !== 'ASC' ) {
 		$order = 'DESC';
 	}
-
-	// this is what will separate dates on weekly archive links
 	$archive_week_separator = '&#8211;';
 
 	$sql_where = $wpdb->prepare( "WHERE post_type = %s AND post_status = 'publish'", $r['post_type'] );
@@ -796,8 +649,7 @@ function wp_get_archives( $args = '' ) {
 				if ( 'post' !== $r['post_type'] ) {
 					$url = add_query_arg( 'post_type', $r['post_type'], $url );
 				}
-				/* translators: 1: month name, 2: 4-digit year */
-				$text = sprintf( __( '%1$s %2$d' ), $wp_locale->get_month( $result->month ), $result->year );
+				$text = sprintf( '%1$s %2$d', $wp_locale->get_month( $result->month ), $result->year );
 				if ( $r['show_post_count'] ) {
 					$r['after'] = '&nbsp;(' . $result->posts . ')' . $after;
 				}
@@ -918,12 +770,9 @@ function calendar_week_mod($num) {
 
 function get_calendar( $initial = true, $echo = true ) {
 	global $wpdb, $m, $monthnum, $year, $wp_locale, $posts;
-
 	$key = md5( $m . $monthnum . $year );
 	$cache = wp_cache_get( 'get_calendar', 'calendar' );
-
 	if ( $cache && is_array( $cache ) && isset( $cache[ $key ] ) ) {
-		/** This filter is documented in wp-includes/general-template.php */
 		$output = apply_filters( 'get_calendar', $cache[ $key ] );
 
 		if ( $echo ) {
@@ -937,8 +786,6 @@ function get_calendar( $initial = true, $echo = true ) {
 	if ( ! is_array( $cache ) ) {
 		$cache = array();
 	}
-
-	// Quick check. If we have no posts at all, abort!
 	if ( ! $posts ) {
 		$gotsome = $wpdb->get_var("SELECT 1 as test FROM $wpdb->posts WHERE post_type = 'post' AND post_status = 'publish' LIMIT 1");
 		if ( ! $gotsome ) {
@@ -951,7 +798,6 @@ function get_calendar( $initial = true, $echo = true ) {
 	if ( isset( $_GET['w'] ) ) {
 		$w = (int) $_GET['w'];
 	}
-	// week_begins = 0 stands for Sunday
 	$week_begins = (int) get_option( 'start_of_week' );
 	$ts = current_time( 'timestamp' );
 
@@ -960,9 +806,7 @@ function get_calendar( $initial = true, $echo = true ) {
 		$thismonth = zeroise( intval( $monthnum ), 2 );
 		$thisyear = (int) $year;
 	} elseif ( ! empty( $w ) ) {
-		// We need to get the month from MySQL
 		$thisyear = (int) substr( $m, 0, 4 );
-		//it seems MySQL's weeks disagree with PHP's
 		$d = ( ( $w - 1 ) * 7 ) + 6;
 		$thismonth = $wpdb->get_var("SELECT DATE_FORMAT((DATE_ADD('{$thisyear}0101', INTERVAL $d DAY) ), '%m')");
 	} elseif ( ! empty( $m ) ) {
@@ -980,7 +824,6 @@ function get_calendar( $initial = true, $echo = true ) {
 	$unixmonth = mktime( 0, 0 , 0, $thismonth, 1, $thisyear );
 	$last_day = date( 't', $unixmonth );
 
-	// Get the next and previous month and year with at least one post
 	$previous = $wpdb->get_row("SELECT MONTH(post_date) AS month, YEAR(post_date) AS year
 		FROM $wpdb->posts
 		WHERE post_date < '$thisyear-$thismonth-01'
@@ -994,7 +837,6 @@ function get_calendar( $initial = true, $echo = true ) {
 			ORDER BY post_date ASC
 			LIMIT 1");
 
-	/* translators: Calendar caption: 1: month name, 2: 4-digit year */
 	$calendar_caption = _x('%1$s %2$s', 'calendar caption');
 	$calendar_output = '<table id="wp-calendar">
 	<caption>' . sprintf(
@@ -1010,7 +852,6 @@ function get_calendar( $initial = true, $echo = true ) {
 	for ( $wdcount = 0; $wdcount <= 6; $wdcount++ ) {
 		$myweek[] = $wp_locale->get_weekday( ( $wdcount + $week_begins ) % 7 );
 	}
-
 	foreach ( $myweek as $wd ) {
 		$day_name = $initial ? $wp_locale->get_weekday_initial( $wd ) : $wp_locale->get_weekday_abbrev( $wd );
 		$wd = esc_attr( $wd );
@@ -1087,8 +928,8 @@ function get_calendar( $initial = true, $echo = true ) {
 
 		if ( in_array( $day, $daywithpost ) ) {
 			// any posts today?
-			$date_format = date( _x( 'F j, Y', 'daily archives date format' ), strtotime( "{$thisyear}-{$thismonth}-{$day}" ) );
-			$label = sprintf( __( 'Posts published on %s' ), $date_format );
+			$date_format = date( 'F j, Y', strtotime( "{$thisyear}-{$thismonth}-{$day}" ) );
+			$label = sprintf( 'Posts published on %s', $date_format );
 			$calendar_output .= sprintf(
 				'<a href="%s" aria-label="%s">%s</a>',
 				get_day_link( $thisyear, $thismonth, $day ),
@@ -1146,12 +987,10 @@ function the_date_xml() {
 
 function the_date( $d = '', $before = '', $after = '', $echo = true ) {
 	global $currentday, $previousday;
-
 	if ( is_new_day() ) {
 		$the_date = $before . get_the_date( $d ) . $after;
 		$previousday = $currentday;
 		$the_date = apply_filters( 'the_date', $the_date, $d, $before, $after );
-
 		if ( $echo )
 			echo $the_date;
 		else
@@ -1161,17 +1000,14 @@ function the_date( $d = '', $before = '', $after = '', $echo = true ) {
 
 function get_the_date( $d = '', $post = null ) {
 	$post = get_post( $post );
-
 	if ( ! $post ) {
 		return false;
 	}
-
 	if ( '' == $d ) {
 		$the_date = mysql2date( get_option( 'date_format' ), $post->post_date );
 	} else {
 		$the_date = mysql2date( $d, $post->post_date );
 	}
-
 	return apply_filters( 'get_the_date', $the_date, $d, $post );
 }
 
@@ -1202,16 +1038,13 @@ function the_time( $d = '' ) {
 
 function get_the_time( $d = '', $post = null ) {
 	$post = get_post($post);
-
 	if ( ! $post ) {
 		return false;
 	}
-
 	if ( '' == $d )
 		$the_time = get_post_time(get_option('time_format'), false, $post, true);
 	else
 		$the_time = get_post_time($d, false, $post, true);
-
 	return apply_filters( 'get_the_time', $the_time, $d, $post );
 }
 
@@ -1247,7 +1080,6 @@ function get_the_modified_time($d = '') {
 
 function get_post_modified_time( $d = 'U', $gmt = false, $post = null, $translate = false ) {
 	$post = get_post($post);
-
 	if ( ! $post ) {
 		return false;
 	}
@@ -1257,14 +1089,12 @@ function get_post_modified_time( $d = 'U', $gmt = false, $post = null, $translat
 	else
 		$time = $post->post_modified;
 	$time = mysql2date($d, $time, $translate);
-
 	return apply_filters( 'get_post_modified_time', $time, $d, $gmt );
 }
 
 function the_weekday() {
 	global $wp_locale;
 	$the_weekday = $wp_locale->get_weekday( mysql2date( 'w', get_post()->post_date, false ) );
-
 	echo apply_filters( 'the_weekday', $the_weekday );
 }
 
@@ -1290,108 +1120,7 @@ function wp_footer() {
 	do_action( 'wp_footer' );
 }
 
-function feed_links( $args = array() ) {
-	if ( !current_theme_supports('automatic-feed-links') )
-		return;
-
-	$defaults = array(
-		/* translators: Separator between blog name and feed type in feed links */
-		'separator'	=> _x('&raquo;', 'feed link'),
-		/* translators: 1: blog title, 2: separator (raquo) */
-		'feedtitle'	=> __('%1$s %2$s Feed'),
-		/* translators: 1: blog title, 2: separator (raquo) */
-		'comstitle'	=> __('%1$s %2$s Comments Feed'),
-	);
-
-	$args = wp_parse_args( $args, $defaults );
-
-	if ( apply_filters( 'feed_links_show_posts_feed', true ) ) {
-		echo '<link rel="alternate" type="' . feed_content_type() . '" title="' . esc_attr( sprintf( $args['feedtitle'], get_bloginfo( 'name' ), $args['separator'] ) ) . '" href="' . esc_url( get_feed_link() ) . "\" />\n";
-	}
-
-	if ( apply_filters( 'feed_links_show_comments_feed', true ) ) {
-		echo '<link rel="alternate" type="' . feed_content_type() . '" title="' . esc_attr( sprintf( $args['comstitle'], get_bloginfo( 'name' ), $args['separator'] ) ) . '" href="' . esc_url( get_feed_link( 'comments_' . get_default_feed() ) ) . "\" />\n";
-	}
-}
-
-function feed_links_extra( $args = array() ) {
-	$defaults = array(
-		/* translators: Separator between blog name and feed type in feed links */
-		'separator'   => _x('&raquo;', 'feed link'),
-		/* translators: 1: blog name, 2: separator(raquo), 3: post title */
-		'singletitle' => __('%1$s %2$s %3$s Comments Feed'),
-		/* translators: 1: blog name, 2: separator(raquo), 3: category name */
-		'cattitle'    => __('%1$s %2$s %3$s Category Feed'),
-		/* translators: 1: blog name, 2: separator(raquo), 3: tag name */
-		'tagtitle'    => __('%1$s %2$s %3$s Tag Feed'),
-		/* translators: 1: blog name, 2: separator(raquo), 3: term name, 4: taxonomy singular name */
-		'taxtitle'    => __('%1$s %2$s %3$s %4$s Feed'),
-		/* translators: 1: blog name, 2: separator(raquo), 3: author name  */
-		'authortitle' => __('%1$s %2$s Posts by %3$s Feed'),
-		/* translators: 1: blog name, 2: separator(raquo), 3: search phrase */
-		'searchtitle' => __('%1$s %2$s Search Results for &#8220;%3$s&#8221; Feed'),
-		/* translators: 1: blog name, 2: separator(raquo), 3: post type name */
-		'posttypetitle' => __('%1$s %2$s %3$s Feed'),
-	);
-
-	$args = wp_parse_args( $args, $defaults );
-
-	if ( is_singular() ) {
-		$id = 0;
-		$post = get_post( $id );
-
-		if ( comments_open() || pings_open() || $post->comment_count > 0 ) {
-			$title = sprintf( $args['singletitle'], get_bloginfo('name'), $args['separator'], the_title_attribute( array( 'echo' => false ) ) );
-			$href = get_post_comments_feed_link( $post->ID );
-		}
-	} elseif ( is_post_type_archive() ) {
-		$post_type = get_query_var( 'post_type' );
-		if ( is_array( $post_type ) )
-			$post_type = reset( $post_type );
-
-		$post_type_obj = get_post_type_object( $post_type );
-		$title = sprintf( $args['posttypetitle'], get_bloginfo( 'name' ), $args['separator'], $post_type_obj->labels->name );
-		$href = get_post_type_archive_feed_link( $post_type_obj->name );
-	} elseif ( is_category() ) {
-		$term = get_queried_object();
-
-		if ( $term ) {
-			$title = sprintf( $args['cattitle'], get_bloginfo('name'), $args['separator'], $term->name );
-			$href = get_category_feed_link( $term->term_id );
-		}
-	} elseif ( is_tag() ) {
-		$term = get_queried_object();
-
-		if ( $term ) {
-			$title = sprintf( $args['tagtitle'], get_bloginfo('name'), $args['separator'], $term->name );
-			$href = get_tag_feed_link( $term->term_id );
-		}
-	} elseif ( is_tax() ) {
- 		$term = get_queried_object();
- 		$tax = get_taxonomy( $term->taxonomy );
- 		$title = sprintf( $args['taxtitle'], get_bloginfo('name'), $args['separator'], $term->name, $tax->labels->singular_name );
- 		$href = get_term_feed_link( $term->term_id, $term->taxonomy );
-	} elseif ( is_author() ) {
-		$author_id = intval( get_query_var('author') );
-
-		$title = sprintf( $args['authortitle'], get_bloginfo('name'), $args['separator'], get_the_author_meta( 'display_name', $author_id ) );
-		$href = get_author_feed_link( $author_id );
-	} elseif ( is_search() ) {
-		$title = sprintf( $args['searchtitle'], get_bloginfo('name'), $args['separator'], get_search_query( false ) );
-		$href = get_search_feed_link();
-	} elseif ( is_post_type_archive() ) {
-		$title = sprintf( $args['posttypetitle'], get_bloginfo('name'), $args['separator'], post_type_archive_title( '', false ) );
-		$post_type_obj = get_queried_object();
-		if ( $post_type_obj )
-			$href = get_post_type_archive_feed_link( $post_type_obj->name );
-	}
-
-	if ( isset($title) && isset($href) )
-		echo '<link rel="alternate" type="' . feed_content_type() . '" title="' . esc_attr( $title ) . '" href="' . esc_url( $href ) . '" />' . "\n";
-}
-
 function noindex() {
-	// If the blog is not public, tell robots to go away.
 	if ( '0' == get_option('blog_public') )
 		wp_no_robots();
 }
@@ -1404,14 +1133,12 @@ function wp_site_icon() {
 	if ( ! has_site_icon() && ! is_customize_preview() ) {
 		return;
 	}
-
 	$meta_tags = array(
 		sprintf( '<link rel="icon" href="%s" sizes="32x32" />', esc_url( get_site_icon_url( 32 ) ) ),
 		sprintf( '<link rel="icon" href="%s" sizes="192x192" />', esc_url( get_site_icon_url( 192 ) ) ),
 		sprintf( '<link rel="apple-touch-icon-precomposed" href="%s" />', esc_url( get_site_icon_url( 180 ) ) ),
 		sprintf( '<meta name="msapplication-TileImage" content="%s" />', esc_url( get_site_icon_url( 270 ) ) ),
 	);
-
 	$meta_tags = apply_filters( 'site_icon_meta_tags', $meta_tags );
 	$meta_tags = array_filter( $meta_tags );
 
@@ -1422,11 +1149,9 @@ function wp_site_icon() {
 
 function user_can_richedit() {
 	global $wp_rich_edit, $is_gecko, $is_opera, $is_safari, $is_chrome, $is_IE, $is_edge;
-
 	if ( !isset($wp_rich_edit) ) {
 		$wp_rich_edit = false;
-
-		if ( get_user_option( 'rich_editing' ) == 'true' || ! is_user_logged_in() ) { // default to 'true' for logged out users
+		if ( get_user_option( 'rich_editing' ) == 'true' || ! is_user_logged_in() ) {
 			if ( $is_safari ) {
 				$wp_rich_edit = ! wp_is_mobile() || ( preg_match( '!AppleWebKit/(\d+)!', $_SERVER['HTTP_USER_AGENT'], $match ) && intval( $match[1] ) >= 534 );
 			} elseif ( $is_gecko || $is_chrome || $is_IE || $is_edge || ( $is_opera && !wp_is_mobile() ) ) {
@@ -1457,7 +1182,6 @@ function wp_editor( $content, $editor_id, $settings = array() ) {
 
 function get_search_query( $escaped = true ) {
 	$query = apply_filters( 'get_search_query', get_query_var( 's' ) );
-
 	if ( $escaped )
 		$query = esc_attr( $query );
 	return $query;
@@ -1467,89 +1191,52 @@ function the_search_query() {
 	echo esc_attr( apply_filters( 'the_search_query', get_search_query( false ) ) );
 }
 
-function get_language_attributes( $doctype = 'html' ) {
-	$attributes = array();
-
-	if ( $lang = get_bloginfo('language') ) {
-		if ( get_option('html_type') == 'text/html' || $doctype == 'html' )
-			$attributes[] = "lang=\"$lang\"";
-
-		if ( get_option('html_type') != 'text/html' || $doctype == 'xhtml' )
-			$attributes[] = "xml:lang=\"$lang\"";
-	}
-
-	$output = implode(' ', $attributes);
-
-	return apply_filters( 'language_attributes', $output, $doctype );
-}
-
 function paginate_links( $args = '' ) {
 	global $wp_query, $wp_rewrite;
-
-	// Setting up default values based on the current URL.
 	$pagenum_link = html_entity_decode( get_pagenum_link() );
 	$url_parts    = explode( '?', $pagenum_link );
-
-	// Get max pages and current page out of the current query, if available.
 	$total   = isset( $wp_query->max_num_pages ) ? $wp_query->max_num_pages : 1;
 	$current = get_query_var( 'paged' ) ? intval( get_query_var( 'paged' ) ) : 1;
-
-	// Append the format placeholder to the base URL.
 	$pagenum_link = trailingslashit( $url_parts[0] ) . '%_%';
-
-	// URL base depends on permalink settings.
 	$format  = $wp_rewrite->using_index_permalinks() && ! strpos( $pagenum_link, 'index.php' ) ? 'index.php/' : '';
 	$format .= $wp_rewrite->using_permalinks() ? user_trailingslashit( $wp_rewrite->pagination_base . '/%#%', 'paged' ) : '?paged=%#%';
-
 	$defaults = array(
-		'base' => $pagenum_link, // http://example.com/all_posts.php%_% : %_% is replaced by format (below)
-		'format' => $format, // ?page=%#% : %#% is replaced by the page number
+		'base' => $pagenum_link,
+		'format' => $format,
 		'total' => $total,
 		'current' => $current,
 		'show_all' => false,
 		'prev_next' => true,
-		'prev_text' => __('&laquo; Previous'),
-		'next_text' => __('Next &raquo;'),
+		'prev_text' => '&laquo; Previous',
+		'next_text' => 'Next &raquo;',
 		'end_size' => 1,
 		'mid_size' => 2,
 		'type' => 'plain',
-		'add_args' => array(), // array of query args to add
+		'add_args' => array(),
 		'add_fragment' => '',
 		'before_page_number' => '',
 		'after_page_number' => ''
 	);
-
 	$args = wp_parse_args( $args, $defaults );
-
 	if ( ! is_array( $args['add_args'] ) ) {
 		$args['add_args'] = array();
 	}
-
-	// Merge additional query vars found in the original URL into 'add_args' array.
 	if ( isset( $url_parts[1] ) ) {
-		// Find the format argument.
 		$format = explode( '?', str_replace( '%_%', $args['format'], $args['base'] ) );
 		$format_query = isset( $format[1] ) ? $format[1] : '';
 		wp_parse_str( $format_query, $format_args );
-
-		// Find the query args of the requested URL.
 		wp_parse_str( $url_parts[1], $url_query_args );
-
-		// Remove the format argument from the array of query arguments, to avoid overwriting custom format.
 		foreach ( $format_args as $format_arg => $format_arg_value ) {
 			unset( $url_query_args[ $format_arg ] );
 		}
-
 		$args['add_args'] = array_merge( $args['add_args'], urlencode_deep( $url_query_args ) );
 	}
-
-	// Who knows what else people pass in $args
 	$total = (int) $args['total'];
 	if ( $total < 2 ) {
 		return;
 	}
 	$current  = (int) $args['current'];
-	$end_size = (int) $args['end_size']; // Out of bounds?  Make it the default.
+	$end_size = (int) $args['end_size'];
 	if ( $end_size < 1 ) {
 		$end_size = 1;
 	}
@@ -1587,7 +1274,7 @@ function paginate_links( $args = '' ) {
 				$page_links[] = "<a class='page-numbers' href='" . esc_url( apply_filters( 'paginate_links', $link ) ) . "'>" . $args['before_page_number'] . number_format_i18n( $n ) . $args['after_page_number'] . "</a>";
 				$dots = true;
 			elseif ( $dots && ! $args['show_all'] ) :
-				$page_links[] = '<span class="page-numbers dots">' . __( '&hellip;' ) . '</span>';
+				$page_links[] = '<span class="page-numbers dots">&hellip;</span>';
 				$dots = false;
 			endif;
 		endif;
@@ -1598,8 +1285,6 @@ function paginate_links( $args = '' ) {
 		if ( $add_args )
 			$link = add_query_arg( $add_args, $link );
 		$link .= $args['add_fragment'];
-
-		/** This filter is documented in wp-includes/general-template.php */
 		$page_links[] = '<a class="next page-numbers" href="' . esc_url( apply_filters( 'paginate_links', $link ) ) . '">' . $args['next_text'] . '</a>';
 	endif;
 	switch ( $args['type'] ) {
@@ -1621,10 +1306,8 @@ function paginate_links( $args = '' ) {
 
 function wp_admin_css_color( $key, $name, $url, $colors = array(), $icons = array() ) {
 	global $_wp_admin_css_colors;
-
 	if ( !isset($_wp_admin_css_colors) )
 		$_wp_admin_css_colors = array();
-
 	$_wp_admin_css_colors[$key] = (object) array(
 		'name' => $name,
 		'url' => $url,
@@ -1639,48 +1322,46 @@ function register_admin_color_schemes() {
 		array( '#222', '#333', '#0073aa', '#00a0d2' ),
 		array( 'base' => '#82878c', 'focus' => '#00a0d2', 'current' => '#fff' )
 	);
-
-	// Other color schemes are not available when running out of src
 	if ( false !== strpos( $GLOBALS['wp_version'], '-src' ) )
 		return;
 
-	wp_admin_css_color( 'light', _x( 'Light', 'admin color scheme' ),
+	wp_admin_css_color( 'light', 'Light',
 		admin_url( "css/colors/light/colors.css" ),
 		array( '#e5e5e5', '#999', '#d64e07', '#04a4cc' ),
 		array( 'base' => '#999', 'focus' => '#ccc', 'current' => '#ccc' )
 	);
 
-	wp_admin_css_color( 'blue', _x( 'Blue', 'admin color scheme' ),
+	wp_admin_css_color( 'blue', 'Blue',
 		admin_url( "css/colors/blue/colors.css" ),
 		array( '#096484', '#4796b3', '#52accc', '#74B6CE' ),
 		array( 'base' => '#e5f8ff', 'focus' => '#fff', 'current' => '#fff' )
 	);
 
-	wp_admin_css_color( 'midnight', _x( 'Midnight', 'admin color scheme' ),
+	wp_admin_css_color( 'midnight', 'Midnight',
 		admin_url( "css/colors/midnight/colors.css" ),
 		array( '#25282b', '#363b3f', '#69a8bb', '#e14d43' ),
 		array( 'base' => '#f1f2f3', 'focus' => '#fff', 'current' => '#fff' )
 	);
 
-	wp_admin_css_color( 'sunrise', _x( 'Sunrise', 'admin color scheme' ),
+	wp_admin_css_color( 'sunrise', 'Sunrise',
 		admin_url( "css/colors/sunrise/colors.css" ),
 		array( '#b43c38', '#cf4944', '#dd823b', '#ccaf0b' ),
 		array( 'base' => '#f3f1f1', 'focus' => '#fff', 'current' => '#fff' )
 	);
 
-	wp_admin_css_color( 'ectoplasm', _x( 'Ectoplasm', 'admin color scheme' ),
+	wp_admin_css_color( 'ectoplasm', 'Ectoplasm',
 		admin_url( "css/colors/ectoplasm/colors.css" ),
 		array( '#413256', '#523f6d', '#a3b745', '#d46f15' ),
 		array( 'base' => '#ece6f6', 'focus' => '#fff', 'current' => '#fff' )
 	);
 
-	wp_admin_css_color( 'ocean', _x( 'Ocean', 'admin color scheme' ),
+	wp_admin_css_color( 'ocean', 'Ocean',
 		admin_url( "css/colors/ocean/colors.css" ),
 		array( '#627c83', '#738e96', '#9ebaa0', '#aa9d88' ),
 		array( 'base' => '#f2fcff', 'focus' => '#fff', 'current' => '#fff' )
 	);
 
-	wp_admin_css_color( 'coffee', _x( 'Coffee', 'admin color scheme' ),
+	wp_admin_css_color( 'coffee', 'Coffee',
 		admin_url( "css/colors/coffee/colors.css" ),
 		array( '#46403c', '#59524c', '#c7a589', '#9ea476' ),
 		array( 'base' => '#f3f2f1', 'focus' => '#fff', 'current' => '#fff' )
@@ -1732,19 +1413,15 @@ function __checked_selected_helper( $helper, $current, $echo, $type ) {
 		$result = " $type='$type'";
 	else
 		$result = '';
-
 	if ( $echo )
 		echo $result;
-
 	return $result;
 }
 
 function wp_heartbeat_settings( $settings ) {
 	if ( ! is_admin() )
 		$settings['ajaxurl'] = admin_url( 'admin-ajax.php', 'relative' );
-
 	if ( is_user_logged_in() )
 		$settings['nonce'] = wp_create_nonce( 'heartbeat-nonce' );
-
 	return $settings;
 }

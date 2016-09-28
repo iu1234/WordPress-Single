@@ -189,23 +189,8 @@ class WP_Text_Diff_Renderer_Table extends Text_Diff_Renderer {
 		return $r;
 	}
 
-	/**
-	 * Takes changed blocks and matches which rows in orig turned into which rows in final.
-	 *
-	 * Returns
-	 *	*_matches ( which rows match with which )
-	 *	*_rows ( order of rows in each column interleaved with blank rows as
-	 *		necessary )
-	 *
-	 * @since 2.6.0
-	 *
-	 * @param array $orig
-	 * @param array $final
-	 * @return array
-	 */
 	public function interleave_changed_lines( $orig, $final ) {
 
-		// Contains all pairwise string comparisons. Keys are such that this need only be a one dimensional array.
 		$matches = array();
 		foreach ( array_keys($orig) as $o ) {
 			foreach ( array_keys($final) as $f ) {
@@ -283,24 +268,13 @@ class WP_Text_Diff_Renderer_Table extends Text_Diff_Renderer {
 		return array($orig_matches, $final_matches, $orig_rows, $final_rows);
 	}
 
-	/**
-	 * Computes a number that is intended to reflect the "distance" between two strings.
-	 *
-	 * @since 2.6.0
-	 *
-	 * @param string $string1
-	 * @param string $string2
-	 * @return int
-	 */
 	public function compute_string_distance( $string1, $string2 ) {
 		// Vectors containing character frequency for all chars in each string
 		$chars1 = count_chars($string1);
 		$chars2 = count_chars($string2);
 
-		// L1-norm of difference vector.
 		$difference = array_sum( array_map( array($this, 'difference'), $chars1, $chars2 ) );
 
-		// $string1 has zero length? Odd. Give huge penalty by not dividing.
 		if ( !$string1 )
 			return $difference;
 
@@ -308,72 +282,28 @@ class WP_Text_Diff_Renderer_Table extends Text_Diff_Renderer {
 		return $difference / strlen($string1);
 	}
 
-	/**
-	 * @ignore
-	 * @since 2.6.0
-	 *
-	 * @param int $a
-	 * @param int $b
-	 * @return int
-	 */
 	public function difference( $a, $b ) {
 		return abs( $a - $b );
 	}
 
-	/**
-	 * Make private properties readable for backwards compatibility.
-	 *
-	 * @since 4.0.0
-	 * @access public
-	 *
-	 * @param string $name Property to get.
-	 * @return mixed Property.
-	 */
 	public function __get( $name ) {
 		if ( in_array( $name, $this->compat_fields ) ) {
 			return $this->$name;
 		}
 	}
 
-	/**
-	 * Make private properties settable for backwards compatibility.
-	 *
-	 * @since 4.0.0
-	 * @access public
-	 *
-	 * @param string $name  Property to check if set.
-	 * @param mixed  $value Property value.
-	 * @return mixed Newly-set property.
-	 */
 	public function __set( $name, $value ) {
 		if ( in_array( $name, $this->compat_fields ) ) {
 			return $this->$name = $value;
 		}
 	}
 
-	/**
-	 * Make private properties checkable for backwards compatibility.
-	 *
-	 * @since 4.0.0
-	 * @access public
-	 *
-	 * @param string $name Property to check if set.
-	 * @return bool Whether the property is set.
-	 */
 	public function __isset( $name ) {
 		if ( in_array( $name, $this->compat_fields ) ) {
 			return isset( $this->$name );
 		}
 	}
 
-	/**
-	 * Make private properties un-settable for backwards compatibility.
-	 *
-	 * @since 4.0.0
-	 * @access public
-	 *
-	 * @param string $name Property to unset.
-	 */
 	public function __unset( $name ) {
 		if ( in_array( $name, $this->compat_fields ) ) {
 			unset( $this->$name );
@@ -381,22 +311,8 @@ class WP_Text_Diff_Renderer_Table extends Text_Diff_Renderer {
 	}
 }
 
-/**
- * Better word splitting than the PEAR package provides.
- *
- * @since 2.6.0
- * @uses Text_Diff_Renderer_inline Extends
- */
 class WP_Text_Diff_Renderer_inline extends Text_Diff_Renderer_inline {
 
-	/**
-	 * @ignore
-	 * @since 2.6.0
-	 *
-	 * @param string $string
-	 * @param string $newlineEscape
-	 * @return string
-	 */
 	public function _splitOnWords($string, $newlineEscape = "\n") {
 		$string = str_replace("\0", '', $string);
 		$words  = preg_split( '/([^\w])/u', $string, -1, PREG_SPLIT_DELIM_CAPTURE );

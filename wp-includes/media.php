@@ -19,7 +19,6 @@ function image_constrain_size_for_editor( $width, $height, $size = 'medium', $co
 	elseif ( $size == 'thumb' || $size == 'thumbnail' ) {
 		$max_width = intval(get_option('thumbnail_size_w'));
 		$max_height = intval(get_option('thumbnail_size_h'));
-		// last chance thumbnail size defaults
 		if ( !$max_width && !$max_height ) {
 			$max_width = 128;
 			$max_height = 96;
@@ -47,11 +46,9 @@ function image_constrain_size_for_editor( $width, $height, $size = 'medium', $co
 	} elseif ( isset( $_wp_additional_image_sizes ) && count( $_wp_additional_image_sizes ) && in_array( $size, array_keys( $_wp_additional_image_sizes ) ) ) {
 		$max_width = intval( $_wp_additional_image_sizes[$size]['width'] );
 		$max_height = intval( $_wp_additional_image_sizes[$size]['height'] );
-		if ( intval($content_width) > 0 && 'edit' == $context ) // Only in admin. Assume that theme authors know what they're doing.
+		if ( intval($content_width) > 0 && 'edit' == $context )
 			$max_width = min( intval($content_width), $max_width );
-	}
-	// $size == 'full' has no constraint
-	else {
+	} else {
 		$max_width = $width;
 		$max_height = $height;
 	}
@@ -197,16 +194,10 @@ function wp_constrain_dimensions( $current_width, $current_height, $max_width = 
 	$w = max ( 1, (int) round( $current_width  * $ratio ) );
 	$h = max ( 1, (int) round( $current_height * $ratio ) );
 
-	// Sometimes, due to rounding, we'll end up with a result like this: 465x700 in a 177x177 box is 117x176... a pixel short
-	// We also have issues with recursive calls resulting in an ever-changing result. Constraining to the result of a constraint should yield the original result.
-	// Thus we look for dimensions that are one pixel shy of the max value and bump them up
-
-	// Note: $did_width means it is possible $smaller_ratio == $width_ratio.
 	if ( $did_width && $w == $max_width - 1 ) {
 		$w = $max_width; // Round it up
 	}
 
-	// Note: $did_height means it is possible $smaller_ratio == $height_ratio.
 	if ( $did_height && $h == $max_height - 1 ) {
 		$h = $max_height; // Round it up
 	}
@@ -282,8 +273,6 @@ function image_resize_dimensions( $orig_w, $orig_h, $dest_w, $dest_h, $crop = fa
 		return false;
 	}
 
-	// the return array matches the parameters to imagecopyresampled()
-	// int dst_x, int dst_y, int src_x, int src_y, int dst_w, int dst_h, int src_w, int src_h
 	return array( 0, 0, (int) $s_x, (int) $s_y, (int) $new_w, (int) $new_h, (int) $crop_w, (int) $crop_h );
 
 }
@@ -332,9 +321,6 @@ function image_get_intermediate_size( $post_id, $size = 'thumbnail' ) {
 			ksort( $candidates );
 			foreach ( $candidates as $_size ) {
 				$data = $imagedata['sizes'][$_size];
-
-				// Skip images with unexpectedly divergent aspect ratios (crops)
-				// First, we calculate what size the original image would be if constrained to a box the size of the current image in the loop
 				$maybe_cropped = image_resize_dimensions($imagedata['width'], $imagedata['height'], $data['width'], $data['height'], false );
 				// If the size doesn't match within one pixel, then it is of a different aspect ratio, so we skip it, unless it's the thumbnail size
 				if ( 'thumbnail' != $_size &&
@@ -363,20 +349,6 @@ function image_get_intermediate_size( $post_id, $size = 'thumbnail' ) {
 		$data['path'] = path_join( dirname($imagedata['file']), $data['file'] );
 		$data['url'] = path_join( dirname($file_url), $data['file'] );
 	}
-
-	/**
-	 * Filter the output of image_get_intermediate_size()
-	 *
-	 * @since 4.4.0
-	 *
-	 * @see image_get_intermediate_size()
-	 *
-	 * @param array        $data    Array of file relative path, width, and height on success. May also include
-	 *                              file absolute path and URL.
-	 * @param int          $post_id The post_id of the image attachment
-	 * @param string|array $size    Registered image size or flat array of initially-requested height and width
-	 *                              dimensions (in that order).
-	 */
 	return apply_filters( 'image_get_intermediate_size', $data, $post_id, $size );
 }
 
@@ -1871,7 +1843,7 @@ function wp_prepare_attachment_for_js( $attachment ) {
 		'type'        => $type,
 		'subtype'     => $subtype,
 		'icon'        => wp_mime_type_icon( $attachment->ID ),
-		'dateFormatted' => mysql2date( __( 'F j, Y' ), $attachment->post_date ),
+		'dateFormatted' => mysql2date( 'F j, Y', $attachment->post_date ),
 		'nonces'      => array(
 			'update' => false,
 			'delete' => false,
@@ -1925,22 +1897,15 @@ function wp_prepare_attachment_for_js( $attachment ) {
 	if ( $meta && 'image' === $type ) {
 		$sizes = array();
 
-		/** This filter is documented in wp-admin/includes/media.php */
 		$possible_sizes = apply_filters( 'image_size_names_choose', array(
-			'thumbnail' => __('Thumbnail'),
-			'medium'    => __('Medium'),
-			'large'     => __('Large'),
-			'full'      => __('Full Size'),
+			'thumbnail' => 'Thumbnail',
+			'medium'    => 'Medium',
+			'large'     => 'Large',
+			'full'      => 'Full Size',
 		) );
 		unset( $possible_sizes['full'] );
 
-		// Loop through all potential sizes that may be chosen. Try to do this with some efficiency.
-		// First: run the image_downsize filter. If it returns something, we can use its data.
-		// If the filter does not return something, then image_downsize() is just an expensive
-		// way to check the image metadata, which we do second.
 		foreach ( $possible_sizes as $size => $label ) {
-
-			/** This filter is documented in wp-includes/media.php */
 			if ( $downsize = apply_filters( 'image_downsize', false, $attachment->ID, $size ) ) {
 				if ( ! $downsize[3] )
 					continue;
@@ -1957,8 +1922,6 @@ function wp_prepare_attachment_for_js( $attachment ) {
 				// Nothing from the filter, so consult image metadata if we have it.
 				$size_meta = $meta['sizes'][ $size ];
 
-				// We have the actual image size, but might need to further constrain it if content_width is narrower.
-				// Thumbnail, medium, and full sizes are also checked against the site's height/width options.
 				list( $width, $height ) = image_constrain_size_for_editor( $size_meta['width'], $size_meta['height'], $size, 'edit' );
 
 				$sizes[ $size ] = array(
@@ -2021,7 +1984,6 @@ function wp_prepare_attachment_for_js( $attachment ) {
 }
 
 function wp_enqueue_media( $args = array() ) {
-	// Enqueue me just once per page, please.
 	if ( did_action( 'wp_enqueue_media' ) )
 		return;
 
@@ -2031,9 +1993,6 @@ function wp_enqueue_media( $args = array() ) {
 		'post' => null,
 	);
 	$args = wp_parse_args( $args, $defaults );
-
-	// We're going to pass the old thickbox media tabs to `media_upload_tabs`
-	// to ensure plugins will work. We will then unset those tabs.
 	$tabs = array(
 		// handler action suffix => tab label
 		'type'     => '',
@@ -2142,123 +2101,98 @@ function wp_enqueue_media( $args = array() ) {
 	}
 
 	$strings = array(
-		// Generic
-		'url'         => __( 'URL' ),
-		'addMedia'    => __( 'Add Media' ),
-		'search'      => __( 'Search' ),
-		'select'      => __( 'Select' ),
-		'cancel'      => __( 'Cancel' ),
-		'update'      => __( 'Update' ),
-		'replace'     => __( 'Replace' ),
-		'remove'      => __( 'Remove' ),
-		'back'        => __( 'Back' ),
-		/* translators: This is a would-be plural string used in the media manager.
-		   If there is not a word you can use in your language to avoid issues with the
-		   lack of plural support here, turn it into "selected: %d" then translate it.
-		 */
-		'selected'    => __( '%d selected' ),
-		'dragInfo'    => __( 'Drag and drop to reorder media files.' ),
-
-		// Upload
-		'uploadFilesTitle'  => __( 'Upload Files' ),
-		'uploadImagesTitle' => __( 'Upload Images' ),
-
-		// Library
-		'mediaLibraryTitle'      => __( 'Media Library' ),
-		'insertMediaTitle'       => __( 'Insert Media' ),
-		'createNewGallery'       => __( 'Create a new gallery' ),
-		'createNewPlaylist'      => __( 'Create a new playlist' ),
-		'createNewVideoPlaylist' => __( 'Create a new video playlist' ),
-		'returnToLibrary'        => __( '&#8592; Return to library' ),
-		'allMediaItems'          => __( 'All media items' ),
-		'allDates'               => __( 'All dates' ),
-		'noItemsFound'           => __( 'No items found.' ),
+		'url'         => 'URL',
+		'addMedia'    => 'Add Media',
+		'search'      => 'Search',
+		'select'      => 'Select',
+		'cancel'      => 'Cancel',
+		'update'      => 'Update',
+		'replace'     => 'Replace',
+		'remove'      => 'Remove',
+		'back'        => 'Back',
+		'selected'    => '%d selected',
+		'dragInfo'    => 'Drag and drop to reorder media files.',
+		'uploadFilesTitle'  => 'Upload Files',
+		'uploadImagesTitle' => 'Upload Images',
+		'mediaLibraryTitle'      => 'Media Library',
+		'insertMediaTitle'       => 'Insert Media',
+		'createNewGallery'       => 'Create a new gallery',
+		'createNewPlaylist'      => 'Create a new playlist',
+		'createNewVideoPlaylist' => 'Create a new video playlist',
+		'returnToLibrary'        => '&#8592; Return to library',
+		'allMediaItems'          => 'All media items',
+		'allDates'               => 'All dates',
+		'noItemsFound'           => 'No items found.',
 		'insertIntoPost'         => $post_type_object->labels->insert_into_item,
-		'unattached'             => __( 'Unattached' ),
-		'trash'                  => _x( 'Trash', 'noun' ),
+		'unattached'             => 'Unattached',
+		'trash'                  => 'Trash',
 		'uploadedToThisPost'     => $post_type_object->labels->uploaded_to_this_item,
-		'warnDelete'             => __( "You are about to permanently delete this item.\n  'Cancel' to stop, 'OK' to delete." ),
-		'warnBulkDelete'         => __( "You are about to permanently delete these items.\n  'Cancel' to stop, 'OK' to delete." ),
-		'warnBulkTrash'          => __( "You are about to trash these items.\n  'Cancel' to stop, 'OK' to delete." ),
-		'bulkSelect'             => __( 'Bulk Select' ),
-		'cancelSelection'        => __( 'Cancel Selection' ),
-		'trashSelected'          => __( 'Trash Selected' ),
-		'untrashSelected'        => __( 'Untrash Selected' ),
-		'deleteSelected'         => __( 'Delete Selected' ),
-		'deletePermanently'      => __( 'Delete Permanently' ),
-		'apply'                  => __( 'Apply' ),
-		'filterByDate'           => __( 'Filter by date' ),
-		'filterByType'           => __( 'Filter by type' ),
-		'searchMediaLabel'       => __( 'Search Media' ),
+		'warnDelete'             => "You are about to permanently delete this item.\n  'Cancel' to stop, 'OK' to delete.",
+		'warnBulkDelete'         => "You are about to permanently delete these items.\n  'Cancel' to stop, 'OK' to delete.",
+		'warnBulkTrash'          => "You are about to trash these items.\n  'Cancel' to stop, 'OK' to delete.",
+		'bulkSelect'             => 'Bulk Select',
+		'cancelSelection'        => 'Cancel Selection',
+		'trashSelected'          => 'Trash Selected',
+		'untrashSelected'        => 'Untrash Selected',
+		'deleteSelected'         => 'Delete Selected',
+		'deletePermanently'      => 'Delete Permanently',
+		'apply'                  => 'Apply',
+		'filterByDate'           => 'Filter by date',
+		'filterByType'           => 'Filter by type',
+		'searchMediaLabel'       => 'Search Media',
 		'noMedia'                => 'No media files found.',
-
 		'attachmentDetails'  => 'Attachment Details',
-
 		'insertFromUrlTitle' => 'Insert from URL',
 
-		// Featured Images
 		'setFeaturedImageTitle' => $post_type_object->labels->featured_image,
 		'setFeaturedImage'      => $post_type_object->labels->set_featured_image,
 
-		// Gallery
 		'createGalleryTitle' => 'Create Gallery',
 		'editGalleryTitle'   => 'Edit Gallery',
-		'cancelGalleryTitle' => __( '&#8592; Cancel Gallery' ),
-		'insertGallery'      => __( 'Insert gallery' ),
-		'updateGallery'      => __( 'Update gallery' ),
-		'addToGallery'       => __( 'Add to gallery' ),
-		'addToGalleryTitle'  => __( 'Add to Gallery' ),
-		'reverseOrder'       => __( 'Reverse order' ),
-
-		// Edit Image
-		'imageDetailsTitle'     => __( 'Image Details' ),
-		'imageReplaceTitle'     => __( 'Replace Image' ),
-		'imageDetailsCancel'    => __( 'Cancel Edit' ),
-		'editImage'             => __( 'Edit Image' ),
-
-		// Crop Image
-		'chooseImage' => __( 'Choose Image' ),
-		'selectAndCrop' => __( 'Select and Crop' ),
-		'skipCropping' => __( 'Skip Cropping' ),
-		'cropImage' => __( 'Crop Image' ),
-		'cropYourImage' => __( 'Crop your image' ),
-		'cropping' => __( 'Cropping&hellip;' ),
-		'suggestedDimensions' => __( 'Suggested image dimensions:' ),
-		'cropError' => __( 'There has been an error cropping your image.' ),
-
-		// Edit Audio
-		'audioDetailsTitle'     => __( 'Audio Details' ),
-		'audioReplaceTitle'     => __( 'Replace Audio' ),
-		'audioAddSourceTitle'   => __( 'Add Audio Source' ),
-		'audioDetailsCancel'    => __( 'Cancel Edit' ),
-
-		// Edit Video
-		'videoDetailsTitle'     => __( 'Video Details' ),
-		'videoReplaceTitle'     => __( 'Replace Video' ),
-		'videoAddSourceTitle'   => __( 'Add Video Source' ),
-		'videoDetailsCancel'    => __( 'Cancel Edit' ),
-		'videoSelectPosterImageTitle' => __( 'Select Poster Image' ),
-		'videoAddTrackTitle'	=> __( 'Add Subtitles' ),
-
- 		// Playlist
- 		'playlistDragInfo'    => __( 'Drag and drop to reorder tracks.' ),
- 		'createPlaylistTitle' => __( 'Create Audio Playlist' ),
- 		'editPlaylistTitle'   => __( 'Edit Audio Playlist' ),
- 		'cancelPlaylistTitle' => __( '&#8592; Cancel Audio Playlist' ),
- 		'insertPlaylist'      => __( 'Insert audio playlist' ),
- 		'updatePlaylist'      => __( 'Update audio playlist' ),
- 		'addToPlaylist'       => __( 'Add to audio playlist' ),
- 		'addToPlaylistTitle'  => __( 'Add to Audio Playlist' ),
-
- 		// Video Playlist
- 		'videoPlaylistDragInfo'    => __( 'Drag and drop to reorder videos.' ),
- 		'createVideoPlaylistTitle' => __( 'Create Video Playlist' ),
- 		'editVideoPlaylistTitle'   => __( 'Edit Video Playlist' ),
- 		'cancelVideoPlaylistTitle' => __( '&#8592; Cancel Video Playlist' ),
- 		'insertVideoPlaylist'      => __( 'Insert video playlist' ),
- 		'updateVideoPlaylist'      => __( 'Update video playlist' ),
- 		'addToVideoPlaylist'       => __( 'Add to video playlist' ),
- 		'addToVideoPlaylistTitle'  => __( 'Add to Video Playlist' ),
+		'cancelGalleryTitle' => '&#8592; Cancel Gallery',
+		'insertGallery'      => 'Insert gallery',
+		'updateGallery'      => 'Update gallery',
+		'addToGallery'       => 'Add to gallery',
+		'addToGalleryTitle'  => 'Add to Gallery',
+		'reverseOrder'       => 'Reverse order',
+		'imageDetailsTitle'     => 'Image Details',
+		'imageReplaceTitle'     => 'Replace Image',
+		'imageDetailsCancel'    => 'Cancel Edit',
+		'editImage'             => 'Edit Image',
+		'chooseImage' => 'Choose Image',
+		'selectAndCrop' => 'Select and Crop',
+		'skipCropping' => 'Skip Cropping',
+		'cropImage' => 'Crop Image',
+		'cropYourImage' => 'Crop your image',
+		'cropping' => 'Cropping&hellip;',
+		'suggestedDimensions' => 'Suggested image dimensions:',
+		'cropError' => 'There has been an error cropping your image.',
+		'audioDetailsTitle'     => 'Audio Details',
+		'audioReplaceTitle'     => 'Replace Audio',
+		'audioAddSourceTitle'   => 'Add Audio Source',
+		'audioDetailsCancel'    => 'Cancel Edit',
+		'videoDetailsTitle'     => 'Video Details',
+		'videoReplaceTitle'     => 'Replace Video',
+		'videoAddSourceTitle'   => 'Add Video Source',
+		'videoDetailsCancel'    => 'Cancel Edit',
+		'videoSelectPosterImageTitle' => 'Select Poster Image',
+		'videoAddTrackTitle'	=> 'Add Subtitles',
+ 		'playlistDragInfo'    => 'Drag and drop to reorder tracks.',
+ 		'createPlaylistTitle' => 'Create Audio Playlist',
+ 		'editPlaylistTitle'   => 'Edit Audio Playlist',
+ 		'cancelPlaylistTitle' => '&#8592; Cancel Audio Playlist',
+ 		'insertPlaylist'      => 'Insert audio playlist',
+ 		'updatePlaylist'      => 'Update audio playlist',
+ 		'addToPlaylist'       => 'Add to audio playlist',
+ 		'addToPlaylistTitle'  => 'Add to Audio Playlist',
+ 		'videoPlaylistDragInfo'    => 'Drag and drop to reorder videos.',
+ 		'createVideoPlaylistTitle' => 'Create Video Playlist',
+ 		'editVideoPlaylistTitle'   => 'Edit Video Playlist',
+ 		'cancelVideoPlaylistTitle' => '&#8592; Cancel Video Playlist',
+ 		'insertVideoPlaylist'      => 'Insert video playlist',
+ 		'updateVideoPlaylist'      => 'Update video playlist',
+ 		'addToVideoPlaylist'       => 'Add to video playlist',
+ 		'addToVideoPlaylistTitle'  => 'Add to Video Playlist',
 	);
 
 	$settings = apply_filters( 'media_view_settings', $settings, $post );
@@ -2267,8 +2201,6 @@ function wp_enqueue_media( $args = array() ) {
 
 	$strings['settings'] = $settings;
 
-	// Ensure we enqueue media-editor first, that way media-views is
-	// registered internally before we try to localize it. see #24724.
 	wp_enqueue_script( 'media-editor' );
 	wp_localize_script( 'media-views', '_wpMediaViewsL10n', $strings );
 
@@ -2286,11 +2218,6 @@ function wp_enqueue_media( $args = array() ) {
 	add_action( 'wp_footer', 'wp_print_media_templates' );
 	add_action( 'customize_controls_print_footer_scripts', 'wp_print_media_templates' );
 
-	/**
-	 * Fires at the conclusion of wp_enqueue_media().
-	 *
-	 * @since 3.5.0
-	 */
 	do_action( 'wp_enqueue_media' );
 }
 

@@ -27,40 +27,25 @@ function wptexturize( $text, $reset = false ) {
 		$open_sq_flag = '<!--osq-->',
 		$apos_flag = '<!--apos-->';
 
-	// If there's nothing to do, just stop.
 	if ( empty( $text ) || false === $run_texturize ) {
 		return $text;
 	}
 
-	// Set up static variables. Run once only.
 	if ( $reset || ! isset( $static_characters ) ) {
 		$run_texturize = apply_filters( 'run_wptexturize', $run_texturize );
 		if ( false === $run_texturize ) {
 			return $text;
 		}
 
-		/* translators: opening curly double quote */
-		$opening_quote = _x( '&#8220;', 'opening curly double quote' );
-		/* translators: closing curly double quote */
-		$closing_quote = _x( '&#8221;', 'closing curly double quote' );
-
-		/* translators: apostrophe, for example in 'cause or can't */
-		$apos = _x( '&#8217;', 'apostrophe' );
-
-		/* translators: prime, for example in 9' (nine feet) */
-		$prime = _x( '&#8242;', 'prime' );
-		/* translators: double prime, for example in 9" (nine inches) */
-		$double_prime = _x( '&#8243;', 'double prime' );
-
-		/* translators: opening curly single quote */
-		$opening_single_quote = _x( '&#8216;', 'opening curly single quote' );
-		/* translators: closing curly single quote */
-		$closing_single_quote = _x( '&#8217;', 'closing curly single quote' );
-
-		/* translators: en dash */
-		$en_dash = _x( '&#8211;', 'en dash' );
-		/* translators: em dash */
-		$em_dash = _x( '&#8212;', 'em dash' );
+		$opening_quote = '&#8220;';
+		$closing_quote = '&#8221;';
+		$apos = '&#8217;';
+		$prime = '&#8242;';
+		$double_prime = '&#8243;';
+		$opening_single_quote = '&#8216;';
+		$closing_single_quote = '&#8217;';
+		$en_dash = '&#8211;';
+		$em_dash = '&#8212;';
 
 		$default_no_texturize_tags = array('pre', 'code', 'kbd', 'style', 'script', 'tt');
 		$default_no_texturize_shortcodes = array('code');
@@ -70,10 +55,6 @@ function wptexturize( $text, $reset = false ) {
 			$cockney = array_keys( $wp_cockneyreplace );
 			$cockneyreplace = array_values( $wp_cockneyreplace );
 		} else {
-			/* translators: This is a comma-separated list of words that defy the syntax of quotations in normal use,
-			 * for example...  'We do not have enough words yet' ... is a typical quoted phrase.  But when we write
-			 * lines of code 'til we have enough of 'em, then we need to insert apostrophes instead of quotes.
-			 */
 			$cockney = explode( ',', _x( "'tain't,'twere,'twas,'tis,'twill,'til,'bout,'nuff,'round,'cause,'em",
 				'Comma-separated list of words to texturize in your language' ) );
 
@@ -84,15 +65,11 @@ function wptexturize( $text, $reset = false ) {
 		$static_characters = array_merge( array( '...', '``', '\'\'', ' (tm)' ), $cockney );
 		$static_replacements = array_merge( array( '&#8230;', $opening_quote, $closing_quote, ' &#8482;' ), $cockneyreplace );
 
-
-		// Pattern-based replacements of characters.
-		// Sort the remaining patterns into several arrays for performance tuning.
 		$dynamic_characters = array( 'apos' => array(), 'quote' => array(), 'dash' => array() );
 		$dynamic_replacements = array( 'apos' => array(), 'quote' => array(), 'dash' => array() );
 		$dynamic = array();
 		$spaces = wp_spaces_regexp();
 
-		// '99' and '99" are ambiguous among other patterns; assume it's an abbreviated year at the end of a quotation.
 		if ( "'" !== $apos || "'" !== $closing_single_quote ) {
 			$dynamic[ '/\'(\d\d)\'(?=\Z|[.,:;!?)}\-\]]|&gt;|' . $spaces . ')/' ] = $apos_flag . '$1' . $closing_single_quote;
 		}
@@ -115,7 +92,6 @@ function wptexturize( $text, $reset = false ) {
 			$dynamic[ '/(?<=\A|[([{"\-]|&lt;|' . $spaces . ')\'/' ] = $open_sq_flag;
 		}
 
-		// Apostrophe in a word.  No spaces, double apostrophes, or other punctuation.
 		if ( "'" !== $apos ) {
 			$dynamic[ '/(?<!' . $spaces . ')\'(?!\Z|[.,:;!?"\'(){}[\]\-]|&[lg]t;|' . $spaces . ')/' ] = $apos_flag;
 		}
@@ -124,12 +100,10 @@ function wptexturize( $text, $reset = false ) {
 		$dynamic_replacements['apos'] = array_values( $dynamic );
 		$dynamic = array();
 
-		// Quoted Numbers like "42"
 		if ( '"' !== $opening_quote && '"' !== $closing_quote ) {
 			$dynamic[ '/(?<=\A|' . $spaces . ')"(\d[.,\d]*)"/' ] = $open_q_flag . '$1' . $closing_quote;
 		}
 
-		// Double quote at start, or preceded by (, {, <, [, -, or spaces, and not followed by spaces.
 		if ( '"' !== $opening_quote ) {
 			$dynamic[ '/(?<=\A|[([{\-]|&lt;|' . $spaces . ')"(?!' . $spaces . ')/' ] = $open_q_flag;
 		}
@@ -138,7 +112,6 @@ function wptexturize( $text, $reset = false ) {
 		$dynamic_replacements['quote'] = array_values( $dynamic );
 		$dynamic = array();
 
-		// Dashes and spaces
 		$dynamic[ '/---/' ] = $em_dash;
 		$dynamic[ '/(?<=^|' . $spaces . ')--(?=$|' . $spaces . ')/' ] = $em_dash;
 		$dynamic[ '/(?<!xn)--/' ] = $en_dash;
@@ -148,28 +121,11 @@ function wptexturize( $text, $reset = false ) {
 		$dynamic_replacements['dash'] = array_values( $dynamic );
 	}
 
-	// Must do this every time in case plugins use these filters in a context sensitive manner
-	/**
-	 * Filter the list of HTML elements not to texturize.
-	 *
-	 * @since 2.8.0
-	 *
-	 * @param array $default_no_texturize_tags An array of HTML element names.
-	 */
 	$no_texturize_tags = apply_filters( 'no_texturize_tags', $default_no_texturize_tags );
-	/**
-	 * Filter the list of shortcodes not to texturize.
-	 *
-	 * @since 2.8.0
-	 *
-	 * @param array $default_no_texturize_shortcodes An array of shortcode names.
-	 */
 	$no_texturize_shortcodes = apply_filters( 'no_texturize_shortcodes', $default_no_texturize_shortcodes );
 
 	$no_texturize_tags_stack = array();
 	$no_texturize_shortcodes_stack = array();
-
-	// Look for shortcodes and HTML elements.
 
 	preg_match_all( '@\[/?([^<>&/\[\]\x00-\x20=]++)@', $text, $matches );
 	$tagnames = array_intersect( array_keys( $shortcode_tags ), $matches[1] );
@@ -180,16 +136,11 @@ function wptexturize( $text, $reset = false ) {
 	$textarr = preg_split( $regex, $text, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY );
 
 	foreach ( $textarr as &$curl ) {
-		// Only call _wptexturize_pushpop_element if $curl is a delimiter.
 		$first = $curl[0];
 		if ( '<' === $first ) {
 			if ( '<!--' === substr( $curl, 0, 4 ) ) {
-				// This is an HTML comment delimiter.
 				continue;
 			} else {
-				// This is an HTML element delimiter.
-
-				// Replace each & with &#038; unless it already looks like an entity.
 				$curl = preg_replace( '/&(?!#(?:\d+|x[a-f0-9]+);|[a-z1-4]{1,8};)/i', '&#038;', $curl );
 
 				_wptexturize_pushpop_element( $curl, $no_texturize_tags_stack, $no_texturize_tags );
@@ -1410,19 +1361,12 @@ function force_balance_tags( $text ) {
 				}
 				$tag = '';
 			}
-		} else { // Begin Tag
+		} else {
 			$tag = strtolower($regex[1]);
-
-			// Tag Cleaning
-
-			// If it's an empty tag "< >", do nothing
 			if ( '' == $tag ) {
 				// do nothing
 			}
-			// ElseIf it presents itself as a self-closing tag...
 			elseif ( substr( $regex[2], -1 ) == '/' ) {
-				// ...but it isn't a known single-entity self-closing tag, then don't let it be treated as such and
-				// immediately close it with a closing tag (the tag will encapsulate no text as a result)
 				if ( ! in_array( $tag, $single_tags ) )
 					$regex[2] = trim( substr( $regex[2], 0, -1 ) ) . "></$tag";
 			}
@@ -1474,13 +1418,6 @@ function force_balance_tags( $text ) {
 }
 
 function format_to_edit( $content, $rich_text = false ) {
-	/**
-	 * Filter the text to be formatted for editing.
-	 *
-	 * @since 1.2.0
-	 *
-	 * @param string $content The text, prior to formatting for editing.
-	 */
 	$content = apply_filters( 'format_to_edit', $content );
 	if ( ! $rich_text )
 		$content = esc_textarea( $content );
@@ -1552,8 +1489,6 @@ function _make_url_clickable_cb( $matches ) {
 	$url = $matches[2];
 
 	if ( ')' == $matches[3] && strpos( $url, '(' ) ) {
-		// If the trailing character is a closing parethesis, and the URL has an opening parenthesis in it, add the closing parenthesis to the URL.
-		// Then we can let the parenthesis balancer do its thing below.
 		$url .= $matches[3];
 		$suffix = '';
 	} else {

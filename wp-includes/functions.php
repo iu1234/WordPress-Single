@@ -97,9 +97,6 @@ function date_i18n( $dateformatstring, $unixtimestamp = false, $gmt = false ) {
 function wp_maybe_decline_date( $date ) {
 	global $wp_locale;
 
-	/* translators: If months in your language require a genitive case,
-	 * translate this to 'on'. Do not translate into your own language.
-	 */
 	if ( 'on' === _x( 'off', 'decline months names: on or off' ) ) {
 		// Match a format like 'j F Y' or 'j. F'
 		if ( @preg_match( '#^\d{1,2}\.? \w+#u', $date ) ) {
@@ -162,10 +159,8 @@ function get_weekstartend( $mysqlstring, $start_of_week = '' ) {
 
 	$md = substr( $mysqlstring, 5, 2 );
 
-	// The timestamp for MySQL string day.
 	$day = mktime( 0, 0, 0, $md, $mm, $my );
 
-	// The day of the week from the timestamp.
 	$weekday = date( 'w', $day );
 
 	if ( !is_numeric($start_of_week) )
@@ -174,10 +169,8 @@ function get_weekstartend( $mysqlstring, $start_of_week = '' ) {
 	if ( $weekday < $start_of_week )
 		$weekday += 7;
 
-	// The most recent week start day on or before $day.
 	$start = $day - DAY_IN_SECONDS * ( $weekday - $start_of_week );
 
-	// $start + 1 week - 1 second.
 	$end = $start + WEEK_IN_SECONDS - 1;
 	return compact( 'start', 'end' );
 }
@@ -764,23 +757,16 @@ function wp_get_original_referer() {
 function wp_mkdir_p( $target ) {
 	$wrapper = null;
 
-	// Strip the protocol.
 	if ( wp_is_stream( $target ) ) {
 		list( $wrapper, $target ) = explode( '://', $target, 2 );
 	}
 
-	// From php.net/mkdir user contributed notes.
 	$target = str_replace( '//', '/', $target );
 
-	// Put the wrapper back on the target.
 	if ( $wrapper !== null ) {
 		$target = $wrapper . '://' . $target;
 	}
 
-	/*
-	 * Safe mode fails with a trailing slash under certain PHP versions.
-	 * Use rtrim() instead of untrailingslashit to avoid formatting.php dependency.
-	 */
 	$target = rtrim($target, '/');
 	if ( empty($target) )
 		$target = '/';
@@ -1395,9 +1381,6 @@ function wp_die( $message = '', $title = '', $args = array() ) {
 function _default_wp_die_handler( $message, $title = '', $args = array() ) {
 	$defaults = array( 'response' => 500 );
 	$r = wp_parse_args($args, $defaults);
-
-	$have_gettext = function_exists('__');
-
 	if ( function_exists( 'is_wp_error' ) && is_wp_error( $message ) ) {
 		if ( empty( $title ) ) {
 			$error_data = $message->get_error_data();
@@ -1421,7 +1404,7 @@ function _default_wp_die_handler( $message, $title = '', $args = array() ) {
 	}
 
 	if ( isset( $r['back_link'] ) && $r['back_link'] ) {
-		$back_text = $have_gettext? __('&laquo; Back') : '&laquo; Back';
+		$back_text = '&laquo; Back';
 		$message .= "\n<p><a href='javascript:history.back()'>$back_text</a></p>";
 	}
 
@@ -1431,16 +1414,11 @@ function _default_wp_die_handler( $message, $title = '', $args = array() ) {
 			nocache_headers();
 			header( 'Content-Type: text/html; charset=utf-8' );
 		}
-
 		if ( empty($title) )
-			$title = $have_gettext ? 'WordPress &rsaquo; Error' : 'WordPress &rsaquo; Error';
-
-		$text_direction = 'ltr';
+			$title = 'WordPress &rsaquo; Error';
 ?>
 <!DOCTYPE html>
-<!-- Ticket #11289, IE bug fix: always pad the error page with enough characters such that it is greater than 512 bytes, even after gzip compression abcdefghijklmnopqrstuvwxyz1234567890aabbccddeeffgghhiijjkkllmmnnooppqqrrssttuuvvwwxxyyzz11223344556677889900abacbcbdcdcededfefegfgfhghgihihjijikjkjlklkmlmlnmnmononpopoqpqprqrqsrsrtstsubcbcdcdedefefgfabcadefbghicjkldmnoepqrfstugvwxhyz1i234j567k890laabmbccnddeoeffpgghqhiirjjksklltmmnunoovppqwqrrxsstytuuzvvw0wxx1yyz2z113223434455666777889890091abc2def3ghi4jkl5mno6pqr7stu8vwx9yz11aab2bcc3dd4ee5ff6gg7hh8ii9j0jk1kl2lmm3nnoo4p5pq6qrr7ss8tt9uuvv0wwx1x2yyzz13aba4cbcb5dcdc6dedfef8egf9gfh0ghg1ihi2hji3jik4jkj5lkl6kml7mln8mnm9ono
--->
-<html xmlns="http://www.w3.org/1999/xhtml" <?php if ( function_exists( 'language_attributes' ) ) language_attributes(); else echo "dir='$text_direction'"; ?>>
+<html xmlns="http://www.w3.org/1999/xhtml" <?php if ( function_exists( 'language_attributes' ) ) language_attributes(); ?>>
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<meta name="viewport" content="width=device-width">
@@ -1927,12 +1905,9 @@ function dead_db() {
 		require_once( WP_CONTENT_DIR . '/db-error.php' );
 		die();
 	}
-
-	// If installing or in the admin, provide the verbose message.
 	if ( wp_installing() || defined( 'WP_ADMIN' ) )
 		wp_die($wpdb->error);
 
-	// Otherwise, be terse.
 	status_header( 500 );
 	nocache_headers();
 	header( 'Content-Type: text/html; charset=utf-8' );
@@ -1940,9 +1915,8 @@ function dead_db() {
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<title>Database Error</title>
-
 </head>
 <body>
 	<h1>Error establishing a database connection</h1>
@@ -1957,7 +1931,6 @@ function absint( $maybeint ) {
 }
 
 function _deprecated_function( $function, $version, $replacement = null ) {
-
 	do_action( 'deprecated_function_run', $function, $replacement, $version );
 
 	if ( WP_DEBUG && apply_filters( 'deprecated_function_trigger_error', true ) ) {
@@ -1969,9 +1942,7 @@ function _deprecated_function( $function, $version, $replacement = null ) {
 }
 
 function _deprecated_constructor( $class, $version, $parent_class = '' ) {
-
 	do_action( 'deprecated_constructor_run', $class, $version, $parent_class );
-
 	if ( WP_DEBUG && apply_filters( 'deprecated_constructor_trigger_error', true ) ) {
 		if ( ! empty( $parent_class ) ) {
 			trigger_error( sprintf( 'The called constructor method for %1$s in %2$s is <strong>deprecated</strong> since version %3$s! Use %4$s instead.',
@@ -1985,9 +1956,7 @@ function _deprecated_constructor( $class, $version, $parent_class = '' ) {
 }
 
 function _deprecated_file( $file, $version, $replacement = null, $message = '' ) {
-
 	do_action( 'deprecated_file_included', $file, $replacement, $version, $message );
-
 	if ( WP_DEBUG && apply_filters( 'deprecated_file_trigger_error', true ) ) {
 		$message = empty( $message ) ? '' : ' ' . $message;
 		if ( ! is_null( $replacement ) )
@@ -1998,25 +1967,7 @@ function _deprecated_file( $file, $version, $replacement = null, $message = '' )
 }
 
 function _deprecated_argument( $function, $version, $message = null ) {
-
-	/**
-	 * Fires when a deprecated argument is called.
-	 *
-	 * @since 3.0.0
-	 *
-	 * @param string $function The function that was called.
-	 * @param string $message  A message regarding the change.
-	 * @param string $version  The version of WordPress that deprecated the argument used.
-	 */
 	do_action( 'deprecated_argument_run', $function, $message, $version );
-
-	/**
-	 * Filter whether to trigger an error for deprecated arguments.
-	 *
-	 * @since 3.0.0
-	 *
-	 * @param bool $trigger Whether to trigger the error for deprecated arguments. Default true.
-	 */
 	if ( WP_DEBUG && apply_filters( 'deprecated_argument_trigger_error', true ) ) {
 		if ( ! is_null( $message ) )
 			trigger_error( sprintf( '%1$s was called with an argument that is <strong>deprecated</strong> since version %2$s! %3$s', $function, $version, $message ) );
@@ -2026,9 +1977,7 @@ function _deprecated_argument( $function, $version, $message = null ) {
 }
 
 function _doing_it_wrong( $function, $message, $version ) {
-
 	do_action( 'doing_it_wrong_run', $function, $message, $version );
-
 	if ( apply_filters( 'doing_it_wrong_trigger_error', true ) ) {
 			$version = is_null( $version ) ? '' : sprintf( '(This message was added in version %s.)', $version );
 			$message .= sprintf( ' Please see <a href="%s">Debugging in WordPress</a> for more information.',
@@ -2080,30 +2029,6 @@ function validate_file( $file, $allowed_files = '' ) {
 	return 0;
 }
 
-function is_ssl() {
-	if ( isset($_SERVER['HTTPS']) ) {
-		if ( 'on' == strtolower($_SERVER['HTTPS']) )
-			return true;
-		if ( '1' == $_SERVER['HTTPS'] )
-			return true;
-	} elseif ( isset($_SERVER['SERVER_PORT']) && ( '443' == $_SERVER['SERVER_PORT'] ) ) {
-		return true;
-	}
-	return false;
-}
-
-function force_ssl_admin( $force = null ) {
-	static $forced = false;
-
-	if ( !is_null( $force ) ) {
-		$old_forced = $forced;
-		$forced = $force;
-		return $old_forced;
-	}
-
-	return $forced;
-}
-
 function wp_guess_url() {
 	if ( defined('WP_SITEURL') && '' != WP_SITEURL ) {
 		$url = WP_SITEURL;
@@ -2111,50 +2036,38 @@ function wp_guess_url() {
 		$abspath_fix = str_replace( '\\', '/', ABSPATH );
 		$script_filename_dir = dirname( $_SERVER['SCRIPT_FILENAME'] );
 
-		// The request is for the admin
 		if ( strpos( $_SERVER['REQUEST_URI'], 'wp-admin' ) !== false || strpos( $_SERVER['REQUEST_URI'], 'wp-login.php' ) !== false ) {
 			$path = preg_replace( '#/(wp-admin/.*|wp-login.php)#i', '', $_SERVER['REQUEST_URI'] );
 
-		// The request is for a file in ABSPATH
 		} elseif ( $script_filename_dir . '/' == $abspath_fix ) {
-			// Strip off any file/query params in the path
 			$path = preg_replace( '#/[^/]*$#i', '', $_SERVER['PHP_SELF'] );
 
 		} else {
 			if ( false !== strpos( $_SERVER['SCRIPT_FILENAME'], $abspath_fix ) ) {
-				// Request is hitting a file inside ABSPATH
 				$directory = str_replace( ABSPATH, '', $script_filename_dir );
-				// Strip off the sub directory, and any file/query params
 				$path = preg_replace( '#/' . preg_quote( $directory, '#' ) . '/[^/]*$#i', '' , $_SERVER['REQUEST_URI'] );
 			} elseif ( false !== strpos( $abspath_fix, $script_filename_dir ) ) {
-				// Request is hitting a file above ABSPATH
 				$subdirectory = substr( $abspath_fix, strpos( $abspath_fix, $script_filename_dir ) + strlen( $script_filename_dir ) );
-				// Strip off any file/query params from the path, appending the sub directory to the install
 				$path = preg_replace( '#/[^/]*$#i', '' , $_SERVER['REQUEST_URI'] ) . $subdirectory;
 			} else {
 				$path = $_SERVER['REQUEST_URI'];
 			}
 		}
-
-		$schema = is_ssl() ? 'https://' : 'http://'; // set_url_scheme() is not defined yet
+		$schema = is_ssl() ? 'https://' : 'http://';
 		$url = $schema . $_SERVER['HTTP_HOST'] . $path;
 	}
-
 	return rtrim($url, '/');
 }
 
 function wp_suspend_cache_addition( $suspend = null ) {
 	static $_suspend = false;
-
 	if ( is_bool( $suspend ) )
 		$_suspend = $suspend;
-
 	return $_suspend;
 }
 
 function wp_suspend_cache_invalidation( $suspend = true ) {
 	global $_wp_suspend_cache_invalidation;
-
 	$current_suspend = $_wp_suspend_cache_invalidation;
 	$_wp_suspend_cache_invalidation = $suspend;
 	return $current_suspend;
@@ -2164,7 +2077,6 @@ function wp_timezone_override_offset() {
 	if ( !$timezone_string = get_option( 'timezone_string' ) ) {
 		return false;
 	}
-
 	$timezone_object = timezone_open( $timezone_string );
 	$datetime_object = date_create();
 	if ( false === $timezone_object || false === $datetime_object ) {
@@ -2174,9 +2086,7 @@ function wp_timezone_override_offset() {
 }
 
 function _wp_timezone_choice_usort_callback( $a, $b ) {
-	// Don't use translated versions of Etc
 	if ( 'Etc' === $a['continent'] && 'Etc' === $b['continent'] ) {
-		// Make the order of these more like the old dropdown
 		if ( 'GMT+' === substr( $a['city'], 0, 4 ) && 'GMT+' === substr( $b['city'], 0, 4 ) ) {
 			return -1 * ( strnatcasecmp( $a['city'], $b['city'] ) );
 		}
@@ -2213,25 +2123,19 @@ function _wp_timezone_choice_usort_callback( $a, $b ) {
 
 function wp_timezone_choice( $selected_zone ) {
 	static $mo_loaded = false;
-
 	$continents = array( 'Africa', 'America', 'Antarctica', 'Arctic', 'Asia', 'Atlantic', 'Australia', 'Europe', 'Indian', 'Pacific');
-
-	// Load translations for continents and cities
 	if ( !$mo_loaded ) {
 		$locale = get_locale();
 		$mofile = WP_LANG_DIR . '/continents-cities-' . $locale . '.mo';
 		load_textdomain( 'continents-cities', $mofile );
 		$mo_loaded = true;
 	}
-
 	$zonen = array();
 	foreach ( timezone_identifiers_list() as $zone ) {
 		$zone = explode( '/', $zone );
 		if ( !in_array( $zone[0], $continents ) ) {
 			continue;
 		}
-
-		// This determines what gets set and translated - we don't translate Etc/* strings here, they are done later
 		$exists = array(
 			0 => ( isset( $zone[0] ) && $zone[0] ),
 			1 => ( isset( $zone[1] ) && $zone[1] ),
@@ -2299,16 +2203,14 @@ function wp_timezone_choice( $selected_zone ) {
 		}
 	}
 
-	// Do UTC
-	$structure[] = '<optgroup label="'. esc_attr__( 'UTC' ) .'">';
+	$structure[] = '<optgroup label="UTC">';
 	$selected = '';
 	if ( 'UTC' === $selected_zone )
 		$selected = 'selected="selected" ';
-	$structure[] = '<option ' . $selected . 'value="' . esc_attr( 'UTC' ) . '">' . __('UTC') . '</option>';
+	$structure[] = '<option ' . $selected . 'value="UTC">UTC</option>';
 	$structure[] = '</optgroup>';
 
-	// Do manual UTC offsets
-	$structure[] = '<optgroup label="'. esc_attr__( 'Manual Offsets' ) .'">';
+	$structure[] = '<optgroup label="Manual Offsets">';
 	$offset_range = array (-12, -11.5, -11, -10.5, -10, -9.5, -9, -8.5, -8, -7.5, -7, -6.5, -6, -5.5, -5, -4.5, -4, -3.5, -3, -2.5, -2, -1.5, -1, -0.5,
 		0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 5.75, 6, 6.5, 7, 7.5, 8, 8.5, 8.75, 9, 9.5, 10, 10.5, 11, 11.5, 12, 12.75, 13, 13.75, 14);
 	foreach ( $offset_range as $offset ) {
@@ -2377,16 +2279,11 @@ function wp_scheduled_delete() {
 }
 
 function get_file_data( $file, $default_headers, $context = '' ) {
-	// We don't need to write to the file, so just open for reading.
 	$fp = fopen( $file, 'r' );
 
-	// Pull only the first 8kiB of the file in.
 	$file_data = fread( $fp, 8192 );
-
-	// PHP will close file handle, but we are good citizens.
 	fclose( $fp );
 
-	// Make sure we catch CR-only line endings.
 	$file_data = str_replace( "\r", "\n", $file_data );
 
 	if ( $context && $extra_headers = apply_filters( "extra_{$context}_headers", array() ) ) {
@@ -2428,10 +2325,8 @@ function _wp_mysql_week( $column ) {
 
 function wp_find_hierarchy_loop( $callback, $start, $start_parent, $callback_args = array() ) {
 	$override = is_null( $start_parent ) ? array() : array( $start => $start_parent );
-
 	if ( !$arbitrary_loop_member = wp_find_hierarchy_loop_tortoise_hare( $callback, $start, $override, $callback_args ) )
 		return array();
-
 	return wp_find_hierarchy_loop_tortoise_hare( $callback, $arbitrary_loop_member, $override, $callback_args, true );
 }
 
@@ -2439,8 +2334,6 @@ function wp_find_hierarchy_loop_tortoise_hare( $callback, $start, $override = ar
 	$tortoise = $hare = $evanescent_hare = $start;
 	$return = array();
 
-	// Set evanescent_hare to one past hare
-	// Increment hare two steps
 	while (
 		$tortoise
 	&&
@@ -2451,11 +2344,9 @@ function wp_find_hierarchy_loop_tortoise_hare( $callback, $start, $override = ar
 		if ( $_return_loop )
 			$return[$tortoise] = $return[$evanescent_hare] = $return[$hare] = true;
 
-		// tortoise got lapped - must be a loop
 		if ( $tortoise == $evanescent_hare || $tortoise == $hare )
 			return $_return_loop ? $return : $tortoise;
 
-		// Increment tortoise by one step
 		$tortoise = isset( $override[$tortoise] ) ? $override[$tortoise] : call_user_func_array( $callback, array_merge( array( $tortoise ), $callback_args ) );
 	}
 
@@ -2468,20 +2359,10 @@ function send_frame_options_header() {
 
 function wp_allowed_protocols() {
 	static $protocols = array();
-
 	if ( empty( $protocols ) ) {
 		$protocols = array( 'http', 'https', 'ftp', 'ftps', 'mailto', 'news', 'irc', 'gopher', 'nntp', 'feed', 'telnet', 'mms', 'rtsp', 'svn', 'tel', 'fax', 'xmpp', 'webcal' );
-
-		/**
-		 * Filter the list of protocols allowed in HTML attributes.
-		 *
-		 * @since 3.0.0
-		 *
-		 * @param array $protocols Array of allowed protocols e.g. 'http', 'ftp', 'tel', and more.
-		 */
 		$protocols = apply_filters( 'kses_allowed_protocols', $protocols );
 	}
-
 	return $protocols;
 }
 
@@ -2554,24 +2435,14 @@ function wp_is_stream( $path ) {
 }
 
 function wp_checkdate( $month, $day, $year, $source_date ) {
-	/**
-	 * Filter whether the given date is valid for the Gregorian calendar.
-	 *
-	 * @since 3.5.0
-	 *
-	 * @param bool   $checkdate   Whether the given date is valid.
-	 * @param string $source_date Date to check.
-	 */
 	return apply_filters( 'wp_checkdate', checkdate( $month, $day, $year ), $source_date );
 }
 
 function wp_auth_check_load() {
 	if ( ! is_admin() && ! is_user_logged_in() )
 		return;
-
 	if ( defined( 'IFRAME_REQUEST' ) )
 		return;
-
 	$screen = get_current_screen();
 	$hidden = array( 'update', 'update-network', 'update-core', 'update-core-network', 'upgrade', 'upgrade-network', 'network' );
 	$show = ! in_array( $screen->id, $hidden );
@@ -2589,14 +2460,6 @@ function wp_auth_check_html() {
 	$login_url = wp_login_url();
 	$current_domain = ( is_ssl() ? 'https://' : 'http://' ) . $_SERVER['HTTP_HOST'];
 	$same_domain = ( strpos( $login_url, $current_domain ) === 0 );
-
-	/**
-	 * Filter whether the authentication check originated at the same domain.
-	 *
-	 * @since 3.6.0
-	 *
-	 * @param bool $same_domain Whether the authentication check originated at the same domain.
-	 */
 	$same_domain = apply_filters( 'wp_auth_check_same_domain', $same_domain );
 	$wrap_class = $same_domain ? 'hidden' : 'hidden fallback';
 
@@ -2677,11 +2540,9 @@ function wp_validate_boolean( $var ) {
 	if ( is_bool( $var ) ) {
 		return $var;
 	}
-
 	if ( is_string( $var ) && 'false' === strtolower( $var ) ) {
 		return false;
 	}
-
 	return (bool) $var;
 }
 
@@ -2694,14 +2555,10 @@ function wp_delete_file( $file ) {
 
 function wp_post_preview_js() {
 	global $post;
-
 	if ( ! is_preview() || empty( $post ) ) {
 		return;
 	}
-
-	// Has to match the window name used in post_submit_meta_box()
 	$name = 'wp-preview-' . (int) $post->ID;
-
 	?>
 	<script>
 	( function() {

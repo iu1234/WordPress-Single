@@ -90,8 +90,6 @@ function get_permalink( $post = 0, $leavename = false ) {
 				if ( $parent = $category_object->parent )
 					$category = get_category_parents($parent, false, '/', true) . $category;
 			}
-			// show default category in permalinks, without
-			// having to assign it explicitly
 			if ( empty($category) ) {
 				$default_category = get_term( get_option( 'default_category' ), 'category' );
 				$category = is_wp_error( $default_category ) ? '' : $default_category->slug;
@@ -161,16 +159,6 @@ function get_post_permalink( $id = 0, $leavename = false, $sample = false ) {
 		$post_link = home_url($post_link);
 	}
 
-	/**
-	 * Filter the permalink for a post with a custom post type.
-	 *
-	 * @since 3.0.0
-	 *
-	 * @param string  $post_link The post's permalink.
-	 * @param WP_Post $post      The post in question.
-	 * @param bool    $leavename Whether to keep the post name.
-	 * @param bool    $sample    Is it a sample permalink.
-	 */
 	return apply_filters( 'post_type_link', $post_link, $post, $leavename, $sample );
 }
 
@@ -181,28 +169,14 @@ function get_page_link( $post = false, $leavename = false, $sample = false ) {
 		$link = home_url('/');
 	else
 		$link = _get_page_link( $post, $leavename, $sample );
-
-	/**
-	 * Filter the permalink for a page.
-	 *
-	 * @since 1.5.0
-	 *
-	 * @param string $link    The page's permalink.
-	 * @param int    $post_id The ID of the page.
-	 * @param bool   $sample  Is it a sample permalink.
-	 */
 	return apply_filters( 'page_link', $link, $post->ID, $sample );
 }
 
 function _get_page_link( $post = false, $leavename = false, $sample = false ) {
 	global $wp_rewrite;
-
 	$post = get_post( $post );
-
 	$draft_or_pending = in_array( $post->post_status, array( 'draft', 'pending', 'auto-draft' ) );
-
 	$link = $wp_rewrite->get_page_permastruct();
-
 	if ( !empty($link) && ( ( isset($post->post_status) && !$draft_or_pending ) || $sample ) ) {
 		if ( ! $leavename ) {
 			$link = str_replace('%pagename%', get_page_uri( $post ), $link);
@@ -214,14 +188,6 @@ function _get_page_link( $post = false, $leavename = false, $sample = false ) {
 		$link = home_url( '?page_id=' . $post->ID );
 	}
 
-	/**
-	 * Filter the permalink for a non-page_on_front page.
-	 *
-	 * @since 2.1.0
-	 *
-	 * @param string $link    The page's permalink.
-	 * @param int    $post_id The ID of the page.
-	 */
 	return apply_filters( '_get_page_link', $link, $post->ID );
 }
 
@@ -259,14 +225,6 @@ function get_attachment_link( $post = null, $leavename = false ) {
 	if ( ! $link )
 		$link = home_url( '/?attachment_id=' . $post->ID );
 
-	/**
-	 * Filter the permalink for an attachment.
-	 *
-	 * @since 2.0.0
-	 *
-	 * @param string $link    The attachment's permalink.
-	 * @param int    $post_id Attachment ID.
-	 */
 	return apply_filters( 'attachment_link', $link, $post->ID );
 }
 
@@ -660,14 +618,6 @@ function get_post_type_archive_link( $post_type ) {
 		$link = home_url( '?post_type=' . $post_type );
 	}
 
-	/**
-	 * Filter the post type archive permalink.
-	 *
-	 * @since 3.1.0
-	 *
-	 * @param string $link      The post type archive permalink.
-	 * @param string $post_type Post type name.
-	 */
 	return apply_filters( 'post_type_archive_link', $link, $post_type );
 }
 
@@ -1369,7 +1319,7 @@ function get_the_posts_pagination( $args = array() ) {
 
 function _navigation_markup( $links, $class = 'posts-navigation', $screen_reader_text = '' ) {
 	if ( empty( $screen_reader_text ) ) {
-		$screen_reader_text = __( 'Posts navigation' );
+		$screen_reader_text = 'Posts navigation';
 	}
 
 	$template = '
@@ -1515,11 +1465,9 @@ function get_the_comments_navigation( $args = array() ) {
 function get_the_comments_pagination( $args = array() ) {
 	$navigation = '';
 	$args       = wp_parse_args( $args, array(
-		'screen_reader_text' => __( 'Comments navigation' ),
+		'screen_reader_text' => 'Comments navigation',
 	) );
 	$args['echo'] = false;
-
-	// Make sure we get plain links, so we get a string we can work with.
 	$args['type'] = 'plain';
 
 	$links = paginate_comments_links( $args );
@@ -1638,16 +1586,6 @@ function includes_url( $path = '', $scheme = null ) {
 
 	if ( $path && is_string( $path ) )
 		$url .= ltrim($path, '/');
-
-	/**
-	 * Filter the URL to the includes directory.
-	 *
-	 * @since 2.8.0
-	 *
-	 * @param string $url  The complete URL to the includes directory including scheme and path.
-	 * @param string $path Path relative to the URL to the wp-includes directory. Blank string
-	 *                     if no path is specified.
-	 */
 	return apply_filters( 'includes_url', $url, $path );
 }
 
@@ -1771,11 +1709,9 @@ function rel_canonical() {
 	if ( ! is_singular() ) {
 		return;
 	}
-
 	if ( ! $id = get_queried_object_id() ) {
 		return;
 	}
-
 	$url = get_permalink( $id );
 
 	$page = get_query_var( 'page' );
@@ -1813,8 +1749,6 @@ function wp_get_shortlink($id = 0, $context = 'post', $allow_slugs = true) {
 	}
 
 	$shortlink = '';
-
-	// Return p= link for all public post types.
 	if ( ! empty( $post_id ) ) {
 		$post_type = get_post_type_object( $post->post_type );
 
@@ -1830,31 +1764,24 @@ function wp_get_shortlink($id = 0, $context = 'post', $allow_slugs = true) {
 
 function wp_shortlink_wp_head() {
 	$shortlink = wp_get_shortlink( 0, 'query' );
-
 	if ( empty( $shortlink ) )
 		return;
-
 	echo "<link rel='shortlink' href='" . esc_url( $shortlink ) . "' />\n";
 }
 
 function wp_shortlink_header() {
 	if ( headers_sent() )
 		return;
-
 	$shortlink = wp_get_shortlink(0, 'query');
-
 	if ( empty($shortlink) )
 		return;
-
 	header('Link: <' . $shortlink . '>; rel=shortlink', false);
 }
 
 function the_shortlink( $text = '', $title = '', $before = '', $after = '' ) {
 	$post = get_post();
-
 	if ( empty( $text ) )
 		$text = 'This is the short link.';
-
 	if ( empty( $title ) )
 		$title = the_title_attribute( array( 'echo' => false ) );
 
@@ -1929,15 +1856,10 @@ function get_avatar_data( $id_or_email, $args = null ) {
 	}
 
 	$args['force_default'] = (bool) $args['force_default'];
-
 	$args['rating'] = strtolower( $args['rating'] );
-
 	$args['found_avatar'] = false;
-
 	$args = apply_filters( 'pre_get_avatar_data', $args, $id_or_email );
-
 	if ( isset( $args['url'] ) && ! is_null( $args['url'] ) ) {
-		/** This filter is documented in wp-includes/link-template.php */
 		return apply_filters( 'get_avatar_data', $args, $id_or_email );
 	}
 
@@ -1947,29 +1869,22 @@ function get_avatar_data( $id_or_email, $args = null ) {
 	if ( is_object( $id_or_email ) && isset( $id_or_email->comment_ID ) ) {
 		$id_or_email = get_comment( $id_or_email );
 	}
-
-	// Process the user identifier.
 	if ( is_numeric( $id_or_email ) ) {
 		$user = get_user_by( 'id', absint( $id_or_email ) );
 	} elseif ( is_string( $id_or_email ) ) {
 		if ( strpos( $id_or_email, '@md5.gravatar.com' ) ) {
-			// md5 hash
 			list( $email_hash ) = explode( '@', $id_or_email );
 		} else {
-			// email address
 			$email = $id_or_email;
 		}
 	} elseif ( $id_or_email instanceof WP_User ) {
-		// User Object
 		$user = $id_or_email;
 	} elseif ( $id_or_email instanceof WP_Post ) {
-		// Post Object
 		$user = get_user_by( 'id', (int) $id_or_email->post_author );
 	} elseif ( $id_or_email instanceof WP_Comment ) {
 		$allowed_comment_types = apply_filters( 'get_avatar_comment_types', array( 'comment' ) );
 		if ( ! empty( $id_or_email->comment_type ) && ! in_array( $id_or_email->comment_type, (array) $allowed_comment_types ) ) {
 			$args['url'] = false;
-			/** This filter is documented in wp-includes/link-template.php */
 			return apply_filters( 'get_avatar_data', $args, $id_or_email );
 		}
 

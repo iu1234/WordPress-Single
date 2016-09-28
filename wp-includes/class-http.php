@@ -20,7 +20,6 @@
  */
 class WP_Http {
 
-	// Aliases for HTTP response codes.
 	const HTTP_CONTINUE                   = 100;
 	const SWITCHING_PROTOCOLS             = 101;
 	const PROCESSING                      = 102;
@@ -223,24 +222,6 @@ class WP_Http {
 		if ( ! isset( $r['_redirection'] ) )
 			$r['_redirection'] = $r['redirection'];
 
-		/**
-		 * Filter whether to preempt an HTTP request's return value.
-		 *
-		 * Returning a non-false value from the filter will short-circuit the HTTP request and return
-		 * early with that value. A filter should return either:
-		 *
-		 *  - An array containing 'headers', 'body', 'response', 'cookies', and 'filename' elements
-		 *  - A WP_Error instance
-		 *  - boolean false (to avoid short-circuiting the response)
-		 *
-		 * Returning any other value may result in unexpected behaviour.
-		 *
-		 * @since 2.9.0
-		 *
-		 * @param false|array|WP_Error $preempt Whether to preempt an HTTP request's return value. Default false.
-		 * @param array               $r        HTTP request arguments.
-		 * @param string              $url      The request URL.
-		 */
 		$pre = apply_filters( 'pre_http_request', false, $r, $url );
 
 		if ( false !== $pre )
@@ -288,7 +269,7 @@ class WP_Http {
 		if ( $r['stream'] ) {
 			$r['blocking'] = true;
 			if ( ! wp_is_writable( dirname( $r['filename'] ) ) )
-				return new WP_Error( 'http_request_failed', __( 'Destination directory for file streaming does not exist or is not writable.' ) );
+				return new WP_Error( 'http_request_failed', 'Destination directory for file streaming does not exist or is not writable.' );
 		}
 
 		if ( is_null( $r['headers'] ) )
@@ -359,33 +340,11 @@ class WP_Http {
 		return $response;
 	}
 
-	/**
-	 * Tests which transports are capable of supporting the request.
-	 *
-	 * @since 3.2.0
-	 * @access public
-	 *
-	 * @param array $args Request arguments
-	 * @param string $url URL to Request
-	 *
-	 * @return string|false Class name for the first transport that claims to support the request. False if no transport claims to support the request.
-	 */
 	public function _get_first_available_transport( $args, $url = null ) {
 		$transports = array( 'curl', 'streams' );
 
-		/**
-		 * Filter which HTTP transports are available and in what order.
-		 *
-		 * @since 3.7.0
-		 *
-		 * @param array  $transports Array of HTTP transports to check. Default array contains
-		 *                           'curl', and 'streams', in that order.
-		 * @param array  $args       HTTP request arguments.
-		 * @param string $url        The URL to request.
-		 */
 		$request_order = apply_filters( 'http_api_transports', $transports, $args, $url );
 
-		// Loop over each transport on each HTTP request looking for one which will serve this request's needs.
 		foreach ( $request_order as $transport ) {
 			if ( in_array( $transport, $transports ) ) {
 				$transport = ucfirst( $transport );
@@ -402,29 +361,12 @@ class WP_Http {
 		return false;
 	}
 
-	/**
-	 * Dispatches a HTTP request to a supporting transport.
-	 *
-	 * Tests each transport in order to find a transport which matches the request arguments.
-	 * Also caches the transport instance to be used later.
-	 *
-	 * The order for requests is cURL, and then PHP Streams.
-	 *
-	 * @since 3.2.0
-	 *
-	 * @static
-	 * @access private
-	 *
-	 * @param string $url URL to Request
-	 * @param array $args Request arguments
-	 * @return array|WP_Error Array containing 'headers', 'body', 'response', 'cookies', 'filename'. A WP_Error instance upon error
-	 */
 	private function _dispatch_request( $url, $args ) {
 		static $transports = array();
 
 		$class = $this->_get_first_available_transport( $args, $url );
 		if ( !$class )
-			return new WP_Error( 'http_failure', __( 'There are no HTTP transports available which can complete the requested request.' ) );
+			return new WP_Error( 'http_failure', 'There are no HTTP transports available which can complete the requested request.' );
 
 		// Transport claims to support request, instantiate it and give it a whirl.
 		if ( empty( $transports[$class] ) )
@@ -432,119 +374,38 @@ class WP_Http {
 
 		$response = $transports[$class]->request( $url, $args );
 
-		/**
-		 * Fires after an HTTP API response is received and before the response is returned.
-		 *
-		 * @since 2.8.0
-		 *
-		 * @param array|WP_Error $response HTTP response or WP_Error object.
-		 * @param string         $context  Context under which the hook is fired.
-		 * @param string         $class    HTTP transport used.
-		 * @param array          $args     HTTP request arguments.
-		 * @param string         $url      The request URL.
-		 */
 		do_action( 'http_api_debug', $response, 'response', $class, $args, $url );
 
 		if ( is_wp_error( $response ) )
 			return $response;
 
-		/**
-		 * Filter the HTTP API response immediately before the response is returned.
-		 *
-		 * @since 2.9.0
-		 *
-		 * @param array  $response HTTP response.
-		 * @param array  $args     HTTP request arguments.
-		 * @param string $url      The request URL.
-		 */
 		return apply_filters( 'http_response', $response, $args, $url );
 	}
 
-	/**
-	 * Uses the POST HTTP method.
-	 *
-	 * Used for sending data that is expected to be in the body.
-	 *
-	 * @access public
-	 * @since 2.7.0
-	 *
-	 * @param string       $url  The request URL.
-	 * @param string|array $args Optional. Override the defaults.
-	 * @return array|WP_Error Array containing 'headers', 'body', 'response', 'cookies', 'filename'. A WP_Error instance upon error
-	 */
 	public function post($url, $args = array()) {
 		$defaults = array('method' => 'POST');
 		$r = wp_parse_args( $args, $defaults );
 		return $this->request($url, $r);
 	}
 
-	/**
-	 * Uses the GET HTTP method.
-	 *
-	 * Used for sending data that is expected to be in the body.
-	 *
-	 * @access public
-	 * @since 2.7.0
-	 *
-	 * @param string $url The request URL.
-	 * @param string|array $args Optional. Override the defaults.
-	 * @return array|WP_Error Array containing 'headers', 'body', 'response', 'cookies', 'filename'. A WP_Error instance upon error
-	 */
 	public function get($url, $args = array()) {
 		$defaults = array('method' => 'GET');
 		$r = wp_parse_args( $args, $defaults );
 		return $this->request($url, $r);
 	}
 
-	/**
-	 * Uses the HEAD HTTP method.
-	 *
-	 * Used for sending data that is expected to be in the body.
-	 *
-	 * @access public
-	 * @since 2.7.0
-	 *
-	 * @param string $url The request URL.
-	 * @param string|array $args Optional. Override the defaults.
-	 * @return array|WP_Error Array containing 'headers', 'body', 'response', 'cookies', 'filename'. A WP_Error instance upon error
-	 */
 	public function head($url, $args = array()) {
 		$defaults = array('method' => 'HEAD');
 		$r = wp_parse_args( $args, $defaults );
 		return $this->request($url, $r);
 	}
 
-	/**
-	 * Parses the responses and splits the parts into headers and body.
-	 *
-	 * @access public
-	 * @static
-	 * @since 2.7.0
-	 *
-	 * @param string $strResponse The full response string
-	 * @return array Array with 'headers' and 'body' keys.
-	 */
 	public static function processResponse($strResponse) {
 		$res = explode("\r\n\r\n", $strResponse, 2);
 
 		return array('headers' => $res[0], 'body' => isset($res[1]) ? $res[1] : '');
 	}
 
-	/**
-	 * Transform header string into an array.
-	 *
-	 * If an array is given then it is assumed to be raw header data with numeric keys with the
-	 * headers as the values. No headers must be passed that were already processed.
-	 *
-	 * @access public
-	 * @static
-	 * @since 2.7.0
-	 *
-	 * @param string|array $headers
-	 * @param string $url The URL that was requested
-	 * @return array Processed string headers. If duplicate headers are encountered,
-	 * 					Then a numbered array is returned as the value of that header-key.
-	 */
 	public static function processHeaders( $headers, $url = '' ) {
 		// Split headers, one per array element.
 		if ( is_string($headers) ) {
@@ -607,19 +468,6 @@ class WP_Http {
 		return array('response' => $response, 'headers' => $newheaders, 'cookies' => $cookies);
 	}
 
-	/**
-	 * Takes the arguments for a ::request() and checks for the cookie array.
-	 *
-	 * If it's found, then it upgrades any basic name => value pairs to WP_Http_Cookie instances,
-	 * which are each parsed into strings and added to the Cookie: header (within the arguments array).
-	 * Edits the array by reference.
-	 *
-	 * @access public
-	 * @version 2.8.0
-	 * @static
-	 *
-	 * @param array $r Full array of args passed into ::request()
-	 */
 	public static function buildCookieHeader( &$r ) {
 		if ( ! empty($r['cookies']) ) {
 			// Upgrade any name => value cookie pairs to WP_HTTP_Cookie instances.
@@ -638,20 +486,6 @@ class WP_Http {
 		}
 	}
 
-	/**
-	 * Decodes chunk transfer-encoding, based off the HTTP 1.1 specification.
-	 *
-	 * Based off the HTTP http_encoding_dechunk function.
-	 *
-	 * @link http://tools.ietf.org/html/rfc2616#section-19.4.6 Process for chunked decoding.
-	 *
-	 * @access public
-	 * @since 2.7.0
-	 * @static
-	 *
-	 * @param string $body Body content
-	 * @return string Chunked decoded body on success or raw body on failure.
-	 */
 	public static function chunkTransferDecode( $body ) {
 		// The body is not chunked encoded or is malformed.
 		if ( ! preg_match( '/^([0-9a-f]+)[^\r\n]*\r\n/i', trim( $body ) ) )
@@ -682,28 +516,6 @@ class WP_Http {
 		}
 	}
 
-	/**
-	 * Block requests through the proxy.
-	 *
-	 * Those who are behind a proxy and want to prevent access to certain hosts may do so. This will
-	 * prevent plugins from working and core functionality, if you don't include api.wordpress.org.
-	 *
-	 * You block external URL requests by defining WP_HTTP_BLOCK_EXTERNAL as true in your wp-config.php
-	 * file and this will only allow localhost and your site to make requests. The constant
-	 * WP_ACCESSIBLE_HOSTS will allow additional hosts to go through for requests. The format of the
-	 * WP_ACCESSIBLE_HOSTS constant is a comma separated list of hostnames to allow, wildcard domains
-	 * are supported, eg *.wordpress.org will allow for all subdomains of wordpress.org to be contacted.
-	 *
-	 * @since 2.8.0
-	 * @link https://core.trac.wordpress.org/ticket/8927 Allow preventing external requests.
-	 * @link https://core.trac.wordpress.org/ticket/14636 Allow wildcard domains in WP_ACCESSIBLE_HOSTS
-	 *
-	 * @staticvar array|null $accessible_hosts
-	 * @staticvar array      $wildcard_regex
-	 *
-	 * @param string $uri URI of url.
-	 * @return bool True to block, false to allow.
-	 */
 	public function block_request($uri) {
 		// We don't need to block requests, because nothing is blocked.
 		if ( ! defined( 'WP_HTTP_BLOCK_EXTERNAL' ) || ! WP_HTTP_BLOCK_EXTERNAL )
@@ -717,14 +529,6 @@ class WP_Http {
 
 		// Don't block requests back to ourselves by default.
 		if ( 'localhost' == $check['host'] || ( isset( $home['host'] ) && $home['host'] == $check['host'] ) ) {
-			/**
-			 * Filter whether to block local requests through the proxy.
-			 *
-			 * @since 2.8.0
-			 *
-			 * @param bool $block Whether to block local requests through proxy.
-			 *                    Default false.
-			 */
 			return apply_filters( 'block_local_requests', false );
 		}
 
@@ -751,36 +555,11 @@ class WP_Http {
 
 	}
 
-	/**
-	 * Used as a wrapper for PHP's parse_url() function that handles edgecases in < PHP 5.4.7.
-	 *
-	 * @access protected
-	 * @deprecated 4.4.0 Use wp_parse_url()
-	 * @see wp_parse_url()
-	 *
-	 * @param string $url The URL to parse.
-	 * @return bool|array False on failure; Array of URL components on success;
-	 *                    See parse_url()'s return values.
-	 */
 	protected static function parse_url( $url ) {
 		_deprecated_function( __METHOD__, '4.4.0', 'wp_parse_url()' );
 		return wp_parse_url( $url );
 	}
 
-	/**
-	 * Converts a relative URL to an absolute URL relative to a given URL.
-	 *
-	 * If an Absolute URL is provided, no processing of that URL is done.
-	 *
-	 * @since 3.4.0
-	 *
-	 * @static
-	 * @access public
-	 *
-	 * @param string $maybe_relative_path The URL which might be relative
-	 * @param string $url                 The URL which $maybe_relative_path is relative to
-	 * @return string An Absolute URL, in a failure condition where the URL cannot be parsed, the relative URL will be returned.
-	 */
 	public static function make_absolute_url( $maybe_relative_path, $url ) {
 		if ( empty( $url ) )
 			return $maybe_relative_path;
@@ -842,18 +621,6 @@ class WP_Http {
 		return $absolute_path . '/' . ltrim( $path, '/' );
 	}
 
-	/**
-	 * Handles HTTP Redirects and follows them if appropriate.
-	 *
-	 * @since 3.7.0
-	 *
-	 * @static
-	 *
-	 * @param string $url The URL which was requested.
-	 * @param array $args The Arguments which were used to make the request.
-	 * @param array $response The Response of the HTTP request.
-	 * @return false|object False if no redirect is present, a WP_HTTP or WP_Error result otherwise.
-	 */
 	public static function handle_redirects( $url, $args, $response ) {
 		// If no redirects are present, or, redirects were not requested, perform no action.
 		if ( ! isset( $response['headers']['location'] ) || 0 === $args['_redirection'] )
@@ -863,9 +630,8 @@ class WP_Http {
 		if ( $response['response']['code'] > 399 || $response['response']['code'] < 300 )
 			return false;
 
-		// Don't redirect if we've run out of redirects.
 		if ( $args['redirection']-- <= 0 )
-			return new WP_Error( 'http_request_failed', __('Too many redirects.') );
+			return new WP_Error( 'http_request_failed', 'Too many redirects.' );
 
 		$redirect_location = $response['headers']['location'];
 
@@ -892,22 +658,6 @@ class WP_Http {
 		return wp_remote_request( $redirect_location, $args );
 	}
 
-	/**
-	 * Determines if a specified string represents an IP address or not.
-	 *
-	 * This function also detects the type of the IP address, returning either
-	 * '4' or '6' to represent a IPv4 and IPv6 address respectively.
-	 * This does not verify if the IP is a valid IP, only that it appears to be
-	 * an IP address.
-	 *
-	 * @link http://home.deds.nl/~aeron/regex/ for IPv6 regex
-	 *
-	 * @since 3.7.0
-	 * @static
-	 *
-	 * @param string $maybe_ip A suspected IP address
-	 * @return integer|bool Upon success, '4' or '6' to represent a IPv4 or IPv6 address, false upon failure
-	 */
 	public static function is_ip_address( $maybe_ip ) {
 		if ( preg_match( '/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/', $maybe_ip ) )
 			return 4;

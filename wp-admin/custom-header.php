@@ -1050,7 +1050,6 @@ wp_nonce_field( 'custom-header-options', '_wpnonce-custom-header-options' ); ?>
 	public function get_default_header_images() {
 		$this->process_default_headers();
 
-		// Get the default image if there is one.
 		$default = get_theme_support( 'custom-header', 'default-image' );
 
 		if ( ! $default ) { // If not,
