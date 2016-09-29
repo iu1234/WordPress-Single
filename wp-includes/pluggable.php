@@ -149,7 +149,6 @@ function wp_mail( $to, $subject, $message, $headers = '', $attachments = array()
 
 	foreach ( (array) $to as $recipient ) {
 		try {
-			// Break $recipient into name and address parts if in the format "Foo <bar@baz.com>"
 			$recipient_name = '';
 			if ( preg_match( '/(.*)<(.+)>/', $recipient, $matches ) ) {
 				if ( count( $matches ) == 3 ) {
@@ -167,7 +166,6 @@ function wp_mail( $to, $subject, $message, $headers = '', $attachments = array()
 	if ( !empty( $cc ) ) {
 		foreach ( (array) $cc as $recipient ) {
 			try {
-				// Break $recipient into name and address parts if in the format "Foo <bar@baz.com>"
 				$recipient_name = '';
 				if ( preg_match( '/(.*)<(.+)>/', $recipient, $matches ) ) {
 					if ( count( $matches ) == 3 ) {
@@ -230,9 +228,7 @@ function wp_mail( $to, $subject, $message, $headers = '', $attachments = array()
 			}
 		}
 	}
-
 	do_action_ref_array( 'phpmailer_init', array( &$phpmailer ) );
-
 	try {
 		return $phpmailer->Send();
 	} catch ( phpmailerException $e ) {
@@ -394,7 +390,7 @@ function wp_clear_auth_cookie() {
 }
 
 function is_user_logged_in() {
-	$user = wp_get_current_user();
+	$user = _wp_get_current_user();
 	return $user->exists();
 }
 
@@ -409,14 +405,9 @@ function auth_redirect() {
 			exit();
 		}
 	}
-
 	$scheme = apply_filters( 'auth_redirect_scheme', '' );
-
 	if ( $user_id = wp_validate_auth_cookie( '',  $scheme) ) {
-
 		do_action( 'auth_redirect', $user_id );
-
-		// If the user wants ssl but the session is not ssl, redirect.
 		if ( !$secure && get_user_option('use_ssl', $user_id) && false !== strpos($_SERVER['REQUEST_URI'], 'wp-admin') ) {
 			if ( 0 === strpos( $_SERVER['REQUEST_URI'], 'http' ) ) {
 				wp_redirect( set_url_scheme( $_SERVER['REQUEST_URI'], 'https' ) );
@@ -426,7 +417,6 @@ function auth_redirect() {
 				exit();
 			}
 		}
-
 		return;
 	}
 	nocache_headers();
@@ -558,7 +548,7 @@ function wp_nonce_tick() {
 
 function wp_verify_nonce( $nonce, $action = -1 ) {
 	$nonce = (string) $nonce;
-	$user = wp_get_current_user();
+	$user = _wp_get_current_user();
 	$uid = (int) $user->ID;
 	if ( ! $uid ) {
 		$uid = apply_filters( 'nonce_user_logged_out', $uid, $action );
@@ -582,15 +572,13 @@ function wp_verify_nonce( $nonce, $action = -1 ) {
 }
 
 function wp_create_nonce($action = -1) {
-	$user = wp_get_current_user();
+	$user = _wp_get_current_user();
 	$uid = (int) $user->ID;
 	if ( ! $uid ) {
 		$uid = apply_filters( 'nonce_user_logged_out', $uid, $action );
 	}
-
 	$token = wp_get_session_token();
 	$i = wp_nonce_tick();
-
 	return substr( wp_hash( $i . '|' . $action . '|' . $uid . '|' . $token, 'nonce' ), -12, 10 );
 }
 
@@ -599,7 +587,6 @@ function wp_salt( $scheme = 'auth' ) {
 	if ( isset( $cached_salts[ $scheme ] ) ) {
 		return apply_filters( 'salt', $cached_salts[ $scheme ], $scheme );
 	}
-
 	static $duplicated_keys;
 	if ( null === $duplicated_keys ) {
 		$duplicated_keys = array( 'put your unique phrase here' => true );
@@ -613,11 +600,7 @@ function wp_salt( $scheme = 'auth' ) {
 			}
 		}
 	}
-
-	$values = array(
-		'key' => '',
-		'salt' => ''
-	);
+	$values = array( 'key' => '', 'salt' => '' );
 	if ( defined( 'SECRET_KEY' ) && SECRET_KEY && empty( $duplicated_keys[ SECRET_KEY ] ) ) {
 		$values['key'] = SECRET_KEY;
 	}

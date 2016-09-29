@@ -287,30 +287,23 @@ class wpdb {
 		if ( ! $success ) {
 			$this->ready = false;
 			if ( ! did_action( 'template_redirect' ) ) {
-
 				$message = "<h1>Can&#8217;t select database</h1>\n";
-
 				$message .= '<p>' . sprintf(
 					'We were able to connect to the database server (which means your username and password is okay) but not able to select the %s database.',
 					'<code>' . htmlspecialchars( $db, ENT_QUOTES ) . '</code>'
 				) . "</p>\n";
-
 				$message .= "<ul>\n";
 				$message .= "<li>Are you sure it exists?</li>\n";
-
 				$message .= '<li>' . sprintf(
 					'Does the user %1$s have permission to use the %2$s database?',
 					'<code>' . htmlspecialchars( $this->dbuser, ENT_QUOTES )  . '</code>',
 					'<code>' . htmlspecialchars( $db, ENT_QUOTES ) . '</code>'
 				) . "</li>\n";
-
 				$message .= '<li>' . sprintf(
 					'On some systems the name of your database is prefixed with your username, so it would be like <code>username_%1$s</code>. Could that be the problem?',
 					htmlspecialchars( $db, ENT_QUOTES )
 				). "</li>\n";
-
 				$message .= "</ul>\n";
-
 				$this->bail( $message, 'db_select_fail' );
 			}
 		}

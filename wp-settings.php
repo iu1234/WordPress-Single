@@ -107,24 +107,17 @@ require( ABSPATH . WPINC . '/rest-api/class-wp-rest-response.php' );
 require( ABSPATH . WPINC . '/rest-api/class-wp-rest-request.php' );
 
 wp_plugin_directory_constants();
-
-$GLOBALS['wp_plugin_paths'] = array();
-
 wp_cookie_constants();
-
+$GLOBALS['wp_plugin_paths'] = array();
 require( ABSPATH . WPINC . '/vars.php' );
-
 create_initial_taxonomies();
 create_initial_post_types();
-
 register_theme_directory( get_theme_root() );
-
 foreach ( wp_get_active_and_valid_plugins() as $plugin ) {
 	wp_register_plugin_realpath( $plugin );
 	include_once( $plugin );
 }
 unset( $plugin );
-require( ABSPATH . WPINC . '/pluggable.php' );
 wp_set_internal_encoding();
 do_action( 'plugins_loaded' );
 wp_functionality_constants();

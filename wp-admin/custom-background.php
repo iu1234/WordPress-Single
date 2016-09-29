@@ -152,14 +152,12 @@ class Custom_Background {
 		call_user_func( $this->admin_image_div_callback );
 	} else {
 		$background_styles = '';
-		if ( $bgcolor = get_background_color() )
+		if ( $bgcolor = get_theme_mod('background_color', get_theme_support( 'custom-background', 'default-color' ) ) )
 			$background_styles .= 'background-color: #' . $bgcolor . ';';
 
-		$background_image_thumb = get_background_image();
+		$background_image_thumb = get_theme_mod('background_image', get_theme_support( 'custom-background', 'default-image' ) );
 		if ( $background_image_thumb ) {
 			$background_image_thumb = esc_url( set_url_scheme( get_theme_mod( 'background_image_thumb', str_replace( '%', '%%', $background_image_thumb ) ) ) );
-
-			// Background-image URL must be single quote, see below.
 			$background_styles .= ' background-image: url(\'' . $background_image_thumb . '\');'
 				. ' background-repeat: ' . get_theme_mod( 'background_repeat', get_theme_support( 'custom-background', 'default-repeat' ) ) . ';'
 				. ' background-position: top ' . get_theme_mod( 'background_position_x', get_theme_support( 'custom-background', 'default-position-x' ) );
@@ -175,7 +173,7 @@ class Custom_Background {
 </td>
 </tr>
 
-<?php if ( get_background_image() ) : ?>
+<?php if ( get_theme_mod('background_image', get_theme_support( 'custom-background', 'default-image' ) ) ) : ?>
 <tr>
 <th scope="row">Remove Image</th>
 <td>
@@ -189,7 +187,7 @@ class Custom_Background {
 <?php endif; ?>
 
 <?php $default_image = get_theme_support( 'custom-background', 'default-image' ); ?>
-<?php if ( $default_image && get_background_image() != $default_image ) : ?>
+<?php if ( $default_image && get_theme_mod('background_image', get_theme_support( 'custom-background', 'default-image' ) ) != $default_image ) : ?>
 <tr>
 <th scope="row">Restore Original Image</th>
 <td>
@@ -230,22 +228,13 @@ class Custom_Background {
 <form method="post">
 <table class="form-table">
 <tbody>
-<?php if ( get_background_image() ) : ?>
+<?php if ( get_theme_mod('background_image', get_theme_support( 'custom-background', 'default-image' ) ) ) : ?>
 <tr>
 <th scope="row">Position</th>
 <td><fieldset><legend class="screen-reader-text"><span>Background Position</span></legend>
-<label>
-<input name="background-position-x" type="radio" value="left"<?php checked( 'left', get_theme_mod( 'background_position_x', get_theme_support( 'custom-background', 'default-position-x' ) ) ); ?> />
-<?php _e('Left') ?>
-</label>
-<label>
-<input name="background-position-x" type="radio" value="center"<?php checked( 'center', get_theme_mod( 'background_position_x', get_theme_support( 'custom-background', 'default-position-x' ) ) ); ?> />
-<?php _e('Center') ?>
-</label>
-<label>
-<input name="background-position-x" type="radio" value="right"<?php checked( 'right', get_theme_mod( 'background_position_x', get_theme_support( 'custom-background', 'default-position-x' ) ) ); ?> />
-<?php _e('Right') ?>
-</label>
+<label><input name="background-position-x" type="radio" value="left"<?php checked( 'left', get_theme_mod( 'background_position_x', get_theme_support( 'custom-background', 'default-position-x' ) ) ); ?> />Left</label>
+<label><input name="background-position-x" type="radio" value="center"<?php checked( 'center', get_theme_mod( 'background_position_x', get_theme_support( 'custom-background', 'default-position-x' ) ) ); ?> />Center</label>
+<label><input name="background-position-x" type="radio" value="right"<?php checked( 'right', get_theme_mod( 'background_position_x', get_theme_support( 'custom-background', 'default-position-x' ) ) ); ?> />Right</label>
 </fieldset></td>
 </tr>
 
@@ -260,16 +249,10 @@ class Custom_Background {
 </tr>
 
 <tr>
-<th scope="row"><?php _ex( 'Attachment', 'Background Attachment' ); ?></th>
+<th scope="row">Attachment</th>
 <td><fieldset><legend class="screen-reader-text"><span>Background Attachment</span></legend>
-<label>
-<input name="background-attachment" type="radio" value="scroll" <?php checked( 'scroll', get_theme_mod( 'background_attachment', get_theme_support( 'custom-background', 'default-attachment' ) ) ); ?> />
-<?php _e( 'Scroll' ); ?>
-</label>
-<label>
-<input name="background-attachment" type="radio" value="fixed" <?php checked( 'fixed', get_theme_mod( 'background_attachment', get_theme_support( 'custom-background', 'default-attachment' ) ) ); ?> />
-<?php _e( 'Fixed' ); ?>
-</label>
+<label><input name="background-attachment" type="radio" value="scroll" <?php checked( 'scroll', get_theme_mod( 'background_attachment', get_theme_support( 'custom-background', 'default-attachment' ) ) ); ?> />Scroll</label>
+<label><input name="background-attachment" type="radio" value="fixed" <?php checked( 'fixed', get_theme_mod( 'background_attachment', get_theme_support( 'custom-background', 'default-attachment' ) ) ); ?> />Fixed</label>
 </fieldset></td>
 </tr>
 <?php endif; ?>
@@ -281,7 +264,7 @@ $default_color = '';
 if ( current_theme_supports( 'custom-background', 'default-color' ) )
 	$default_color = ' data-default-color="#' . esc_attr( get_theme_support( 'custom-background', 'default-color' ) ) . '"';
 ?>
-<input type="text" name="background-color" id="background-color" value="#<?php echo esc_attr( get_background_color() ); ?>"<?php echo $default_color ?> />
+<input type="text" name="background-color" id="background-color" value="#<?php echo esc_attr( get_theme_mod('background_color', get_theme_support( 'custom-background', 'default-color' ) ) ); ?>"<?php echo $default_color ?> />
 </fieldset></td>
 </tr>
 </tbody>
@@ -367,12 +350,10 @@ if ( current_theme_supports( 'custom-background', 'default-color' ) )
 	public function wp_set_background_image() {
 		if ( ! current_user_can('edit_theme_options') || ! isset( $_POST['attachment_id'] ) ) exit;
 		$attachment_id = absint($_POST['attachment_id']);
-		/** This filter is documented in wp-admin/includes/media.php */
 		$sizes = array_keys(apply_filters( 'image_size_names_choose', array('thumbnail' => 'Thumbnail', 'medium' => 'Medium', 'large' => 'Large', 'full' => 'Full Size') ));
 		$size = 'thumbnail';
 		if ( in_array( $_POST['size'], $sizes ) )
 			$size = esc_attr( $_POST['size'] );
-
 		update_post_meta( $attachment_id, '_wp_attachment_is_custom_background', get_option('stylesheet' ) );
 		$url = wp_get_attachment_image_src( $attachment_id, $size );
 		$thumbnail = wp_get_attachment_image_src( $attachment_id, 'thumbnail' );

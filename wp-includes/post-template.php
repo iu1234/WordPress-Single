@@ -1,20 +1,5 @@
 <?php
-/**
- * WordPress Post Template Functions.
- *
- * Gets content for the current post in the loop.
- *
- * @package WordPress
- * @subpackage Template
- */
 
-/**
- * Retrieve the ID of the current item in the WordPress Loop.
- *
- * @since 2.1.0
- *
- * @return int|false The ID of the current item in the WordPress Loop. False if $post is not set.
- */
 function get_the_ID() {
 	$post = get_post();
 	return ! empty( $post ) ? $post->ID : false;
@@ -397,7 +382,7 @@ function get_body_class( $class = '' ) {
 		$classes[] = 'no-customize-support';
 	}
 
-	if ( get_background_color() !== get_theme_support( 'custom-background', 'default-color' ) || get_background_image() )
+	if ( get_theme_mod('background_color', get_theme_support( 'custom-background', 'default-color' ) ) !== get_theme_support( 'custom-background', 'default-color' ) || get_theme_mod('background_image', get_theme_support( 'custom-background', 'default-image' ) ) )
 		$classes[] = 'custom-background';
 
 	if ( has_custom_logo() ) {

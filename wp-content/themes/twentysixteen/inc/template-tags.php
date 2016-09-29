@@ -10,13 +10,7 @@
  */
 
 if ( ! function_exists( 'twentysixteen_entry_meta' ) ) :
-/**
- * Prints HTML with meta information for the categories, tags.
- *
- * Create your own twentysixteen_entry_meta() function to override in a child theme.
- *
- * @since Twenty Sixteen 1.0
- */
+
 function twentysixteen_entry_meta() {
 	if ( 'post' === get_post_type() ) {
 		$author_avatar_size = apply_filters( 'twentysixteen_author_avatar_size', 49 );
@@ -54,13 +48,7 @@ function twentysixteen_entry_meta() {
 endif;
 
 if ( ! function_exists( 'twentysixteen_entry_date' ) ) :
-/**
- * Prints HTML with date information for current post.
- *
- * Create your own twentysixteen_entry_date() function to override in a child theme.
- *
- * @since Twenty Sixteen 1.0
- */
+
 function twentysixteen_entry_date() {
 	$time_string = '<time class="entry-date published updated" datetime="%1$s">%2$s</time>';
 
@@ -84,13 +72,7 @@ function twentysixteen_entry_date() {
 endif;
 
 if ( ! function_exists( 'twentysixteen_entry_taxonomies' ) ) :
-/**
- * Prints HTML with category and tags for current post.
- *
- * Create your own twentysixteen_entry_taxonomies() function to override in a child theme.
- *
- * @since Twenty Sixteen 1.0
- */
+
 function twentysixteen_entry_taxonomies() {
 	$categories_list = get_the_category_list( _x( ', ', 'Used between list items, there is a space after the comma.', 'twentysixteen' ) );
 	if ( $categories_list && twentysixteen_categorized_blog() ) {
@@ -111,16 +93,7 @@ function twentysixteen_entry_taxonomies() {
 endif;
 
 if ( ! function_exists( 'twentysixteen_post_thumbnail' ) ) :
-/**
- * Displays an optional post thumbnail.
- *
- * Wraps the post thumbnail in an anchor element on index views, or a div
- * element when on single views.
- *
- * Create your own twentysixteen_post_thumbnail() function to override in a child theme.
- *
- * @since Twenty Sixteen 1.0
- */
+
 function twentysixteen_post_thumbnail() {
 	if ( post_password_required() || is_attachment() || ! has_post_thumbnail() ) {
 		return;
@@ -144,17 +117,6 @@ function twentysixteen_post_thumbnail() {
 endif;
 
 if ( ! function_exists( 'twentysixteen_excerpt' ) ) :
-	/**
-	 * Displays the optional excerpt.
-	 *
-	 * Wraps the excerpt in a div element.
-	 *
-	 * Create your own twentysixteen_excerpt() function to override in a child theme.
-	 *
-	 * @since Twenty Sixteen 1.0
-	 *
-	 * @param string $class Optional. Class string of the div element. Defaults to 'entry-summary'.
-	 */
 	function twentysixteen_excerpt( $class = 'entry-summary' ) {
 		$class = esc_attr( $class );
 
@@ -235,18 +197,3 @@ function twentysixteen_category_transient_flusher() {
 }
 add_action( 'edit_category', 'twentysixteen_category_transient_flusher' );
 add_action( 'save_post',     'twentysixteen_category_transient_flusher' );
-
-if ( ! function_exists( 'twentysixteen_the_custom_logo' ) ) :
-/**
- * Displays the optional custom logo.
- *
- * Does nothing if the custom logo is not available.
- *
- * @since Twenty Sixteen 1.2
- */
-function twentysixteen_the_custom_logo() {
-	if ( function_exists( 'the_custom_logo' ) ) {
-		the_custom_logo();
-	}
-}
-endif;

@@ -45,13 +45,9 @@ function date_i18n( $dateformatstring, $unixtimestamp = false, $gmt = false ) {
 			$i = current_time( 'timestamp' );
 		else
 			$i = time();
-		// we should not let date() interfere with our
-		// specially computed timestamp
 		$gmt = true;
 	}
-
 	$req_format = $dateformatstring;
-
 	$datefunc = $gmt? 'gmdate' : 'date';
 
 	if ( ( !empty( $wp_locale->month ) ) && ( !empty( $wp_locale->weekday ) ) ) {
@@ -96,9 +92,7 @@ function date_i18n( $dateformatstring, $unixtimestamp = false, $gmt = false ) {
 
 function wp_maybe_decline_date( $date ) {
 	global $wp_locale;
-
 	if ( 'on' === _x( 'off', 'decline months names: on or off' ) ) {
-		// Match a format like 'j F Y' or 'j. F'
 		if ( @preg_match( '#^\d{1,2}\.? \w+#u', $date ) ) {
 			$months = $wp_locale->month;
 
@@ -109,80 +103,55 @@ function wp_maybe_decline_date( $date ) {
 			$date = preg_replace( $months, $wp_locale->month_genitive, $date );
 		}
 	}
-
-	// Used for locale-specific rules
 	$locale = get_locale();
-
 	if ( 'ca' === $locale ) {
-		// " de abril| de agost| de octubre..." -> " d'abril| d'agost| d'octubre..."
 		$date = preg_replace( '# de ([ao])#i', " d'\\1", $date );
 	}
-
 	return $date;
 }
 
 function number_format_i18n( $number, $decimals = 0 ) {
 	global $wp_locale;
-
 	if ( isset( $wp_locale ) ) {
 		$formatted = number_format( $number, absint( $decimals ), $wp_locale->number_format['decimal_point'], $wp_locale->number_format['thousands_sep'] );
 	} else {
 		$formatted = number_format( $number, absint( $decimals ) );
 	}
-
 	return apply_filters( 'number_format_i18n', $formatted );
 }
 
 function size_format( $bytes, $decimals = 0 ) {
-	$quant = array(
-		'TB' => TB_IN_BYTES,
-		'GB' => GB_IN_BYTES,
-		'MB' => MB_IN_BYTES,
-		'kB' => KB_IN_BYTES,
-		'B'  => 1,
-	);
-
+	$quant = array( 'TB' => TB_IN_BYTES, 'GB' => GB_IN_BYTES, 'MB' => MB_IN_BYTES, 'kB' => KB_IN_BYTES, 'B'  => 1, );
 	foreach ( $quant as $unit => $mag ) {
 		if ( doubleval( $bytes ) >= $mag ) {
 			return number_format_i18n( $bytes / $mag, $decimals ) . ' ' . $unit;
 		}
 	}
-
 	return false;
 }
 
 function get_weekstartend( $mysqlstring, $start_of_week = '' ) {
-
 	$my = substr( $mysqlstring, 0, 4 );
-
 	$mm = substr( $mysqlstring, 8, 2 );
-
 	$md = substr( $mysqlstring, 5, 2 );
-
 	$day = mktime( 0, 0, 0, $md, $mm, $my );
-
 	$weekday = date( 'w', $day );
-
 	if ( !is_numeric($start_of_week) )
 		$start_of_week = get_option( 'start_of_week' );
-
 	if ( $weekday < $start_of_week )
 		$weekday += 7;
-
 	$start = $day - DAY_IN_SECONDS * ( $weekday - $start_of_week );
-
 	$end = $start + WEEK_IN_SECONDS - 1;
 	return compact( 'start', 'end' );
 }
 
 function maybe_unserialize( $original ) {
-	if ( is_serialized( $original ) ) // don't attempt to unserialize data that wasn't serialized going in
+	if ( is_serialized( $original ) )
 		return @unserialize( $original );
 	return $original;
 }
 
 function is_serialized( $data, $strict = true ) {
-	// if it isn't a string, it isn't serialized.
 	if ( ! is_string( $data ) ) {
 		return false;
 	}
@@ -204,10 +173,8 @@ function is_serialized( $data, $strict = true ) {
 	} else {
 		$semicolon = strpos( $data, ';' );
 		$brace     = strpos( $data, '}' );
-		// Either ; or } must exist.
 		if ( false === $semicolon && false === $brace )
 			return false;
-		// But neither must be in the first X characters.
 		if ( false !== $semicolon && $semicolon < 3 )
 			return false;
 		if ( false !== $brace && $brace < 4 )
@@ -223,7 +190,6 @@ function is_serialized( $data, $strict = true ) {
 			} elseif ( false === strpos( $data, '"' ) ) {
 				return false;
 			}
-			// or else fall through
 		case 'a' :
 		case 'O' :
 			return (bool) preg_match( "/^{$token}:[0-9]+:/s", $data );
@@ -237,7 +203,6 @@ function is_serialized( $data, $strict = true ) {
 }
 
 function is_serialized_string( $data ) {
-	// if it isn't a string, it isn't a serialized string.
 	if ( ! is_string( $data ) ) {
 		return false;
 	}
@@ -260,10 +225,8 @@ function is_serialized_string( $data ) {
 function maybe_serialize( $data ) {
 	if ( is_array( $data ) || is_object( $data ) )
 		return serialize( $data );
-
 	if ( is_serialized( $data, false ) )
 		return serialize( $data );
-
 	return $data;
 }
 
@@ -292,26 +255,19 @@ function wp_extract_urls( $content ) {
 
 function do_enclose( $content, $post_ID ) {
 	global $wpdb;
-
-	//TODO: Tidy this ghetto code up and make the debug code optional
 	include_once( ABSPATH . WPINC . '/class-IXR.php' );
-
 	$post_links = array();
-
 	$pung = get_enclosed( $post_ID );
-
 	$post_links_temp = wp_extract_urls( $content );
-
 	foreach ( $pung as $link_test ) {
-		if ( ! in_array( $link_test, $post_links_temp ) ) { // link no longer in post
+		if ( ! in_array( $link_test, $post_links_temp ) ) {
 			$mids = $wpdb->get_col( $wpdb->prepare("SELECT meta_id FROM $wpdb->postmeta WHERE post_id = %d AND meta_key = 'enclosure' AND meta_value LIKE %s", $post_ID, $wpdb->esc_like( $link_test ) . '%') );
 			foreach ( $mids as $mid )
 				delete_metadata_by_mid( 'post', $mid );
 		}
 	}
-
 	foreach ( (array) $post_links_temp as $link_test ) {
-		if ( !in_array( $link_test, $pung ) ) { // If we haven't pung it already
+		if ( !in_array( $link_test, $pung ) ) {
 			$test = @parse_url( $link_test );
 			if ( false === $test )
 				continue;
@@ -321,19 +277,13 @@ function do_enclose( $content, $post_ID ) {
 				$post_links[] = $link_test;
 		}
 	}
-
 	$post_links = apply_filters( 'enclosure_links', $post_links, $post_ID );
-
 	foreach ( (array) $post_links as $url ) {
 		if ( $url != '' && !$wpdb->get_var( $wpdb->prepare( "SELECT post_id FROM $wpdb->postmeta WHERE post_id = %d AND meta_key = 'enclosure' AND meta_value LIKE %s", $post_ID, $wpdb->esc_like( $url ) . '%' ) ) ) {
-
 			if ( $headers = wp_get_http_headers( $url) ) {
 				$len = isset( $headers['content-length'] ) ? (int) $headers['content-length'] : 0;
 				$type = isset( $headers['content-type'] ) ? $headers['content-type'] : '';
 				$allowed_types = array( 'video', 'audio' );
-
-				// Check to see if we can figure out the mime type from
-				// the extension
 				$url_parts = @parse_url( $url );
 				if ( false !== $url_parts ) {
 					$extension = pathinfo( $url_parts['path'], PATHINFO_EXTENSION );
@@ -346,7 +296,6 @@ function do_enclose( $content, $post_ID ) {
 						}
 					}
 				}
-
 				if ( in_array( substr( $type, 0, strpos( $type, "/" ) ), $allowed_types ) ) {
 					add_post_meta( $post_ID, 'enclosure', "$url\n$len\n$mime\n" );
 				}
@@ -355,15 +304,10 @@ function do_enclose( $content, $post_ID ) {
 	}
 }
 
-function wp_get_http_headers( $url, $deprecated = false ) {
-	if ( !empty( $deprecated ) )
-		_deprecated_argument( __FUNCTION__, '2.7' );
-
+function wp_get_http_headers( $url ) {
 	$response = wp_safe_remote_head( $url );
-
 	if ( is_wp_error( $response ) )
 		return false;
-
 	return wp_remote_retrieve_headers( $response );
 }
 
@@ -381,7 +325,6 @@ function build_query( $data ) {
 
 function _http_build_query( $data, $prefix = null, $sep = null, $key = '', $urlencode = true ) {
 	$ret = array();
-
 	foreach ( (array) $data as $k => $v ) {
 		if ( $urlencode)
 			$k = urlencode($k);
@@ -393,7 +336,6 @@ function _http_build_query( $data, $prefix = null, $sep = null, $key = '', $urle
 			continue;
 		elseif ( $v === false )
 			$v = '0';
-
 		if ( is_array($v) || is_object($v) )
 			array_push($ret,_http_build_query($v, '', $sep, $k, $urlencode));
 		elseif ( $urlencode )
@@ -401,10 +343,8 @@ function _http_build_query( $data, $prefix = null, $sep = null, $key = '', $urle
 		else
 			array_push($ret, $k.'='.$v);
 	}
-
 	if ( null === $sep )
 		$sep = ini_get('arg_separator.output');
-
 	return implode($sep, $ret);
 }
 
@@ -449,7 +389,7 @@ function add_query_arg() {
 	}
 
 	wp_parse_str( $query, $qs );
-	$qs = urlencode_deep( $qs ); // this re-URL-encodes things that were already in the query string
+	$qs = urlencode_deep( $qs );
 	if ( is_array( $args[0] ) ) {
 		foreach ( $args[0] as $k => $v ) {
 			$qs[ $k ] = $v;
@@ -462,7 +402,6 @@ function add_query_arg() {
 		if ( $v === false )
 			unset( $qs[$k] );
 	}
-
 	$ret = build_query( $qs );
 	$ret = trim( $ret, '?' );
 	$ret = preg_replace( '#=(&|$)#', '$1', $ret );
@@ -521,18 +460,13 @@ function add_magic_quotes( $array ) {
 
 function wp_remote_fopen( $uri ) {
 	$parsed_url = @parse_url( $uri );
-
 	if ( !$parsed_url || !is_array( $parsed_url ) )
 		return false;
-
 	$options = array();
 	$options['timeout'] = 10;
-
 	$response = wp_safe_remote_get( $uri, $options );
-
 	if ( is_wp_error( $response ) )
 		return false;
-
 	return wp_remote_retrieve_body( $response );
 }
 
@@ -545,15 +479,12 @@ function wp( $query_vars = '' ) {
 
 function get_status_header_desc( $code ) {
 	global $wp_header_to_desc;
-
 	$code = absint( $code );
-
 	if ( !isset( $wp_header_to_desc ) ) {
 		$wp_header_to_desc = array(
 			100 => 'Continue',
 			101 => 'Switching Protocols',
 			102 => 'Processing',
-
 			200 => 'OK',
 			201 => 'Created',
 			202 => 'Accepted',
@@ -563,7 +494,6 @@ function get_status_header_desc( $code ) {
 			206 => 'Partial Content',
 			207 => 'Multi-Status',
 			226 => 'IM Used',
-
 			300 => 'Multiple Choices',
 			301 => 'Moved Permanently',
 			302 => 'Found',
@@ -573,7 +503,6 @@ function get_status_header_desc( $code ) {
 			306 => 'Reserved',
 			307 => 'Temporary Redirect',
 			308 => 'Permanent Redirect',
-
 			400 => 'Bad Request',
 			401 => 'Unauthorized',
 			402 => 'Payment Required',
@@ -602,7 +531,6 @@ function get_status_header_desc( $code ) {
 			429 => 'Too Many Requests',
 			431 => 'Request Header Fields Too Large',
 			451 => 'Unavailable For Legal Reasons',
-
 			500 => 'Internal Server Error',
 			501 => 'Not Implemented',
 			502 => 'Bad Gateway',
@@ -615,7 +543,6 @@ function get_status_header_desc( $code ) {
 			511 => 'Network Authentication Required',
 		);
 	}
-
 	if ( isset( $wp_header_to_desc[$code] ) )
 		return $wp_header_to_desc[$code];
 	else
@@ -623,28 +550,17 @@ function get_status_header_desc( $code ) {
 }
 
 function status_header( $code, $description = '' ) {
-	if ( ! $description ) {
-		$description = get_status_header_desc( $code );
-	}
-
-	if ( empty( $description ) ) {
-		return;
-	}
-
+	if ( ! $description ) { $description = get_status_header_desc( $code ); }
+	if ( empty( $description ) ) { return; }
 	$protocol = wp_get_server_protocol();
 	$status_header = "$protocol $code $description";
 	if ( function_exists( 'apply_filters' ) )
 		$status_header = apply_filters( 'status_header', $status_header, $code, $description, $protocol );
-
 	@header( $status_header, true, $code );
 }
 
 function wp_get_nocache_headers() {
-	$headers = array(
-		'Expires' => 'Wed, 11 Jan 1984 05:00:00 GMT',
-		'Cache-Control' => 'no-cache, must-revalidate, max-age=0',
-		'Pragma' => 'no-cache',
-	);
+	$headers = array( 'Expires' => 'Wed, 11 Jan 1984 05:00:00 GMT', 'Cache-Control' => 'no-cache, must-revalidate, max-age=0', 'Pragma' => 'no-cache' );
 	if ( function_exists('apply_filters') ) {
 		$headers = (array) apply_filters( 'nocache_headers', $headers );
 	}
@@ -662,15 +578,9 @@ function nocache_headers() {
 
 function cache_javascript_headers() {
 	$expiresOffset = 10 * 86400;
-
 	header( "Content-Type: text/javascript; charset=" . get_bloginfo( 'charset' ) );
-	header( "Vary: Accept-Encoding" ); // Handle proxies
+	header( "Vary: Accept-Encoding" );
 	header( "Expires: " . gmdate( "D, d M Y H:i:s", time() + $expiresOffset ) . " GMT" );
-}
-
-function get_num_queries() {
-	global $wpdb;
-	return $wpdb->num_queries;
 }
 
 function bool_from_yn( $yn ) {
@@ -696,19 +606,15 @@ function wp_nonce_url( $actionurl, $action = -1, $name = '_wpnonce' ) {
 function wp_nonce_field( $action = -1, $name = "_wpnonce", $referer = true , $echo = true ) {
 	$name = esc_attr( $name );
 	$nonce_field = '<input type="hidden" id="' . $name . '" name="' . $name . '" value="' . wp_create_nonce( $action ) . '" />';
-
 	if ( $referer )
 		$nonce_field .= wp_referer_field( false );
-
 	if ( $echo )
 		echo $nonce_field;
-
 	return $nonce_field;
 }
 
 function wp_referer_field( $echo = true ) {
 	$referer_field = '<input type="hidden" name="_wp_http_referer" value="'. esc_attr( wp_unslash( $_SERVER['REQUEST_URI'] ) ) . '" />';
-
 	if ( $echo )
 		echo $referer_field;
 	return $referer_field;
@@ -728,13 +634,10 @@ function wp_get_referer() {
 	if ( ! function_exists( 'wp_validate_redirect' ) ) {
 		return false;
 	}
-
 	$ref = wp_get_raw_referer();
-
 	if ( $ref && $ref !== wp_unslash( $_SERVER['REQUEST_URI'] ) && $ref !== home_url() . wp_unslash( $_SERVER['REQUEST_URI'] ) ) {
 		return wp_validate_redirect( $ref, false );
 	}
-
 	return false;
 }
 
@@ -744,7 +647,6 @@ function wp_get_raw_referer() {
 	} else if ( ! empty( $_SERVER['HTTP_REFERER'] ) ) {
 		return wp_unslash( $_SERVER['HTTP_REFERER'] );
 	}
-
 	return false;
 }
 
@@ -756,75 +658,53 @@ function wp_get_original_referer() {
 
 function wp_mkdir_p( $target ) {
 	$wrapper = null;
-
 	if ( wp_is_stream( $target ) ) {
 		list( $wrapper, $target ) = explode( '://', $target, 2 );
 	}
-
 	$target = str_replace( '//', '/', $target );
-
 	if ( $wrapper !== null ) {
 		$target = $wrapper . '://' . $target;
 	}
-
 	$target = rtrim($target, '/');
 	if ( empty($target) )
 		$target = '/';
 
 	if ( file_exists( $target ) )
 		return @is_dir( $target );
-
-	// We need to find the permissions of the parent folder that exists and inherit that.
 	$target_parent = dirname( $target );
 	while ( '.' != $target_parent && ! is_dir( $target_parent ) ) {
 		$target_parent = dirname( $target_parent );
 	}
-
-	// Get the permission bits.
 	if ( $stat = @stat( $target_parent ) ) {
 		$dir_perms = $stat['mode'] & 0007777;
 	} else {
 		$dir_perms = 0777;
 	}
-
 	if ( @mkdir( $target, $dir_perms, true ) ) {
-
-		/*
-		 * If a umask is set that modifies $dir_perms, we'll have to re-set
-		 * the $dir_perms correctly with chmod()
-		 */
 		if ( $dir_perms != ( $dir_perms & ~umask() ) ) {
 			$folder_parts = explode( '/', substr( $target, strlen( $target_parent ) + 1 ) );
 			for ( $i = 1, $c = count( $folder_parts ); $i <= $c; $i++ ) {
 				@chmod( $target_parent . '/' . implode( '/', array_slice( $folder_parts, 0, $i ) ), $dir_perms );
 			}
 		}
-
 		return true;
 	}
-
 	return false;
 }
 
 function path_is_absolute( $path ) {
-
 	if ( realpath($path) == $path )
 		return true;
-
 	if ( strlen($path) == 0 || $path[0] == '.' )
 		return false;
-
 	if ( preg_match('#^[a-zA-Z]:\\\\#', $path) )
 		return true;
-
-	// A path starting with / or \ is absolute; anything else is relative.
 	return ( $path[0] == '/' || $path[0] == '\\' );
 }
 
 function path_join( $base, $path ) {
 	if ( path_is_absolute($path) )
 		return $path;
-
 	return rtrim($base, '/') . '/' . ltrim($path, '/');
 }
 
@@ -841,70 +721,31 @@ function get_temp_dir() {
 	static $temp = '';
 	if ( defined('WP_TEMP_DIR') )
 		return trailingslashit(WP_TEMP_DIR);
-
 	if ( $temp )
 		return trailingslashit( $temp );
-
 	if ( function_exists('sys_get_temp_dir') ) {
 		$temp = sys_get_temp_dir();
-		if ( @is_dir( $temp ) && wp_is_writable( $temp ) )
+		if ( @is_dir( $temp ) && @is_writable( $temp ) )
 			return trailingslashit( $temp );
 	}
-
 	$temp = ini_get('upload_tmp_dir');
-	if ( @is_dir( $temp ) && wp_is_writable( $temp ) )
+	if ( @is_dir( $temp ) && @is_writable( $temp ) )
 		return trailingslashit( $temp );
-
 	$temp = WP_CONTENT_DIR . '/';
-	if ( is_dir( $temp ) && wp_is_writable( $temp ) )
+	if ( is_dir( $temp ) && @is_writable( $temp ) )
 		return $temp;
-
 	return '/tmp/';
-}
-
-function wp_is_writable( $path ) {
-	if ( 'WIN' === strtoupper( substr( PHP_OS, 0, 3 ) ) )
-		return win_is_writable( $path );
-	else
-		return @is_writable( $path );
-}
-
-function win_is_writable( $path ) {
-
-	if ( $path[strlen( $path ) - 1] == '/' ) { // if it looks like a directory, check a random file within the directory
-		return win_is_writable( $path . uniqid( mt_rand() ) . '.tmp');
-	} elseif ( is_dir( $path ) ) { // If it's a directory (and not a file) check a random file within the directory
-		return win_is_writable( $path . '/' . uniqid( mt_rand() ) . '.tmp' );
-	}
-	// check tmp file for read/write capabilities
-	$should_delete_tmp_file = !file_exists( $path );
-	$f = @fopen( $path, 'a' );
-	if ( $f === false )
-		return false;
-	fclose( $f );
-	if ( $should_delete_tmp_file )
-		unlink( $path );
-	return true;
-}
-
-function wp_get_upload_dir() {
-	return wp_upload_dir( null, false );
 }
 
 function wp_upload_dir( $time = null, $create_dir = true, $refresh_cache = false ) {
 	static $cache = array(), $tested_paths = array();
-
 	$key = sprintf( '%d-%s', get_current_blog_id(), (string) $time );
-
 	if ( $refresh_cache || empty( $cache[ $key ] ) ) {
 		$cache[ $key ] = _wp_upload_dir( $time );
 	}
-
 	$uploads = apply_filters( 'upload_dir', $cache[ $key ] );
-
 	if ( $create_dir ) {
 		$path = $uploads['path'];
-
 		if ( array_key_exists( $path, $tested_paths ) ) {
 			$uploads['error'] = $tested_paths[ $path ];
 		} else {
@@ -914,42 +755,31 @@ function wp_upload_dir( $time = null, $create_dir = true, $refresh_cache = false
 				} else {
 					$error_path = basename( $uploads['basedir'] ) . $uploads['subdir'];
 				}
-
-				$uploads['error'] = sprintf( __( 'Unable to create directory %s. Is its parent directory writable by the server?' ), esc_html( $error_path ) );
+				$uploads['error'] = sprintf( 'Unable to create directory %s. Is its parent directory writable by the server?', esc_html( $error_path ) );
 			}
-
 			$tested_paths[ $path ] = $uploads['error'];
 		}
 	}
-
 	return $uploads;
 }
 
 function _wp_upload_dir( $time = null ) {
 	$siteurl = get_option( 'siteurl' );
 	$upload_path = trim( get_option( 'upload_path' ) );
-
 	if ( empty( $upload_path ) || 'wp-content/uploads' == $upload_path ) {
 		$dir = WP_CONTENT_DIR . '/uploads';
 	} elseif ( 0 !== strpos( $upload_path, ABSPATH ) ) {
-		// $dir is absolute, $upload_path is (maybe) relative to ABSPATH
 		$dir = path_join( ABSPATH, $upload_path );
 	} else {
 		$dir = $upload_path;
 	}
-
 	if ( !$url = get_option( 'upload_url_path' ) ) {
 		if ( empty($upload_path) || ( 'wp-content/uploads' == $upload_path ) || ( $upload_path == $dir ) )
 			$url = WP_CONTENT_URL . '/uploads';
 		else
 			$url = trailingslashit( $siteurl ) . $upload_path;
 	}
-
-	/*
-	 * Honor the value of UPLOADS. This happens as long as ms-files rewriting is disabled.
-	 * We also sometimes obey UPLOADS when rewriting is enabled -- see the next block.
-	 */
-	if ( defined( 'UPLOADS' ) && ! ( is_multisite() && get_site_option( 'ms_files_rewriting' ) ) ) {
+	if ( defined( 'UPLOADS' ) ) {
 		$dir = ABSPATH . UPLOADS;
 		$url = trailingslashit( $siteurl ) . UPLOADS;
 	}
@@ -959,17 +789,14 @@ function _wp_upload_dir( $time = null ) {
 
 	$subdir = '';
 	if ( get_option( 'uploads_use_yearmonth_folders' ) ) {
-		// Generate the yearly and monthly dirs
 		if ( !$time )
 			$time = current_time( 'mysql' );
 		$y = substr( $time, 0, 4 );
 		$m = substr( $time, 5, 2 );
 		$subdir = "/$y/$m";
 	}
-
 	$dir .= $subdir;
 	$url .= $subdir;
-
 	return array(
 		'path'    => $dir,
 		'url'     => $url,
@@ -981,50 +808,25 @@ function _wp_upload_dir( $time = null ) {
 }
 
 function wp_unique_filename( $dir, $filename, $unique_filename_callback = null ) {
-	// Sanitize the file name before we begin processing.
 	$filename = sanitize_file_name($filename);
-
-	// Separate the filename into a name and extension.
 	$info = pathinfo($filename);
 	$ext = !empty($info['extension']) ? '.' . $info['extension'] : '';
 	$name = basename($filename, $ext);
-
-	// Edge case: if file is named '.ext', treat as an empty name.
 	if ( $name === $ext )
 		$name = '';
-
-	/*
-	 * Increment the file number until we have a unique file to save in $dir.
-	 * Use callback if supplied.
-	 */
 	if ( $unique_filename_callback && is_callable( $unique_filename_callback ) ) {
 		$filename = call_user_func( $unique_filename_callback, $dir, $name, $ext );
 	} else {
 		$number = '';
-
-		// Change '.ext' to lower case.
 		if ( $ext && strtolower($ext) != $ext ) {
 			$ext2 = strtolower($ext);
 			$filename2 = preg_replace( '|' . preg_quote($ext) . '$|', $ext2, $filename );
-
-			// Check for both lower and upper case extension or image sub-sizes may be overwritten.
 			while ( file_exists($dir . "/$filename") || file_exists($dir . "/$filename2") ) {
 				$new_number = $number + 1;
 				$filename = str_replace( array( "-$number$ext", "$number$ext" ), "-$new_number$ext", $filename );
 				$filename2 = str_replace( array( "-$number$ext2", "$number$ext2" ), "-$new_number$ext2", $filename2 );
 				$number = $new_number;
 			}
-
-			/**
-			 * Filter the result when generating a unique file name.
-			 *
-			 * @since 4.5.0
-			 *
-			 * @param string        $filename                 Unique file name.
-			 * @param string        $ext                      File extension, eg. ".png".
-			 * @param string        $dir                      Directory path.
-			 * @param callable|null $unique_filename_callback Callback function that generates the unique file name.
-			 */
 			return apply_filters( 'wp_unique_filename', $filename2, $ext, $dir, $unique_filename_callback );
 		}
 
@@ -1036,89 +838,50 @@ function wp_unique_filename( $dir, $filename, $unique_filename_callback = null )
 			}
 		}
 	}
-
-	/** This filter is documented in wp-includes/functions.php */
 	return apply_filters( 'wp_unique_filename', $filename, $ext, $dir, $unique_filename_callback );
 }
 
-function wp_upload_bits( $name, $deprecated, $bits, $time = null ) {
-	if ( !empty( $deprecated ) )
-		_deprecated_argument( __FUNCTION__, '2.0' );
-
+function wp_upload_bits( $name, $bits, $time = null ) {
 	if ( empty( $name ) )
-		return array( 'error' => __( 'Empty filename' ) );
-
+		return array( 'error' => 'Empty filename' );
 	$wp_filetype = wp_check_filetype( $name );
 	if ( ! $wp_filetype['ext'] && ! current_user_can( 'unfiltered_upload' ) )
-		return array( 'error' => __( 'Invalid file type' ) );
-
+		return array( 'error' => 'Invalid file type' );
 	$upload = wp_upload_dir( $time );
-
 	if ( $upload['error'] !== false )
 		return $upload;
-
 	$upload_bits_error = apply_filters( 'wp_upload_bits', array( 'name' => $name, 'bits' => $bits, 'time' => $time ) );
 	if ( !is_array( $upload_bits_error ) ) {
 		$upload[ 'error' ] = $upload_bits_error;
 		return $upload;
 	}
-
 	$filename = wp_unique_filename( $upload['path'], $name );
-
 	$new_file = $upload['path'] . "/$filename";
 	if ( ! wp_mkdir_p( dirname( $new_file ) ) ) {
 		if ( 0 === strpos( $upload['basedir'], ABSPATH ) )
 			$error_path = str_replace( ABSPATH, '', $upload['basedir'] ) . $upload['subdir'];
 		else
 			$error_path = basename( $upload['basedir'] ) . $upload['subdir'];
-
-		$message = sprintf( __( 'Unable to create directory %s. Is its parent directory writable by the server?' ), $error_path );
+		$message = sprintf( 'Unable to create directory %s. Is its parent directory writable by the server?', $error_path );
 		return array( 'error' => $message );
 	}
-
 	$ifp = @ fopen( $new_file, 'wb' );
 	if ( ! $ifp )
-		return array( 'error' => sprintf( __( 'Could not write file %s' ), $new_file ) );
-
+		return array( 'error' => sprintf( 'Could not write file %s', $new_file ) );
 	@fwrite( $ifp, $bits );
 	fclose( $ifp );
 	clearstatcache();
-
-	// Set correct file permissions
 	$stat = @ stat( dirname( $new_file ) );
 	$perms = $stat['mode'] & 0007777;
 	$perms = $perms & 0000666;
 	@ chmod( $new_file, $perms );
 	clearstatcache();
-
-	// Compute the URL
 	$url = $upload['url'] . "/$filename";
-
-	/** This filter is documented in wp-admin/includes/file.php */
 	return apply_filters( 'wp_handle_upload', array( 'file' => $new_file, 'url' => $url, 'type' => $wp_filetype['type'], 'error' => false ), 'sideload' );
 }
 
-/**
- * Retrieve the file type based on the extension name.
- *
- * @since 2.5.0
- *
- * @param string $ext The extension to search.
- * @return string|void The file type, example: audio, video, document, spreadsheet, etc.
- */
 function wp_ext2type( $ext ) {
 	$ext = strtolower( $ext );
-
-	/**
-	 * Filter file type based on the extension name.
-	 *
-	 * @since 2.5.0
-	 *
-	 * @see wp_ext2type()
-	 *
-	 * @param array $ext2type Multi-dimensional array with extensions for a default set
-	 *                        of file types.
-	 */
 	$ext2type = apply_filters( 'ext2type', array(
 		'image'       => array( 'jpg', 'jpeg', 'jpe',  'gif',  'png',  'bmp',   'tif',  'tiff', 'ico' ),
 		'audio'       => array( 'aac', 'ac3',  'aif',  'aiff', 'm3a',  'm4a',   'm4b',  'mka',  'mp1',  'mp2',  'mp3', 'ogg', 'oga', 'ram', 'wav', 'wma' ),
@@ -1136,23 +899,11 @@ function wp_ext2type( $ext ) {
 			return $type;
 }
 
-/**
- * Retrieve the file type from the file name.
- *
- * You can optionally define the mime array, if needed.
- *
- * @since 2.0.4
- *
- * @param string $filename File name or path.
- * @param array  $mimes    Optional. Key is the file extension with value as the mime type.
- * @return array Values with extension first and mime type.
- */
 function wp_check_filetype( $filename, $mimes = null ) {
 	if ( empty($mimes) )
 		$mimes = get_allowed_mime_types();
 	$type = false;
 	$ext = false;
-
 	foreach ( $mimes as $ext_preg => $mime_match ) {
 		$ext_preg = '!\.(' . $ext_preg . ')$!i';
 		if ( preg_match( $ext_preg, $filename, $ext_matches ) ) {
@@ -1161,57 +912,20 @@ function wp_check_filetype( $filename, $mimes = null ) {
 			break;
 		}
 	}
-
 	return compact( 'ext', 'type' );
 }
 
-/**
- * Attempt to determine the real file type of a file.
- *
- * If unable to, the file name extension will be used to determine type.
- *
- * If it's determined that the extension does not match the file's real type,
- * then the "proper_filename" value will be set with a proper filename and extension.
- *
- * Currently this function only supports validating images known to getimagesize().
- *
- * @since 3.0.0
- *
- * @param string $file     Full path to the file.
- * @param string $filename The name of the file (may differ from $file due to $file being
- *                         in a tmp directory).
- * @param array   $mimes   Optional. Key is the file extension with value as the mime type.
- * @return array Values for the extension, MIME, and either a corrected filename or false
- *               if original $filename is valid.
- */
 function wp_check_filetype_and_ext( $file, $filename, $mimes = null ) {
 	$proper_filename = false;
-
-	// Do basic extension validation and MIME mapping
 	$wp_filetype = wp_check_filetype( $filename, $mimes );
 	$ext = $wp_filetype['ext'];
 	$type = $wp_filetype['type'];
-
-	// We can't do any further validation without a file to work with
 	if ( ! file_exists( $file ) ) {
 		return compact( 'ext', 'type', 'proper_filename' );
 	}
-
-	// We're able to validate images using GD
 	if ( $type && 0 === strpos( $type, 'image/' ) && function_exists('getimagesize') ) {
-
-		// Attempt to figure out what type of image it actually is
 		$imgstats = @getimagesize( $file );
-
-		// If getimagesize() knows what kind of image it really is and if the real MIME doesn't match the claimed MIME
 		if ( !empty($imgstats['mime']) && $imgstats['mime'] != $type ) {
-			/**
-			 * Filter the list mapping image mime types to their respective extensions.
-			 *
-			 * @since 3.0.0
-			 *
-			 * @param  array $mime_to_ext Array of image mime types and their matching extensions.
-			 */
 			$mime_to_ext = apply_filters( 'getimagesize_mimes_to_exts', array(
 				'image/jpeg' => 'jpg',
 				'image/png'  => 'png',
@@ -1219,8 +933,6 @@ function wp_check_filetype_and_ext( $file, $filename, $mimes = null ) {
 				'image/bmp'  => 'bmp',
 				'image/tiff' => 'tif',
 			) );
-
-			// Replace whatever is after the last period in the filename with the correct extension
 			if ( ! empty( $mime_to_ext[ $imgstats['mime'] ] ) ) {
 				$filename_parts = explode( '.', $filename );
 				array_pop( $filename_parts );
@@ -1228,16 +940,14 @@ function wp_check_filetype_and_ext( $file, $filename, $mimes = null ) {
 				$new_filename = implode( '.', $filename_parts );
 
 				if ( $new_filename != $filename ) {
-					$proper_filename = $new_filename; // Mark that it changed
+					$proper_filename = $new_filename;
 				}
-				// Redefine the extension / MIME
 				$wp_filetype = wp_check_filetype( $new_filename, $mimes );
 				$ext = $wp_filetype['ext'];
 				$type = $wp_filetype['type'];
 			}
 		}
 	}
-
 	return apply_filters( 'wp_check_filetype_and_ext', compact( 'ext', 'type', 'proper_filename' ), $file, $filename, $mimes );
 }
 
@@ -1361,20 +1071,17 @@ function wp_nonce_ays( $action ) {
 }
 
 function wp_die( $message = '', $title = '', $args = array() ) {
-
 	if ( is_int( $args ) ) {
 		$args = array( 'response' => $args );
 	} elseif ( is_int( $title ) ) {
 		$args  = array( 'response' => $title );
 		$title = '';
 	}
-
 	if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
 		$function = apply_filters( 'wp_die_ajax_handler', '_ajax_wp_die_handler' );
 	} else {
 		$function = apply_filters( 'wp_die_handler', '_default_wp_die_handler' );
 	}
-
 	call_user_func( $function, $message, $title, $args );
 }
 
@@ -1424,19 +1131,8 @@ function _default_wp_die_handler( $message, $title = '', $args = array() ) {
 	<meta name="viewport" content="width=device-width">
 	<title><?php echo $title ?></title>
 	<style type="text/css">
-		html {
-			background: #f1f1f1;
-		}
-		body {
-			background: #fff;
-			color: #444;
-			font-family: "Open Sans", sans-serif;
-			margin: 2em auto;
-			padding: 1em 2em;
-			max-width: 700px;
-			-webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.13);
-			box-shadow: 0 1px 3px rgba(0,0,0,0.13);
-		}
+		html {background: #f1f1f1;}
+		body {background: #fff;color: #444;font-family: sans-serif;margin: 2em auto;padding: 1em 2em;max-width: 700px;-webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.13);box-shadow: 0 1px 3px rgba(0,0,0,0.13);}
 		h1 {
 			border-bottom: 1px solid #dadada;
 			clear: both;
@@ -1446,28 +1142,15 @@ function _default_wp_die_handler( $message, $title = '', $args = array() ) {
 			padding: 0;
 			padding-bottom: 7px;
 		}
-		#error-page {
-			margin-top: 50px;
-		}
-		#error-page p {
-			font-size: 14px;
-			line-height: 1.5;
-			margin: 25px 0 20px;
-		}
-		#error-page code {
-			font-family: Consolas, Monaco, monospace;
-		}
+		#error-page {margin-top: 50px;}
+		#error-page p {font-size: 14px;line-height: 1.5;margin: 25px 0 20px;}
+		#error-page code {font-family: Consolas, Monaco, monospace;}
 		ul li {
 			margin-bottom: 10px;
 			font-size: 14px ;
 		}
-		a {
-			color: #0073aa;
-		}
-		a:hover,
-		a:active {
-			color: #00a0d2;
-		}
+		a {color: #0073aa;}
+		a:hover, a:active {color: #00a0d2;}
 		a:focus {
 			color: #124964;
 		    -webkit-box-shadow:
@@ -1532,12 +1215,6 @@ function _default_wp_die_handler( $message, $title = '', $args = array() ) {
 		 	-ms-transform: translateY(1px);
 		 	transform: translateY(1px);
 		}
-
-		<?php
-		if ( 'rtl' == $text_direction ) {
-			echo 'body { font-family: Tahoma, Arial; }';
-		}
-		?>
 	</style>
 </head>
 <body id="error-page">
@@ -1552,9 +1229,7 @@ function _default_wp_die_handler( $message, $title = '', $args = array() ) {
 function _xmlrpc_wp_die_handler( $message, $title = '', $args = array() ) {
 	global $wp_xmlrpc_server;
 	$defaults = array( 'response' => 500 );
-
 	$r = wp_parse_args($args, $defaults);
-
 	if ( $wp_xmlrpc_server ) {
 		$error = new IXR_Error( $r['response'] , $message);
 		$wp_xmlrpc_server->output( $error->getXml() );
@@ -1575,7 +1250,6 @@ function _scalar_wp_die_handler( $message = '' ) {
 }
 
 function wp_json_encode( $data, $options = 0, $depth = 512 ) {
-
 	if ( version_compare( PHP_VERSION, '5.5', '>=' ) ) {
 		$args = array( $data, $options, $depth );
 	} elseif ( version_compare( PHP_VERSION, '5.3', '>=' ) ) {
@@ -1583,21 +1257,16 @@ function wp_json_encode( $data, $options = 0, $depth = 512 ) {
 	} else {
 		$args = array( $data );
 	}
-
 	$data = _wp_json_prepare_data( $data );
-
 	$json = @call_user_func_array( 'json_encode', $args );
-
 	if ( false !== $json && ( version_compare( PHP_VERSION, '5.5', '>=' ) || false === strpos( $json, 'null' ) ) )  {
 		return $json;
 	}
-
 	try {
 		$args[0] = _wp_json_sanity_check( $data, $depth );
 	} catch ( Exception $e ) {
 		return false;
 	}
-
 	return call_user_func_array( 'json_encode', $args );
 }
 
@@ -1609,14 +1278,11 @@ function _wp_json_sanity_check( $data, $depth ) {
 	if ( is_array( $data ) ) {
 		$output = array();
 		foreach ( $data as $id => $el ) {
-			// Don't forget to sanitize the ID!
 			if ( is_string( $id ) ) {
 				$clean_id = _wp_json_convert_string( $id );
 			} else {
 				$clean_id = $id;
 			}
-
-			// Check the element type, so that we're only recursing if we really have to.
 			if ( is_array( $el ) || is_object( $el ) ) {
 				$output[ $clean_id ] = _wp_json_sanity_check( $el, $depth - 1 );
 			} elseif ( is_string( $el ) ) {
@@ -1633,7 +1299,6 @@ function _wp_json_sanity_check( $data, $depth ) {
 			} else {
 				$clean_id = $id;
 			}
-
 			if ( is_array( $el ) || is_object( $el ) ) {
 				$output->$clean_id = _wp_json_sanity_check( $el, $depth - 1 );
 			} elseif ( is_string( $el ) ) {
@@ -1656,7 +1321,6 @@ function _wp_json_convert_string( $string ) {
 	if ( is_null( $use_mb ) ) {
 		$use_mb = function_exists( 'mb_convert_encoding' );
 	}
-
 	if ( $use_mb ) {
 		$encoding = mb_detect_encoding( $string, mb_detect_order(), true );
 		if ( $encoding ) {
@@ -1673,22 +1337,16 @@ function _wp_json_prepare_data( $data ) {
 	if ( ! defined( 'WP_JSON_SERIALIZE_COMPATIBLE' ) || WP_JSON_SERIALIZE_COMPATIBLE === false ) {
 		return $data;
 	}
-
 	switch ( gettype( $data ) ) {
 		case 'boolean':
 		case 'integer':
 		case 'double':
 		case 'string':
 		case 'NULL':
-			// These values can be passed through.
 			return $data;
-
 		case 'array':
-			// Arrays must be mapped in case they also return objects.
 			return array_map( '_wp_json_prepare_data', $data );
-
 		case 'object':
-			// If this is an incomplete object (__PHP_Incomplete_Class), bail.
 			if ( ! is_object( $data ) ) {
 				return null;
 			}
@@ -1698,10 +1356,7 @@ function _wp_json_prepare_data( $data ) {
 			} else {
 				$data = get_object_vars( $data );
 			}
-
-			// Now, pass the array (or whatever was returned from jsonSerialize through).
 			return _wp_json_prepare_data( $data );
-
 		default:
 			return null;
 	}
@@ -1718,16 +1373,13 @@ function wp_send_json( $response ) {
 
 function wp_send_json_success( $data = null ) {
 	$response = array( 'success' => true );
-
 	if ( isset( $data ) )
 		$response['data'] = $data;
-
 	wp_send_json( $response );
 }
 
 function wp_send_json_error( $data = null ) {
 	$response = array( 'success' => false );
-
 	if ( isset( $data ) ) {
 		if ( is_wp_error( $data ) ) {
 			$result = array();
@@ -1736,13 +1388,11 @@ function wp_send_json_error( $data = null ) {
 					$result[] = array( 'code' => $code, 'message' => $message );
 				}
 			}
-
 			$response['data'] = $result;
 		} else {
 			$response['data'] = $data;
 		}
 	}
-
 	wp_send_json( $response );
 }
 
@@ -1834,10 +1484,6 @@ function wp_list_filter( $list, $args = array(), $operator = 'AND' ) {
 
 function wp_list_pluck( $list, $field, $index_key = null ) {
 	if ( ! $index_key ) {
-		/*
-		 * This is simple. Could at some point wrap array_column()
-		 * if we knew we had an array of arrays.
-		 */
 		foreach ( $list as $key => $value ) {
 			if ( is_object( $value ) ) {
 				$list[ $key ] = $value->$field;
@@ -1847,11 +1493,6 @@ function wp_list_pluck( $list, $field, $index_key = null ) {
 		}
 		return $list;
 	}
-
-	/*
-	 * When index_key is not set for a particular item, push the value
-	 * to the end of the stack. This is how array_column() behaves.
-	 */
 	$newlist = array();
 	foreach ( $list as $value ) {
 		if ( is_object( $value ) ) {
@@ -1873,10 +1514,7 @@ function wp_list_pluck( $list, $field, $index_key = null ) {
 }
 
 function wp_maybe_load_widgets() {
-	require_once( ABSPATH . WPINC . '/widgets/class-wp-widget-pages.php' );
-	require_once( ABSPATH . WPINC . '/widgets/class-wp-widget-links.php' );
 	require_once( ABSPATH . WPINC . '/widgets/class-wp-widget-search.php' );
-	require_once( ABSPATH . WPINC . '/widgets/class-wp-widget-meta.php' );
 	require_once( ABSPATH . WPINC . '/widgets/class-wp-widget-text.php' );
 	require_once( ABSPATH . WPINC . '/widgets/class-wp-widget-categories.php' );
 	require_once( ABSPATH . WPINC . '/widgets/class-wp-widget-recent-posts.php' );
@@ -1900,14 +1538,12 @@ function wp_ob_end_flush_all() {
 
 function dead_db() {
 	global $wpdb;
-
 	if ( file_exists( WP_CONTENT_DIR . '/db-error.php' ) ) {
 		require_once( WP_CONTENT_DIR . '/db-error.php' );
 		die();
 	}
 	if ( wp_installing() || defined( 'WP_ADMIN' ) )
 		wp_die($wpdb->error);
-
 	status_header( 500 );
 	nocache_headers();
 	header( 'Content-Type: text/html; charset=utf-8' );
@@ -1930,52 +1566,6 @@ function absint( $maybeint ) {
 	return abs( intval( $maybeint ) );
 }
 
-function _deprecated_function( $function, $version, $replacement = null ) {
-	do_action( 'deprecated_function_run', $function, $replacement, $version );
-
-	if ( WP_DEBUG && apply_filters( 'deprecated_function_trigger_error', true ) ) {
-		if ( ! is_null( $replacement ) )
-			trigger_error( sprintf( '%1$s is <strong>deprecated</strong> since version %2$s! Use %3$s instead.', $function, $version, $replacement ) );
-		else
-			trigger_error( sprintf( '%1$s is <strong>deprecated</strong> since version %2$s with no alternative available.', $function, $version ) );
-	}
-}
-
-function _deprecated_constructor( $class, $version, $parent_class = '' ) {
-	do_action( 'deprecated_constructor_run', $class, $version, $parent_class );
-	if ( WP_DEBUG && apply_filters( 'deprecated_constructor_trigger_error', true ) ) {
-		if ( ! empty( $parent_class ) ) {
-			trigger_error( sprintf( 'The called constructor method for %1$s in %2$s is <strong>deprecated</strong> since version %3$s! Use %4$s instead.',
-				$class, $parent_class, $version, '<pre>__construct()</pre>' ) );
-		} else {
-			trigger_error( sprintf( 'The called constructor method for %1$s is <strong>deprecated</strong> since version %2$s! Use %3$s instead.',
-				$class, $version, '<pre>__construct()</pre>' ) );
-		}
-	}
-
-}
-
-function _deprecated_file( $file, $version, $replacement = null, $message = '' ) {
-	do_action( 'deprecated_file_included', $file, $replacement, $version, $message );
-	if ( WP_DEBUG && apply_filters( 'deprecated_file_trigger_error', true ) ) {
-		$message = empty( $message ) ? '' : ' ' . $message;
-		if ( ! is_null( $replacement ) )
-			trigger_error( sprintf( '%1$s is <strong>deprecated</strong> since version %2$s! Use %3$s instead.', $file, $version, $replacement ) . $message );
-		else
-			trigger_error( sprintf( '%1$s is <strong>deprecated</strong> since version %2$s with no alternative available.', $file, $version ) . $message );
-	}
-}
-
-function _deprecated_argument( $function, $version, $message = null ) {
-	do_action( 'deprecated_argument_run', $function, $message, $version );
-	if ( WP_DEBUG && apply_filters( 'deprecated_argument_trigger_error', true ) ) {
-		if ( ! is_null( $message ) )
-			trigger_error( sprintf( '%1$s was called with an argument that is <strong>deprecated</strong> since version %2$s! %3$s', $function, $version, $message ) );
-		else
-			trigger_error( sprintf( '%1$s was called with an argument that is <strong>deprecated</strong> since version %2$s with no alternative available.', $function, $version ) );
-	}
-}
-
 function _doing_it_wrong( $function, $message, $version ) {
 	do_action( 'doing_it_wrong_run', $function, $message, $version );
 	if ( apply_filters( 'doing_it_wrong_trigger_error', true ) ) {
@@ -1995,10 +1585,8 @@ function is_lighttpd_before_150() {
 
 function apache_mod_loaded($mod, $default = false) {
 	global $is_apache;
-
 	if ( !$is_apache )
 		return false;
-
 	if ( function_exists( 'apache_get_modules' ) ) {
 		$mods = apache_get_modules();
 		if ( in_array($mod, $mods) )
@@ -2110,7 +1698,6 @@ function _wp_timezone_choice_usort_callback( $a, $b ) {
 		}
 		return strnatcasecmp( $a['t_city'], $b['t_city'] );
 	} else {
-		// Force Etc to the bottom of the list
 		if ( 'Etc' === $a['continent'] ) {
 			return 1;
 		}
@@ -2163,46 +1750,32 @@ function wp_timezone_choice( $selected_zone ) {
 	}
 
 	foreach ( $zonen as $key => $zone ) {
-		// Build value in an array to join later
 		$value = array( $zone['continent'] );
-
 		if ( empty( $zone['city'] ) ) {
-			// It's at the continent level (generally won't happen)
 			$display = $zone['t_continent'];
 		} else {
-			// It's inside a continent group
-
-			// Continent optgroup
 			if ( !isset( $zonen[$key - 1] ) || $zonen[$key - 1]['continent'] !== $zone['continent'] ) {
 				$label = $zone['t_continent'];
 				$structure[] = '<optgroup label="'. esc_attr( $label ) .'">';
 			}
-
-			// Add the city to the value
 			$value[] = $zone['city'];
 
 			$display = $zone['t_city'];
 			if ( !empty( $zone['subcity'] ) ) {
-				// Add the subcity to the value
 				$value[] = $zone['subcity'];
 				$display .= ' - ' . $zone['t_subcity'];
 			}
 		}
-
-		// Build the value
 		$value = join( '/', $value );
 		$selected = '';
 		if ( $value === $selected_zone ) {
 			$selected = 'selected="selected" ';
 		}
 		$structure[] = '<option ' . $selected . 'value="' . esc_attr( $value ) . '">' . esc_html( $display ) . "</option>";
-
-		// Close continent optgroup
 		if ( !empty( $zone['city'] ) && ( !isset($zonen[$key + 1]) || (isset( $zonen[$key + 1] ) && $zonen[$key + 1]['continent'] !== $zone['continent']) ) ) {
 			$structure[] = '</optgroup>';
 		}
 	}
-
 	$structure[] = '<optgroup label="UTC">';
 	$selected = '';
 	if ( 'UTC' === $selected_zone )
@@ -2374,14 +1947,14 @@ function wp_debug_backtrace_summary( $ignore_class = null, $skip_frames = 0, $pr
 
 	$caller = array();
 	$check_class = ! is_null( $ignore_class );
-	$skip_frames++; // skip this function
+	$skip_frames++;
 
 	foreach ( $trace as $call ) {
 		if ( $skip_frames > 0 ) {
 			$skip_frames--;
 		} elseif ( isset( $call['class'] ) ) {
 			if ( $check_class && $ignore_class == $call['class'] )
-				continue; // Filter out calls
+				continue;
 
 			$caller[] = "{$call['class']}{$call['type']}{$call['function']}";
 		} else {
@@ -2403,22 +1976,18 @@ function wp_debug_backtrace_summary( $ignore_class = null, $skip_frames = 0, $pr
 function _device_can_upload() {
 	if ( ! wp_is_mobile() )
 		return true;
-
 	$ua = $_SERVER['HTTP_USER_AGENT'];
-
 	if ( strpos($ua, 'iPhone') !== false
 		|| strpos($ua, 'iPad') !== false
 		|| strpos($ua, 'iPod') !== false ) {
 			return preg_match( '#OS ([\d_]+) like Mac OS X#', $ua, $version ) && version_compare( $version[1], '6', '>=' );
 	}
-
 	return true;
 }
 
 function wp_is_stream( $path ) {
 	$wrappers = stream_get_wrappers();
 	$wrappers_re = '(' . join('|', $wrappers) . ')';
-
 	return preg_match( "!^$wrappers_re://!", $path ) === 1;
 }
 
@@ -2457,14 +2026,10 @@ function wp_auth_check_html() {
 	<div id="wp-auth-check">
 	<button type="button" class="wp-auth-check-close button-link"><span class="screen-reader-text">Close dialog</span></button>
 	<?php
-
 	if ( $same_domain ) {
 		?>
 		<div id="wp-auth-check-form" class="loading" data-src="<?php echo esc_url( add_query_arg( array( 'interim-login' => 1 ), $login_url ) ); ?>"></div>
-		<?php
-	}
-
-	?>
+	<?php } ?>
 	<div class="wp-auth-fallback">
 		<p><b class="wp-auth-fallback-expired" tabindex="0">Session expired</b></p>
 		<p><a href="<?php echo esc_url( $login_url ); ?>" target="_blank">Please log in again.</a>
@@ -2567,4 +2132,831 @@ function wp_post_preview_js() {
 function mysql_to_rfc3339( $date_string ) {
 	$formatted = mysql2date( 'c', $date_string, false );
 	return preg_replace( '/(?:Z|[+-]\d{2}(?::\d{2})?)$/', '', $formatted );
+}
+
+function wp_set_current_user($id, $name = '') {
+	global $current_user;
+	if ( isset( $current_user )
+		&& ( $current_user instanceof WP_User )
+		&& ( $id == $current_user->ID )
+		&& ( null !== $id )
+	) {
+		return $current_user;
+	}
+	$current_user = new WP_User( $id, $name );
+	setup_userdata( $current_user->ID );
+	do_action( 'set_current_user' );
+	return $current_user;
+}
+
+function get_user_by( $field, $value ) {
+	$userdata = WP_User::get_data_by( $field, $value );
+	if ( !$userdata )
+		return false;
+	$user = new WP_User;
+	$user->init( $userdata );
+	return $user;
+}
+
+function wp_mail( $to, $subject, $message, $headers = '', $attachments = array() ) {
+	$atts = apply_filters( 'wp_mail', compact( 'to', 'subject', 'message', 'headers', 'attachments' ) );
+	if ( isset( $atts['to'] ) ) {
+		$to = $atts['to'];
+	}
+	if ( isset( $atts['subject'] ) ) {
+		$subject = $atts['subject'];
+	}
+	if ( isset( $atts['message'] ) ) {
+		$message = $atts['message'];
+	}
+	if ( isset( $atts['headers'] ) ) {
+		$headers = $atts['headers'];
+	}
+	if ( isset( $atts['attachments'] ) ) {
+		$attachments = $atts['attachments'];
+	}
+	if ( ! is_array( $attachments ) ) {
+		$attachments = explode( "\n", str_replace( "\r\n", "\n", $attachments ) );
+	}
+	global $phpmailer;
+	if ( ! ( $phpmailer instanceof PHPMailer ) ) {
+		require_once ABSPATH . WPINC . '/class-phpmailer.php';
+		require_once ABSPATH . WPINC . '/class-smtp.php';
+		$phpmailer = new PHPMailer( true );
+	}
+	if ( empty( $headers ) ) {
+		$headers = array();
+	} else {
+		if ( !is_array( $headers ) ) {
+			$tempheaders = explode( "\n", str_replace( "\r\n", "\n", $headers ) );
+		} else {
+			$tempheaders = $headers;
+		}
+		$headers = array();
+		$cc = array();
+		$bcc = array();
+		if ( !empty( $tempheaders ) ) {
+			foreach ( (array) $tempheaders as $header ) {
+				if ( strpos($header, ':') === false ) {
+					if ( false !== stripos( $header, 'boundary=' ) ) {
+						$parts = preg_split('/boundary=/i', trim( $header ) );
+						$boundary = trim( str_replace( array( "'", '"' ), '', $parts[1] ) );
+					}
+					continue;
+				}
+				list( $name, $content ) = explode( ':', trim( $header ), 2 );
+				$name    = trim( $name    );
+				$content = trim( $content );
+				switch ( strtolower( $name ) ) {
+					case 'from':
+						$bracket_pos = strpos( $content, '<' );
+						if ( $bracket_pos !== false ) {
+							if ( $bracket_pos > 0 ) {
+								$from_name = substr( $content, 0, $bracket_pos - 1 );
+								$from_name = str_replace( '"', '', $from_name );
+								$from_name = trim( $from_name );
+							}
+							$from_email = substr( $content, $bracket_pos + 1 );
+							$from_email = str_replace( '>', '', $from_email );
+							$from_email = trim( $from_email );
+						} elseif ( '' !== trim( $content ) ) {
+							$from_email = trim( $content );
+						}
+						break;
+					case 'content-type':
+						if ( strpos( $content, ';' ) !== false ) {
+							list( $type, $charset_content ) = explode( ';', $content );
+							$content_type = trim( $type );
+							if ( false !== stripos( $charset_content, 'charset=' ) ) {
+								$charset = trim( str_replace( array( 'charset=', '"' ), '', $charset_content ) );
+							} elseif ( false !== stripos( $charset_content, 'boundary=' ) ) {
+								$boundary = trim( str_replace( array( 'BOUNDARY=', 'boundary=', '"' ), '', $charset_content ) );
+								$charset = '';
+							}
+						} elseif ( '' !== trim( $content ) ) {
+							$content_type = trim( $content );
+						}
+						break;
+					case 'cc':
+						$cc = array_merge( (array) $cc, explode( ',', $content ) );
+						break;
+					case 'bcc':
+						$bcc = array_merge( (array) $bcc, explode( ',', $content ) );
+						break;
+					default:
+						// Add it to our grand headers array
+						$headers[trim( $name )] = trim( $content );
+						break;
+				}
+			}
+		}
+	}
+
+	$phpmailer->ClearAllRecipients();
+	$phpmailer->ClearAttachments();
+	$phpmailer->ClearCustomHeaders();
+	$phpmailer->ClearReplyTos();
+
+	if ( !isset( $from_name ) )
+		$from_name = 'WordPress';
+
+	if ( !isset( $from_email ) ) {
+		$sitename = strtolower( $_SERVER['SERVER_NAME'] );
+		if ( substr( $sitename, 0, 4 ) == 'www.' ) {
+			$sitename = substr( $sitename, 4 );
+		}
+
+		$from_email = 'wordpress@' . $sitename;
+	}
+
+	$phpmailer->From = apply_filters( 'wp_mail_from', $from_email );
+	$phpmailer->FromName = apply_filters( 'wp_mail_from_name', $from_name );
+
+	if ( !is_array( $to ) )
+		$to = explode( ',', $to );
+
+	foreach ( (array) $to as $recipient ) {
+		try {
+			$recipient_name = '';
+			if ( preg_match( '/(.*)<(.+)>/', $recipient, $matches ) ) {
+				if ( count( $matches ) == 3 ) {
+					$recipient_name = $matches[1];
+					$recipient = $matches[2];
+				}
+			}
+			$phpmailer->AddAddress( $recipient, $recipient_name);
+		} catch ( phpmailerException $e ) {
+			continue;
+		}
+	}
+	$phpmailer->Subject = $subject;
+	$phpmailer->Body    = $message;
+	if ( !empty( $cc ) ) {
+		foreach ( (array) $cc as $recipient ) {
+			try {
+				$recipient_name = '';
+				if ( preg_match( '/(.*)<(.+)>/', $recipient, $matches ) ) {
+					if ( count( $matches ) == 3 ) {
+						$recipient_name = $matches[1];
+						$recipient = $matches[2];
+					}
+				}
+				$phpmailer->AddCc( $recipient, $recipient_name );
+			} catch ( phpmailerException $e ) {
+				continue;
+			}
+		}
+	}
+
+	if ( !empty( $bcc ) ) {
+		foreach ( (array) $bcc as $recipient) {
+			try {
+				$recipient_name = '';
+				if ( preg_match( '/(.*)<(.+)>/', $recipient, $matches ) ) {
+					if ( count( $matches ) == 3 ) {
+						$recipient_name = $matches[1];
+						$recipient = $matches[2];
+					}
+				}
+				$phpmailer->AddBcc( $recipient, $recipient_name );
+			} catch ( phpmailerException $e ) {
+				continue;
+			}
+		}
+	}
+
+	$phpmailer->IsMail();
+
+	if ( !isset( $content_type ) )
+		$content_type = 'text/plain';
+	$content_type = apply_filters( 'wp_mail_content_type', $content_type );
+	$phpmailer->ContentType = $content_type;
+	if ( 'text/html' == $content_type )
+		$phpmailer->IsHTML( true );
+	if ( !isset( $charset ) )
+		$charset = get_bloginfo( 'charset' );
+
+	$phpmailer->CharSet = apply_filters( 'wp_mail_charset', $charset );
+
+	if ( !empty( $headers ) ) {
+		foreach ( (array) $headers as $name => $content ) {
+			$phpmailer->AddCustomHeader( sprintf( '%1$s: %2$s', $name, $content ) );
+		}
+
+		if ( false !== stripos( $content_type, 'multipart' ) && ! empty($boundary) )
+			$phpmailer->AddCustomHeader( sprintf( "Content-Type: %s;\n\t boundary=\"%s\"", $content_type, $boundary ) );
+	}
+
+	if ( !empty( $attachments ) ) {
+		foreach ( $attachments as $attachment ) {
+			try {
+				$phpmailer->AddAttachment($attachment);
+			} catch ( phpmailerException $e ) {
+				continue;
+			}
+		}
+	}
+	do_action_ref_array( 'phpmailer_init', array( &$phpmailer ) );
+	try {
+		return $phpmailer->Send();
+	} catch ( phpmailerException $e ) {
+		$mail_error_data = compact( 'to', 'subject', 'message', 'headers', 'attachments' );
+ 		do_action( 'wp_mail_failed', new WP_Error( $e->getCode(), $e->getMessage(), $mail_error_data ) );
+		return false;
+	}
+}
+
+function wp_authenticate($username, $password) {
+	$username = sanitize_user($username);
+	$password = trim($password);
+	$user = apply_filters( 'authenticate', null, $username, $password );
+	if ( $user == null ) {
+		$user = new WP_Error( 'authentication_failed', '<strong>ERROR</strong>: Invalid username, email address or incorrect password.' );
+	}
+	$ignore_codes = array('empty_username', 'empty_password');
+	if (is_wp_error($user) && !in_array($user->get_error_code(), $ignore_codes) ) {
+		do_action( 'wp_login_failed', $username );
+	}
+	return $user;
+}
+
+function wp_logout() {
+	wp_destroy_current_session();
+	wp_clear_auth_cookie();
+	do_action( 'wp_logout' );
+}
+
+function wp_validate_auth_cookie($cookie = '', $scheme = '') {
+	if ( ! $cookie_elements = wp_parse_auth_cookie($cookie, $scheme) ) {
+		do_action( 'auth_cookie_malformed', $cookie, $scheme );
+		return false;
+	}
+	$scheme = $cookie_elements['scheme'];
+	$username = $cookie_elements['username'];
+	$hmac = $cookie_elements['hmac'];
+	$token = $cookie_elements['token'];
+	$expired = $expiration = $cookie_elements['expiration'];
+	if ( defined('DOING_AJAX') || 'POST' == $_SERVER['REQUEST_METHOD'] ) {
+		$expired += 3600;
+	}
+	if ( $expired < time() ) {
+		do_action( 'auth_cookie_expired', $cookie_elements );
+		return false;
+	}
+	$user = get_user_by('login', $username);
+	if ( ! $user ) {
+		do_action( 'auth_cookie_bad_username', $cookie_elements );
+		return false;
+	}
+	$pass_frag = substr($user->user_pass, 8, 4);
+	$key = wp_hash( $username . '|' . $pass_frag . '|' . $expiration . '|' . $token, $scheme );
+	$hash = hash_hmac( 'sha256', $username . '|' . $expiration . '|' . $token, $key );
+	if ( ! hash_equals( $hash, $hmac ) ) {
+		do_action( 'auth_cookie_bad_hash', $cookie_elements );
+		return false;
+	}
+	$manager = WP_Session_Tokens::get_instance( $user->ID );
+	if ( ! $manager->verify( $token ) ) {
+		do_action( 'auth_cookie_bad_session_token', $cookie_elements );
+		return false;
+	}
+	if ( $expiration < time() ) {
+		$GLOBALS['login_grace_period'] = 1;
+	}
+	do_action( 'auth_cookie_valid', $cookie_elements, $user );
+	return $user->ID;
+}
+
+function wp_generate_auth_cookie( $user_id, $expiration, $scheme = 'auth', $token = '' ) {
+	$user = get_user_by( 'id', $user_id );
+	if ( ! $user ) { return ''; }
+	if ( ! $token ) {
+		$manager = WP_Session_Tokens::get_instance( $user_id );
+		$token = $manager->create( $expiration );
+	}
+	$pass_frag = substr($user->user_pass, 8, 4);
+	$key = wp_hash( $user->user_login . '|' . $pass_frag . '|' . $expiration . '|' . $token, $scheme );
+	$hash = hash_hmac( 'sha256', $user->user_login . '|' . $expiration . '|' . $token, $key );
+	$cookie = $user->user_login . '|' . $expiration . '|' . $token . '|' . $hash;
+	return apply_filters( 'auth_cookie', $cookie, $user_id, $expiration, $scheme, $token );
+}
+
+function wp_parse_auth_cookie($cookie = '', $scheme = '') {
+	if ( empty($cookie) ) {
+		switch ($scheme){
+			case 'auth':
+				$cookie_name = AUTH_COOKIE;
+				break;
+			case "logged_in":
+				$cookie_name = LOGGED_IN_COOKIE;
+				break;
+			default:
+				$cookie_name = AUTH_COOKIE;
+				$scheme = 'auth';
+	    }
+
+		if ( empty($_COOKIE[$cookie_name]) )
+			return false;
+		$cookie = $_COOKIE[$cookie_name];
+	}
+
+	$cookie_elements = explode('|', $cookie);
+	if ( count( $cookie_elements ) !== 4 ) {
+		return false;
+	}
+	list( $username, $expiration, $token, $hmac ) = $cookie_elements;
+	return compact( 'username', 'expiration', 'token', 'hmac', 'scheme' );
+}
+
+function wp_set_auth_cookie( $user_id, $remember = false, $token = '' ) {
+	if ( $remember ) {
+		$expiration = time() + apply_filters( 'auth_cookie_expiration', 14 * 86400, $user_id, $remember );
+		$expire = $expiration + ( 12 * 3600 );
+	} else {
+		$expiration = time() + apply_filters( 'auth_cookie_expiration', 2 * 86400, $user_id, $remember );
+		$expire = 0;
+	}
+
+	$secure_logged_in_cookie = $secure && 'https' === parse_url( get_option( 'home' ), PHP_URL_SCHEME );
+	$secure = apply_filters( 'secure_auth_cookie', $secure, $user_id );
+	$secure_logged_in_cookie = apply_filters( 'secure_logged_in_cookie', $secure_logged_in_cookie, $user_id, $secure );
+	$auth_cookie_name = AUTH_COOKIE;
+	$scheme = 'auth';
+	if ( '' === $token ) {
+		$manager = WP_Session_Tokens::get_instance( $user_id );
+		$token   = $manager->create( $expiration );
+	}
+	$auth_cookie = wp_generate_auth_cookie( $user_id, $expiration, $scheme, $token );
+	$logged_in_cookie = wp_generate_auth_cookie( $user_id, $expiration, 'logged_in', $token );
+	do_action( 'set_auth_cookie', $auth_cookie, $expire, $expiration, $user_id, $scheme );
+	do_action( 'set_logged_in_cookie', $logged_in_cookie, $expire, $expiration, $user_id, 'logged_in' );
+	setcookie($auth_cookie_name, $auth_cookie, $expire, PLUGINS_COOKIE_PATH, COOKIE_DOMAIN, $secure, true);
+	setcookie($auth_cookie_name, $auth_cookie, $expire, ADMIN_COOKIE_PATH, COOKIE_DOMAIN, $secure, true);
+	setcookie(LOGGED_IN_COOKIE, $logged_in_cookie, $expire, COOKIEPATH, COOKIE_DOMAIN, $secure_logged_in_cookie, true);
+	if ( COOKIEPATH != SITECOOKIEPATH )
+		setcookie(LOGGED_IN_COOKIE, $logged_in_cookie, $expire, SITECOOKIEPATH, COOKIE_DOMAIN, $secure_logged_in_cookie, true);
+}
+
+function wp_clear_auth_cookie() {
+	do_action( 'clear_auth_cookie' );
+	setcookie( AUTH_COOKIE,        ' ', time() - YEAR_IN_SECONDS, ADMIN_COOKIE_PATH,   COOKIE_DOMAIN );
+	setcookie( SECURE_AUTH_COOKIE, ' ', time() - YEAR_IN_SECONDS, ADMIN_COOKIE_PATH,   COOKIE_DOMAIN );
+	setcookie( AUTH_COOKIE,        ' ', time() - YEAR_IN_SECONDS, PLUGINS_COOKIE_PATH, COOKIE_DOMAIN );
+	setcookie( SECURE_AUTH_COOKIE, ' ', time() - YEAR_IN_SECONDS, PLUGINS_COOKIE_PATH, COOKIE_DOMAIN );
+	setcookie( LOGGED_IN_COOKIE,   ' ', time() - YEAR_IN_SECONDS, COOKIEPATH,          COOKIE_DOMAIN );
+	setcookie( LOGGED_IN_COOKIE,   ' ', time() - YEAR_IN_SECONDS, SITECOOKIEPATH,      COOKIE_DOMAIN );
+
+	setcookie( AUTH_COOKIE,        ' ', time() - YEAR_IN_SECONDS, COOKIEPATH,     COOKIE_DOMAIN );
+	setcookie( AUTH_COOKIE,        ' ', time() - YEAR_IN_SECONDS, SITECOOKIEPATH, COOKIE_DOMAIN );
+	setcookie( SECURE_AUTH_COOKIE, ' ', time() - YEAR_IN_SECONDS, COOKIEPATH,     COOKIE_DOMAIN );
+	setcookie( SECURE_AUTH_COOKIE, ' ', time() - YEAR_IN_SECONDS, SITECOOKIEPATH, COOKIE_DOMAIN );
+
+	setcookie( USER_COOKIE, ' ', time() - YEAR_IN_SECONDS, COOKIEPATH,     COOKIE_DOMAIN );
+	setcookie( PASS_COOKIE, ' ', time() - YEAR_IN_SECONDS, COOKIEPATH,     COOKIE_DOMAIN );
+	setcookie( USER_COOKIE, ' ', time() - YEAR_IN_SECONDS, SITECOOKIEPATH, COOKIE_DOMAIN );
+	setcookie( PASS_COOKIE, ' ', time() - YEAR_IN_SECONDS, SITECOOKIEPATH, COOKIE_DOMAIN );
+}
+
+function is_user_logged_in() {
+	$user = _wp_get_current_user();
+	return $user->exists();
+}
+
+function auth_redirect() {
+	$secure = apply_filters( 'secure_auth_redirect', $secure );
+	if ( $secure && !is_ssl() && false !== strpos($_SERVER['REQUEST_URI'], 'wp-admin') ) {
+		if ( 0 === strpos( $_SERVER['REQUEST_URI'], 'http' ) ) {
+			wp_redirect( set_url_scheme( $_SERVER['REQUEST_URI'], 'https' ) );
+			exit();
+		} else {
+			wp_redirect( 'https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] );
+			exit();
+		}
+	}
+	$scheme = apply_filters( 'auth_redirect_scheme', '' );
+	if ( $user_id = wp_validate_auth_cookie( '',  $scheme) ) {
+		do_action( 'auth_redirect', $user_id );
+		if ( !$secure && get_user_option('use_ssl', $user_id) && false !== strpos($_SERVER['REQUEST_URI'], 'wp-admin') ) {
+			if ( 0 === strpos( $_SERVER['REQUEST_URI'], 'http' ) ) {
+				wp_redirect( set_url_scheme( $_SERVER['REQUEST_URI'], 'https' ) );
+				exit();
+			} else {
+				wp_redirect( 'https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] );
+				exit();
+			}
+		}
+		return;
+	}
+	nocache_headers();
+	$redirect = ( strpos( $_SERVER['REQUEST_URI'], '/options.php' ) && wp_get_referer() ) ? wp_get_referer() : set_url_scheme( 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] );
+	$login_url = wp_login_url($redirect, true);
+	wp_redirect($login_url);
+	exit();
+}
+
+function check_admin_referer( $action = -1, $query_arg = '_wpnonce' ) {
+	if ( -1 == $action )
+		_doing_it_wrong( __FUNCTION__, 'You should specify a nonce action to be verified by using the first parameter.', '3.2' );
+
+	$adminurl = strtolower(admin_url());
+	$referer = strtolower(wp_get_referer());
+	$result = isset($_REQUEST[$query_arg]) ? wp_verify_nonce($_REQUEST[$query_arg], $action) : false;
+
+	do_action( 'check_admin_referer', $action, $result );
+
+	if ( ! $result && ! ( -1 == $action && strpos( $referer, $adminurl ) === 0 ) ) {
+		wp_nonce_ays( $action );
+		die();
+	}
+
+	return $result;
+}
+
+function check_ajax_referer( $action = -1, $query_arg = false, $die = true ) {
+	$nonce = '';
+
+	if ( $query_arg && isset( $_REQUEST[ $query_arg ] ) )
+		$nonce = $_REQUEST[ $query_arg ];
+	elseif ( isset( $_REQUEST['_ajax_nonce'] ) )
+		$nonce = $_REQUEST['_ajax_nonce'];
+	elseif ( isset( $_REQUEST['_wpnonce'] ) )
+		$nonce = $_REQUEST['_wpnonce'];
+
+	$result = wp_verify_nonce( $nonce, $action );
+
+	do_action( 'check_ajax_referer', $action, $result );
+
+	if ( $die && false === $result ) {
+		if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
+			wp_die( -1 );
+		} else {
+			die( '-1' );
+		}
+	}
+
+	return $result;
+}
+
+function wp_redirect($location, $status = 302) {
+	$location = apply_filters( 'wp_redirect', $location, $status );
+	$status = apply_filters( 'wp_redirect_status', $status, $location );
+	if ( ! $location )
+		return false;
+
+	$location = wp_sanitize_redirect($location);
+	if ( PHP_SAPI != 'cgi-fcgi' )
+		status_header($status);
+	header("Location: $location", true, $status);
+	return true;
+}
+
+function wp_sanitize_redirect($location) {
+	$regex = '/
+		(
+			(?: [\xC2-\xDF][\x80-\xBF]        # double-byte sequences   110xxxxx 10xxxxxx
+			|   \xE0[\xA0-\xBF][\x80-\xBF]    # triple-byte sequences   1110xxxx 10xxxxxx * 2
+			|   [\xE1-\xEC][\x80-\xBF]{2}
+			|   \xED[\x80-\x9F][\x80-\xBF]
+			|   [\xEE-\xEF][\x80-\xBF]{2}
+			|   \xF0[\x90-\xBF][\x80-\xBF]{2} # four-byte sequences   11110xxx 10xxxxxx * 3
+			|   [\xF1-\xF3][\x80-\xBF]{3}
+			|   \xF4[\x80-\x8F][\x80-\xBF]{2}
+		){1,40}                              # ...one or more times
+		)/x';
+	$location = preg_replace_callback( $regex, '_wp_sanitize_utf8_in_redirect', $location );
+	$location = preg_replace('|[^a-z0-9-~+_.?#=&;,/:%!*\[\]()@]|i', '', $location);
+	$location = wp_kses_no_null($location);
+	$strip = array('%0d', '%0a', '%0D', '%0A');
+	return _deep_replace( $strip, $location );
+}
+
+function _wp_sanitize_utf8_in_redirect( $matches ) {
+	return urlencode( $matches[0] );
+}
+
+function wp_safe_redirect($location, $status = 302) {
+	$location = wp_sanitize_redirect($location);
+	$location = wp_validate_redirect( $location, apply_filters( 'wp_safe_redirect_fallback', admin_url(), $status ) );
+	wp_redirect($location, $status);
+}
+
+function wp_validate_redirect($location, $default = '') {
+	$location = trim( $location );
+	if ( substr($location, 0, 2) == '//' )
+		$location = 'http:' . $location;
+	$test = ( $cut = strpos($location, '?') ) ? substr( $location, 0, $cut ) : $location;
+	$lp = @parse_url($test);
+	if ( false === $lp )
+		return $default;
+	if ( isset($lp['scheme']) && !('http' == $lp['scheme'] || 'https' == $lp['scheme']) )
+		return $default;
+	if ( ! isset( $lp['host'] ) && ( isset( $lp['scheme'] ) || isset( $lp['user'] ) || isset( $lp['pass'] ) || isset( $lp['port'] ) ) ) {
+		return $default;
+	}
+	foreach ( array( 'user', 'pass', 'host' ) as $component ) {
+		if ( isset( $lp[ $component ] ) && strpbrk( $lp[ $component ], ':/?#@' ) ) {
+			return $default;
+		}
+	}
+
+	$wpp = parse_url(home_url());
+
+	$allowed_hosts = (array) apply_filters( 'allowed_redirect_hosts', array($wpp['host']), isset($lp['host']) ? $lp['host'] : '' );
+
+	if ( isset($lp['host']) && ( !in_array($lp['host'], $allowed_hosts) && $lp['host'] != strtolower($wpp['host'])) )
+		$location = $default;
+
+	return $location;
+}
+
+function wp_nonce_tick() {
+	$nonce_life = apply_filters( 'nonce_life', DAY_IN_SECONDS );
+	return ceil(time() / ( $nonce_life / 2 ));
+}
+
+function wp_verify_nonce( $nonce, $action = -1 ) {
+	$nonce = (string) $nonce;
+	$user = _wp_get_current_user();
+	$uid = (int) $user->ID;
+	if ( ! $uid ) {
+		$uid = apply_filters( 'nonce_user_logged_out', $uid, $action );
+	}
+	if ( empty( $nonce ) ) {
+		return false;
+	}
+	$token = wp_get_session_token();
+	$i = wp_nonce_tick();
+	$expected = substr( wp_hash( $i . '|' . $action . '|' . $uid . '|' . $token, 'nonce'), -12, 10 );
+	if ( hash_equals( $expected, $nonce ) ) {
+		return 1;
+	}
+	$expected = substr( wp_hash( ( $i - 1 ) . '|' . $action . '|' . $uid . '|' . $token, 'nonce' ), -12, 10 );
+	if ( hash_equals( $expected, $nonce ) ) {
+		return 2;
+	}
+
+	do_action( 'wp_verify_nonce_failed', $nonce, $action, $user, $token );
+	return false;
+}
+
+function wp_create_nonce($action = -1) {
+	$user = _wp_get_current_user();
+	$uid = (int) $user->ID;
+	if ( ! $uid ) {
+		$uid = apply_filters( 'nonce_user_logged_out', $uid, $action );
+	}
+	$token = wp_get_session_token();
+	$i = wp_nonce_tick();
+	return substr( wp_hash( $i . '|' . $action . '|' . $uid . '|' . $token, 'nonce' ), -12, 10 );
+}
+
+function wp_salt( $scheme = 'auth' ) {
+	static $cached_salts = array();
+	if ( isset( $cached_salts[ $scheme ] ) ) {
+		return apply_filters( 'salt', $cached_salts[ $scheme ], $scheme );
+	}
+	static $duplicated_keys;
+	if ( null === $duplicated_keys ) {
+		$duplicated_keys = array( 'put your unique phrase here' => true );
+		foreach ( array( 'AUTH', 'SECURE_AUTH', 'LOGGED_IN', 'NONCE', 'SECRET' ) as $first ) {
+			foreach ( array( 'KEY', 'SALT' ) as $second ) {
+				if ( ! defined( "{$first}_{$second}" ) ) {
+					continue;
+				}
+				$value = constant( "{$first}_{$second}" );
+				$duplicated_keys[ $value ] = isset( $duplicated_keys[ $value ] );
+			}
+		}
+	}
+	$values = array( 'key' => '', 'salt' => '' );
+	if ( defined( 'SECRET_KEY' ) && SECRET_KEY && empty( $duplicated_keys[ SECRET_KEY ] ) ) {
+		$values['key'] = SECRET_KEY;
+	}
+	if ( 'auth' == $scheme && defined( 'SECRET_SALT' ) && SECRET_SALT && empty( $duplicated_keys[ SECRET_SALT ] ) ) {
+		$values['salt'] = SECRET_SALT;
+	}
+
+	if ( in_array( $scheme, array( 'auth', 'secure_auth', 'logged_in', 'nonce' ) ) ) {
+		foreach ( array( 'key', 'salt' ) as $type ) {
+			$const = strtoupper( "{$scheme}_{$type}" );
+			if ( defined( $const ) && constant( $const ) && empty( $duplicated_keys[ constant( $const ) ] ) ) {
+				$values[ $type ] = constant( $const );
+			} elseif ( ! $values[ $type ] ) {
+				$values[ $type ] = get_site_option( "{$scheme}_{$type}" );
+				if ( ! $values[ $type ] ) {
+					$values[ $type ] = '123456';
+					update_site_option( "{$scheme}_{$type}", $values[ $type ] );
+				}
+			}
+		}
+	} else {
+		if ( ! $values['key'] ) {
+			$values['key'] = get_site_option( 'secret_key' );
+			if ( ! $values['key'] ) {
+				$values['key'] = '123456';
+				update_site_option( 'secret_key', $values['key'] );
+			}
+		}
+		$values['salt'] = hash_hmac( 'md5', $scheme, $values['key'] );
+	}
+
+	$cached_salts[ $scheme ] = $values['key'] . $values['salt'];
+	return apply_filters( 'salt', $cached_salts[ $scheme ], $scheme );
+}
+
+function wp_hash($data, $scheme = 'auth') {
+	$salt = wp_salt($scheme);
+	return hash_hmac('md5', $data, $salt);
+}
+
+function wp_hash_password($password) {
+	global $wp_hasher;
+	if ( empty($wp_hasher) ) {
+		require_once( ABSPATH . WPINC . '/class-phpass.php');
+		$wp_hasher = new PasswordHash(8, true);
+	}
+	return $wp_hasher->HashPassword( trim( $password ) );
+}
+
+function wp_check_password($password, $hash, $user_id = '') {
+	global $wp_hasher;
+	if ( strlen($hash) <= 32 ) {
+		$check = hash_equals( $hash, md5( $password ) );
+		if ( $check && $user_id ) {
+			wp_set_password($password, $user_id);
+			$hash = wp_hash_password($password);
+		}
+
+		return apply_filters( 'check_password', $check, $password, $hash, $user_id );
+	}
+	if ( empty($wp_hasher) ) {
+		require_once( ABSPATH . WPINC . '/class-phpass.php');
+		$wp_hasher = new PasswordHash(8, true);
+	}
+	$check = $wp_hasher->CheckPassword($password, $hash);
+	return apply_filters( 'check_password', $check, $password, $hash, $user_id );
+}
+
+function wp_rand( $min = 0, $max = 0 ) {
+	global $rnd_value;
+	$max_random_number = 3000000000 === 2147483647 ? (float) "4294967295" : 4294967295; // 4294967295 = 0xffffffff
+	$min = (int) $min;
+	$max = (int) $max;
+	static $use_random_int_functionality = true;
+	if ( $use_random_int_functionality ) {
+		try {
+			$_max = ( 0 != $max ) ? $max : $max_random_number;
+			$_max = max( $min, $_max );
+			$_min = min( $min, $_max );
+			$val = random_int( $_min, $_max );
+			if ( false !== $val ) {
+				return absint( $val );
+			} else {
+				$use_random_int_functionality = false;
+			}
+		} catch ( Error $e ) {
+			$use_random_int_functionality = false;
+		} catch ( Exception $e ) {
+			$use_random_int_functionality = false;
+		}
+	}
+	if ( strlen($rnd_value) < 8 ) {
+		if ( defined( 'WP_SETUP_CONFIG' ) )
+			static $seed = '';
+		else
+			$seed = get_transient('random_seed');
+		$rnd_value = md5( uniqid(microtime() . mt_rand(), true ) . $seed );
+		$rnd_value .= sha1($rnd_value);
+		$rnd_value .= sha1($rnd_value . $seed);
+		$seed = md5($seed . $rnd_value);
+		if ( ! defined( 'WP_SETUP_CONFIG' ) && ! defined( 'WP_INSTALLING' ) ) {
+			set_transient( 'random_seed', $seed );
+		}
+	}
+	$value = substr($rnd_value, 0, 8);
+	$rnd_value = substr($rnd_value, 8);
+	$value = abs(hexdec($value));
+	if ( $max != 0 )
+		$value = $min + ( $max - $min + 1 ) * $value / ( $max_random_number + 1 );
+	return abs(intval($value));
+}
+
+function wp_set_password( $password, $user_id ) {
+	global $wpdb;
+	$hash = wp_hash_password( $password );
+	$wpdb->update($wpdb->users, array('user_pass' => $hash, 'user_activation_key' => ''), array('ID' => $user_id) );
+	wp_cache_delete($user_id, 'users');
+}
+
+function get_avatar( $id_or_email, $size = 96, $default = '', $alt = '', $args = null ) {
+	$defaults = array(
+		'size'          => 96,
+		'height'        => null,
+		'width'         => null,
+		'default'       => get_option( 'avatar_default', 'mystery' ),
+		'force_default' => false,
+		'rating'        => get_option( 'avatar_rating' ),
+		'scheme'        => null,
+		'alt'           => '',
+		'class'         => null,
+		'force_display' => false,
+		'extra_attr'    => '',
+	);
+	if ( empty( $args ) ) {
+		$args = array();
+	}
+	$args['size']    = (int) $size;
+	$args['default'] = $default;
+	$args['alt']     = $alt;
+	$args = wp_parse_args( $args, $defaults );
+	if ( empty( $args['height'] ) ) {
+		$args['height'] = $args['size'];
+	}
+	if ( empty( $args['width'] ) ) {
+		$args['width'] = $args['size'];
+	}
+
+	if ( is_object( $id_or_email ) && isset( $id_or_email->comment_ID ) ) {
+		$id_or_email = get_comment( $id_or_email );
+	}
+	$avatar = apply_filters( 'pre_get_avatar', null, $id_or_email, $args );
+	if ( ! is_null( $avatar ) ) {
+		return apply_filters( 'get_avatar', $avatar, $id_or_email, $args['size'], $args['default'], $args['alt'], $args );
+	}
+
+	if ( ! $args['force_display'] && ! get_option( 'show_avatars' ) ) {
+		return false;
+	}
+	$url = $args['url'];
+	if ( ! $url || is_wp_error( $url ) ) {
+		return false;
+	}
+	$class = array( 'avatar', 'avatar-' . (int) $args['size'], 'photo' );
+	if ( ! $args['found_avatar'] || $args['force_default'] ) {
+		$class[] = 'avatar-default';
+	}
+	if ( $args['class'] ) {
+		if ( is_array( $args['class'] ) ) {
+			$class = array_merge( $class, $args['class'] );
+		} else {
+			$class[] = $args['class'];
+		}
+	}
+	$avatar = sprintf(
+		"<img alt='%s' src='%s' srcset='%s' class='%s' height='%d' width='%d' %s/>",
+		esc_attr( $args['alt'] ),
+		esc_url( $url ),
+		esc_attr( "$url2x 2x" ),
+		esc_attr( join( ' ', $class ) ),
+		(int) $args['height'],
+		(int) $args['width'],
+		$args['extra_attr']
+	);
+	return apply_filters( 'get_avatar', $avatar, $id_or_email, $args['size'], $args['default'], $args['alt'], $args );
+}
+
+function wp_text_diff( $left_string, $right_string, $args = null ) {
+	$defaults = array( 'title' => '', 'title_left' => '', 'title_right' => '' );
+	$args = wp_parse_args( $args, $defaults );
+
+	if ( ! class_exists( 'WP_Text_Diff_Renderer_Table', false ) )
+		require( ABSPATH . WPINC . '/wp-diff.php' );
+
+	$left_string  = normalize_whitespace($left_string);
+	$right_string = normalize_whitespace($right_string);
+
+	$left_lines  = explode("\n", $left_string);
+	$right_lines = explode("\n", $right_string);
+	$text_diff = new Text_Diff($left_lines, $right_lines);
+	$renderer  = new WP_Text_Diff_Renderer_Table( $args );
+	$diff = $renderer->render($text_diff);
+
+	if ( !$diff )
+		return '';
+
+	$r  = "<table class='diff'>\n";
+
+	if ( ! empty( $args[ 'show_split_view' ] ) ) {
+		$r .= "<col class='content diffsplit left' /><col class='content diffsplit middle' /><col class='content diffsplit right' />";
+	} else {
+		$r .= "<col class='content' />";
+	}
+
+	if ( $args['title'] || $args['title_left'] || $args['title_right'] )
+		$r .= "<thead>";
+	if ( $args['title'] )
+		$r .= "<tr class='diff-title'><th colspan='4'>$args[title]</th></tr>\n";
+	if ( $args['title_left'] || $args['title_right'] ) {
+		$r .= "<tr class='diff-sub-title'>\n";
+		$r .= "\t<td></td><th>$args[title_left]</th>\n";
+		$r .= "\t<td></td><th>$args[title_right]</th>\n";
+		$r .= "</tr>\n";
+	}
+	if ( $args['title'] || $args['title_left'] || $args['title_right'] )
+		$r .= "</thead>\n";
+
+	$r .= "<tbody>\n$diff\n</tbody>\n";
+	$r .= "</table>";
+
+	return $r;
 }

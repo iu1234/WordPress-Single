@@ -338,12 +338,9 @@ function image_get_intermediate_size( $post_id, $size = 'thumbnail' ) {
 			}
 		}
 	}
-
 	if ( is_array($size) || empty($size) || empty($imagedata['sizes'][$size]) )
 		return false;
-
 	$data = $imagedata['sizes'][$size];
-	// include the full filesystem path of the intermediate file
 	if ( empty($data['path']) && !empty($data['file']) ) {
 		$file_url = wp_get_attachment_url($post_id);
 		$data['path'] = path_join( dirname($imagedata['file']), $data['file'] );
@@ -357,37 +354,22 @@ function get_intermediate_image_sizes() {
 	$image_sizes = array('thumbnail', 'medium', 'medium_large', 'large'); // Standard sizes
 	if ( isset( $_wp_additional_image_sizes ) && count( $_wp_additional_image_sizes ) )
 		$image_sizes = array_merge( $image_sizes, array_keys( $_wp_additional_image_sizes ) );
-
-	/**
-	 * Filter the list of intermediate image sizes.
-	 *
-	 * @since 2.5.0
-	 *
-	 * @param array $image_sizes An array of intermediate image sizes. Defaults
-	 *                           are 'thumbnail', 'medium', 'medium_large', 'large'.
-	 */
 	return apply_filters( 'intermediate_image_sizes', $image_sizes );
 }
 
 function wp_get_attachment_image_src( $attachment_id, $size = 'thumbnail', $icon = false ) {
-	// get a thumbnail or intermediate image if there is one
 	$image = image_downsize( $attachment_id, $size );
 	if ( ! $image ) {
 		$src = false;
-
 		if ( $icon && $src = wp_mime_type_icon( $attachment_id ) ) {
-			/** This filter is documented in wp-includes/post.php */
 			$icon_dir = apply_filters( 'icon_dir', ABSPATH . WPINC . '/images/media' );
-
 			$src_file = $icon_dir . '/' . wp_basename( $src );
 			@list( $width, $height ) = getimagesize( $src_file );
 		}
-
 		if ( $src && $width && $height ) {
 			$image = array( $src, $width, $height );
 		}
 	}
-
 	return apply_filters( 'wp_get_attachment_image_src', $image, $attachment_id, $size, $icon );
 }
 
@@ -405,16 +387,14 @@ function wp_get_attachment_image($attachment_id, $size = 'thumbnail', $icon = fa
 		$default_attr = array(
 			'src'	=> $src,
 			'class'	=> "attachment-$size_class size-$size_class",
-			'alt'	=> trim(strip_tags( get_post_meta($attachment_id, '_wp_attachment_image_alt', true) )), // Use Alt field first
+			'alt'	=> trim(strip_tags( get_post_meta($attachment_id, '_wp_attachment_image_alt', true) )),
 		);
 		if ( empty($default_attr['alt']) )
-			$default_attr['alt'] = trim(strip_tags( $attachment->post_excerpt )); // If not, Use the Caption
+			$default_attr['alt'] = trim(strip_tags( $attachment->post_excerpt ));
 		if ( empty($default_attr['alt']) )
-			$default_attr['alt'] = trim(strip_tags( $attachment->post_title )); // Finally, use the title
+			$default_attr['alt'] = trim(strip_tags( $attachment->post_title ));
 
 		$attr = wp_parse_args( $attr, $default_attr );
-
-		// Generate 'srcset' and 'sizes' if not already present.
 		if ( empty( $attr['srcset'] ) ) {
 			$image_meta = get_post_meta( $attachment_id, '_wp_attachment_metadata', true );
 
@@ -452,13 +432,10 @@ function wp_get_attachment_image_url( $attachment_id, $size = 'thumbnail', $icon
 
 function _wp_get_attachment_relative_path( $file ) {
 	$dirname = dirname( $file );
-
 	if ( '.' === $dirname ) {
 		return '';
 	}
-
 	if ( false !== strpos( $dirname, 'wp-content/uploads' ) ) {
-		// Get the directory name relative to the upload directory (back compat for pre-2.7 uploads)
 		$dirname = substr( $dirname, strpos( $dirname, 'wp-content/uploads' ) + 18 );
 		$dirname = ltrim( $dirname, '/' );
 	}
@@ -502,24 +479,16 @@ function wp_get_attachment_image_srcset( $attachment_id, $size = 'medium', $imag
 
 function wp_calculate_image_srcset( $size_array, $image_src, $image_meta, $attachment_id = 0 ) {
 	$image_meta = apply_filters( 'wp_calculate_image_srcset_meta', $image_meta, $size_array, $image_src, $attachment_id );
-
 	if ( empty( $image_meta['sizes'] ) || ! isset( $image_meta['file'] ) || strlen( $image_meta['file'] ) < 4 ) {
 		return false;
 	}
-
 	$image_sizes = $image_meta['sizes'];
-
-	// Get the width and height of the image.
 	$image_width = (int) $size_array[0];
 	$image_height = (int) $size_array[1];
-
-	// Bail early if error/no width.
 	if ( $image_width < 1 ) {
 		return false;
 	}
-
 	$image_basename = wp_basename( $image_meta['file'] );
-
 	if ( ! isset( $image_sizes['thumbnail']['mime-type'] ) || 'image/gif' !== $image_sizes['thumbnail']['mime-type'] ) {
 		$image_sizes['full'] = array(
 			'width'  => $image_meta['width'],
@@ -529,21 +498,13 @@ function wp_calculate_image_srcset( $size_array, $image_src, $image_meta, $attac
 	} elseif ( strpos( $image_src, $image_meta['file'] ) ) {
 		return false;
 	}
-
-	// Retrieve the uploads sub-directory from the full size image.
 	$dirname = _wp_get_attachment_relative_path( $image_meta['file'] );
 
 	if ( $dirname ) {
 		$dirname = trailingslashit( $dirname );
 	}
-
-	$upload_dir = wp_get_upload_dir();
+	$upload_dir = wp_upload_dir( null, false );
 	$image_baseurl = trailingslashit( $upload_dir['baseurl'] ) . $dirname;
-
-	/*
-	 * If currently on HTTPS, prefer HTTPS URLs when we know they're supported by the domain
-	 * (which is to say, when they share the domain name of the current request).
-	 */
 	if ( is_ssl() && 'https' !== substr( $image_baseurl, 0, 5 ) && parse_url( $image_baseurl, PHP_URL_HOST ) === $_SERVER['HTTP_HOST'] ) {
 		$image_baseurl = set_url_scheme( $image_baseurl, 'https' );
 	}
@@ -551,43 +512,23 @@ function wp_calculate_image_srcset( $size_array, $image_src, $image_meta, $attac
 	$image_edited = preg_match( '/-e[0-9]{13}/', wp_basename( $image_src ), $image_edit_hash );
 
 	$max_srcset_image_width = apply_filters( 'max_srcset_image_width', 1600, $size_array );
-
-	// Array to hold URL candidates.
 	$sources = array();
-
 	$src_matched = false;
 
 	foreach ( $image_sizes as $image ) {
 		$is_src = false;
-
-		// Check if image meta isn't corrupted.
 		if ( ! is_array( $image ) ) {
 			continue;
 		}
-
-		// If the file name is part of the `src`, we've confirmed a match.
 		if ( ! $src_matched && false !== strpos( $image_src, $dirname . $image['file'] ) ) {
 			$src_matched = $is_src = true;
 		}
-
-		// Filter out images that are from previous edits.
 		if ( $image_edited && ! strpos( $image['file'], $image_edit_hash[0] ) ) {
 			continue;
 		}
-
-		/*
-		 * Filter out images that are wider than '$max_srcset_image_width' unless
-		 * that file is in the 'src' attribute.
-		 */
 		if ( $max_srcset_image_width && $image['width'] > $max_srcset_image_width && ! $is_src ) {
 			continue;
 		}
-
-		/**
-		 * To check for varying crops, we calculate the expected size of the smaller
-		 * image if the larger were constrained by the width of the smaller and then
-		 * see if it matches what we're expecting.
-		 */
 		if ( $image_width > $image['width'] ) {
 			$constrained_size = wp_constrain_dimensions( $image_width, $image_height, $image['width'] );
 			$expected_size = array( $image['width'], $image['height'] );
@@ -595,17 +536,12 @@ function wp_calculate_image_srcset( $size_array, $image_src, $image_meta, $attac
 			$constrained_size = wp_constrain_dimensions( $image['width'], $image['height'], $image_width );
 			$expected_size = array( $image_width, $image_height );
 		}
-
-		// If the image dimensions are within 1px of the expected size, use it.
 		if ( abs( $constrained_size[0] - $expected_size[0] ) <= 1 && abs( $constrained_size[1] - $expected_size[1] ) <= 1 ) {
-			// Add the URL, descriptor, and value to the sources array to be returned.
 			$source = array(
 				'url'        => $image_baseurl . $image['file'],
 				'descriptor' => 'w',
 				'value'      => $image['width'],
 			);
-
-			// The 'src' image has to be the first in the 'srcset', because of a bug in iOS8. See #35030.
 			if ( $is_src ) {
 				$sources = array( $image['width'] => $source ) + $sources;
 			} else {
@@ -615,8 +551,6 @@ function wp_calculate_image_srcset( $size_array, $image_src, $image_meta, $attac
 	}
 
 	$sources = apply_filters( 'wp_calculate_image_srcset', $sources, $size_array, $image_src, $image_meta, $attachment_id );
-
-	// Only return a 'srcset' value if there is more than one source.
 	if ( ! $src_matched || count( $sources ) < 2 ) {
 		return false;
 	}
@@ -2336,28 +2270,21 @@ function wp_maybe_generate_attachment_metadata( $attachment ) {
 
 function attachment_url_to_postid( $url ) {
 	global $wpdb;
-
-	$dir = wp_get_upload_dir();
+	$dir = wp_upload_dir( null, false );
 	$path = $url;
-
 	$site_url = parse_url( $dir['url'] );
 	$image_path = parse_url( $path );
-
-	//force the protocols to match if needed
 	if ( isset( $image_path['scheme'] ) && ( $image_path['scheme'] !== $site_url['scheme'] ) ) {
 		$path = str_replace( $image_path['scheme'], $site_url['scheme'], $path );
 	}
-
 	if ( 0 === strpos( $path, $dir['baseurl'] . '/' ) ) {
 		$path = substr( $path, strlen( $dir['baseurl'] . '/' ) );
 	}
-
 	$sql = $wpdb->prepare(
 		"SELECT post_id FROM $wpdb->postmeta WHERE meta_key = '_wp_attached_file' AND meta_value = %s",
 		$path
 	);
 	$post_id = $wpdb->get_var( $sql );
-
 	return (int) apply_filters( 'attachment_url_to_postid', $post_id, $url );
 }
 

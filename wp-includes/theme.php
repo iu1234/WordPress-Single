@@ -1,10 +1,4 @@
 <?php
-/**
- * Theme, template, and stylesheet functions.
- *
- * @package WordPress
- * @subpackage Theme
- */
 
 function wp_get_themes( $args = array() ) {
 	global $wp_theme_directories;
@@ -20,36 +14,29 @@ function wp_get_themes( $args = array() ) {
 			$theme_directories[ $current_theme ]['theme_root'] = $root_of_current_theme;
 		}
 	}
-
 	if ( empty( $theme_directories ) )
 		return array();
-
 	$themes = array();
 	static $_themes = array();
-
 	foreach ( $theme_directories as $theme => $theme_root ) {
 		if ( isset( $_themes[ $theme_root['theme_root'] . '/' . $theme ] ) )
 			$themes[ $theme ] = $_themes[ $theme_root['theme_root'] . '/' . $theme ];
 		else
 			$themes[ $theme ] = $_themes[ $theme_root['theme_root'] . '/' . $theme ] = new WP_Theme( $theme, $theme_root['theme_root'] );
 	}
-
 	if ( null !== $args['errors'] ) {
 		foreach ( $themes as $theme => $wp_theme ) {
 			if ( $wp_theme->errors() != $args['errors'] )
 				unset( $themes[ $theme ] );
 		}
 	}
-
 	return $themes;
 }
 
 function wp_get_theme( $stylesheet = null, $theme_root = null ) {
 	global $wp_theme_directories;
-
 	if ( empty( $stylesheet ) )
 		$stylesheet = get_stylesheet();
-
 	if ( empty( $theme_root ) ) {
 		$theme_root = get_raw_theme_root( $stylesheet );
 		if ( false === $theme_root )
@@ -57,7 +44,6 @@ function wp_get_theme( $stylesheet = null, $theme_root = null ) {
 		elseif ( ! in_array( $theme_root, (array) $wp_theme_directories ) )
 			$theme_root = WP_CONTENT_DIR . $theme_root;
 	}
-
 	return new WP_Theme( $stylesheet, $theme_root );
 }
 
@@ -150,49 +136,38 @@ function register_theme_directory( $directory ) {
 function search_theme_directories( $force = false ) {
 	global $wp_theme_directories;
 	static $found_themes = null;
-
 	if ( empty( $wp_theme_directories ) )
 		return false;
-
 	if ( ! $force && isset( $found_themes ) )
 		return $found_themes;
-
 	$found_themes = array();
-
 	$wp_theme_directories = (array) $wp_theme_directories;
 	$relative_theme_roots = array();
-
 	foreach ( $wp_theme_directories as $theme_root ) {
 		if ( 0 === strpos( $theme_root, WP_CONTENT_DIR ) )
 			$relative_theme_roots[ str_replace( WP_CONTENT_DIR, '', $theme_root ) ] = $theme_root;
 		else
 			$relative_theme_roots[ $theme_root ] = $theme_root;
 	}
-
 	if ( $cache_expiration = apply_filters( 'wp_cache_themes_persistently', false, 'search_theme_directories' ) ) {
 		$cached_roots = get_site_transient( 'theme_roots' );
 		if ( is_array( $cached_roots ) ) {
 			foreach ( $cached_roots as $theme_dir => $theme_root ) {
-				// A cached theme root is no longer around, so skip it.
 				if ( ! isset( $relative_theme_roots[ $theme_root ] ) )
 					continue;
 				$found_themes[ $theme_dir ] = array(
 					'theme_file' => $theme_dir . '/style.css',
-					'theme_root' => $relative_theme_roots[ $theme_root ], // Convert relative to absolute.
+					'theme_root' => $relative_theme_roots[ $theme_root ],
 				);
 			}
 			return $found_themes;
 		}
 		if ( ! is_int( $cache_expiration ) )
-			$cache_expiration = 1800; // half hour
+			$cache_expiration = 1800;
 	} else {
-		$cache_expiration = 1800; // half hour
+		$cache_expiration = 1800;
 	}
-
-	/* Loop the registered theme directories and extract all themes */
 	foreach ( $wp_theme_directories as $theme_root ) {
-
-		// Start with directories in the root of the current theme directory.
 		$dirs = @ scandir( $theme_root );
 		if ( ! $dirs ) {
 			trigger_error( "$theme_root is not readable", E_USER_NOTICE );
@@ -202,16 +177,12 @@ function search_theme_directories( $force = false ) {
 			if ( ! is_dir( $theme_root . '/' . $dir ) || $dir[0] == '.' || $dir == 'CVS' )
 				continue;
 			if ( file_exists( $theme_root . '/' . $dir . '/style.css' ) ) {
-				// wp-content/themes/a-single-theme
-				// wp-content/themes is $theme_root, a-single-theme is $dir
 				$found_themes[ $dir ] = array(
 					'theme_file' => $dir . '/style.css',
 					'theme_root' => $theme_root,
 				);
 			} else {
 				$found_theme = false;
-				// wp-content/themes/a-folder-of-themes/*
-				// wp-content/themes is $theme_root, a-folder-of-themes is $dir, then themes are $sub_dirs
 				$sub_dirs = @ scandir( $theme_root . '/' . $dir );
 				if ( ! $sub_dirs ) {
 					trigger_error( "$theme_root/$dir is not readable", E_USER_NOTICE );
@@ -228,8 +199,6 @@ function search_theme_directories( $force = false ) {
 					);
 					$found_theme = true;
 				}
-				// Never mind the above, it's just a theme missing a style.css.
-				// Return it; WP_Theme will catch the error.
 				if ( ! $found_theme )
 					$found_themes[ $dir ] = array(
 						'theme_file' => $dir . '/style.css',
@@ -273,7 +242,6 @@ function get_theme_root_uri( $stylesheet_or_template = false, $theme_root = fals
 
 	if ( $stylesheet_or_template && $theme_root ) {
 		if ( in_array( $theme_root, (array) $wp_theme_directories ) ) {
-			// Absolute path. Make an educated guess. YMMV -- but note the filter below.
 			if ( 0 === strpos( $theme_root, WP_CONTENT_DIR ) )
 				$theme_root_uri = content_url( str_replace( WP_CONTENT_DIR, '', $theme_root ) );
 			elseif ( 0 === strpos( $theme_root, ABSPATH ) )
@@ -288,7 +256,6 @@ function get_theme_root_uri( $stylesheet_or_template = false, $theme_root = fals
 	} else {
 		$theme_root_uri = content_url( 'themes' );
 	}
-
 	return apply_filters( 'theme_root_uri', $theme_root_uri, get_option( 'siteurl' ), $stylesheet_or_template );
 }
 
@@ -296,23 +263,18 @@ function get_raw_theme_root( $stylesheet_or_template, $skip_cache = false ) {
 	global $wp_theme_directories;
 	if ( count($wp_theme_directories) <= 1 )
 		return '/themes';
-
 	$theme_root = false;
-
-	// If requesting the root for the current theme, consult options to avoid calling get_theme_roots()
 	if ( ! $skip_cache ) {
 		if ( get_option('stylesheet') == $stylesheet_or_template )
 			$theme_root = get_option('stylesheet_root');
 		elseif ( get_option('template') == $stylesheet_or_template )
 			$theme_root = get_option('template_root');
 	}
-
 	if ( empty($theme_root) ) {
 		$theme_roots = get_theme_roots();
 		if ( !empty($theme_roots[$stylesheet_or_template]) )
 			$theme_root = $theme_roots[$stylesheet_or_template];
 	}
-
 	return $theme_root;
 }
 
@@ -325,31 +287,24 @@ function locale_stylesheet() {
 
 function switch_theme( $stylesheet ) {
 	global $wp_theme_directories, $wp_customize, $sidebars_widgets;
-
 	$_sidebars_widgets = null;
 	if ( 'wp_ajax_customize_save' === current_action() ) {
 		$_sidebars_widgets = $wp_customize->post_value( $wp_customize->get_setting( 'old_sidebars_widgets_data' ) );
 	} elseif ( is_array( $sidebars_widgets ) ) {
 		$_sidebars_widgets = $sidebars_widgets;
 	}
-
 	if ( is_array( $_sidebars_widgets ) ) {
 		set_theme_mod( 'sidebars_widgets', array( 'time' => time(), 'data' => $_sidebars_widgets ) );
 	}
-
 	$nav_menu_locations = get_theme_mod( 'nav_menu_locations' );
-
 	if ( func_num_args() > 1 ) {
 		$stylesheet = func_get_arg( 1 );
 	}
-
 	$old_theme = wp_get_theme();
 	$new_theme = wp_get_theme( $stylesheet );
 	$template  = $new_theme->get_template();
-
 	update_option( 'template', $template );
 	update_option( 'stylesheet', $stylesheet );
-
 	if ( count( $wp_theme_directories ) > 1 ) {
 		update_option( 'template_root', get_raw_theme_root( $template, true ) );
 		update_option( 'stylesheet_root', get_raw_theme_root( $stylesheet, true ) );
@@ -357,12 +312,8 @@ function switch_theme( $stylesheet ) {
 		delete_option( 'template_root' );
 		delete_option( 'stylesheet_root' );
 	}
-
 	$new_name  = $new_theme->get('Name');
-
 	update_option( 'current_theme', $new_name );
-
-	// Migrate from the old mods_{name} option to theme_mods_{slug}.
 	if ( is_admin() && false === get_option( 'theme_mods_' . $stylesheet ) ) {
 		$default_theme_mods = (array) get_option( 'mods_' . $new_name );
 		if ( ! empty( $nav_menu_locations ) && empty( $default_theme_mods['nav_menu_locations'] ) ) {
@@ -370,15 +321,9 @@ function switch_theme( $stylesheet ) {
 		}
 		add_option( "theme_mods_$stylesheet", $default_theme_mods );
 	} else {
-		/*
-		 * Since retrieve_widgets() is called when initializing a theme in the Customizer,
-		 * we need to remove the theme mods to avoid overwriting changes made via
-		 * the Customizer when accessing wp-admin/widgets.php.
-		 */
 		if ( 'wp_ajax_customize_save' === current_action() ) {
 			remove_theme_mod( 'sidebars_widgets' );
 		}
-
 		if ( ! empty( $nav_menu_locations ) ) {
 			$nav_mods = get_theme_mod( 'nav_menu_locations' );
 			if ( empty( $nav_mods ) ) {
@@ -386,9 +331,7 @@ function switch_theme( $stylesheet ) {
 			}
 		}
 	}
-
 	update_option( 'theme_switched', $old_theme->get_stylesheet() );
-
 	do_action( 'switch_theme', $new_name, $new_theme, $old_theme );
 }
 
@@ -402,18 +345,15 @@ function validate_current_theme() {
 	} else {
 		return true;
 	}
-
 	$default = wp_get_theme( WP_DEFAULT_THEME );
 	if ( $default->exists() ) {
 		switch_theme( WP_DEFAULT_THEME );
 		return false;
 	}
-
 	$default = WP_Theme::get_core_default_theme();
 	if ( false === $default || get_stylesheet() == $default->get_stylesheet() ) {
 		return true;
 	}
-
 	switch_theme( $default->get_stylesheet() );
 	return false;
 }
@@ -425,7 +365,7 @@ function get_theme_mods() {
 		$theme_name = get_option( 'current_theme' );
 		if ( false === $theme_name )
 			$theme_name = wp_get_theme()->get('Name');
-		$mods = get_option( "mods_$theme_name" ); // Deprecated location.
+		$mods = get_option( "mods_$theme_name" );
 		if ( is_admin() && false !== $mods ) {
 			update_option( "theme_mods_$theme_slug", $mods );
 			delete_option( "mods_$theme_name" );
@@ -436,36 +376,27 @@ function get_theme_mods() {
 
 function get_theme_mod( $name, $default = false ) {
 	$mods = get_theme_mods();
-
 	if ( isset( $mods[$name] ) ) {
 		return apply_filters( "theme_mod_{$name}", $mods[$name] );
 	}
-
 	if ( is_string( $default ) )
 		$default = sprintf( $default, get_template_directory_uri(), get_stylesheet_directory_uri() );
-
-	/** This filter is documented in wp-includes/theme.php */
 	return apply_filters( "theme_mod_{$name}", $default );
 }
 
 function set_theme_mod( $name, $value ) {
 	$mods = get_theme_mods();
 	$old_value = isset( $mods[ $name ] ) ? $mods[ $name ] : false;
-
 	$mods[ $name ] = apply_filters( "pre_set_theme_mod_$name", $value, $old_value );
-
 	$theme = get_option( 'stylesheet' );
 	update_option( "theme_mods_$theme", $mods );
 }
 
 function remove_theme_mod( $name ) {
 	$mods = get_theme_mods();
-
 	if ( ! isset( $mods[ $name ] ) )
 		return;
-
 	unset( $mods[ $name ] );
-
 	if ( empty( $mods ) ) {
 		remove_theme_mods();
 		return;
@@ -476,8 +407,6 @@ function remove_theme_mod( $name ) {
 
 function remove_theme_mods() {
 	delete_option( 'theme_mods_' . get_option( 'stylesheet' ) );
-
-	// Old style.
 	$theme_name = get_option( 'current_theme' );
 	if ( false === $theme_name )
 		$theme_name = wp_get_theme()->get('Name');
@@ -491,7 +420,6 @@ function get_header_textcolor() {
 function display_header_text() {
 	if ( ! current_theme_supports( 'custom-header', 'header-text' ) )
 		return false;
-
 	$text_color = get_theme_mod( 'header_textcolor', get_theme_support( 'custom-header', 'default-text-color' ) );
 	return 'blank' !== $text_color;
 }
@@ -502,26 +430,20 @@ function has_header_image() {
 
 function get_header_image() {
 	$url = get_theme_mod( 'header_image', get_theme_support( 'custom-header', 'default-image' ) );
-
 	if ( 'remove-header' == $url )
 		return false;
-
 	if ( is_random_header_image() )
 		$url = get_random_header_image();
-
 	return esc_url_raw( set_url_scheme( $url ) );
 }
 
 function get_header_image_tag( $attr = array() ) {
 	$header = get_custom_header();
-
 	if ( empty( $header->url ) ) {
 		return '';
 	}
-
 	$width = absint( $header->width );
 	$height = absint( $header->height );
-
 	$attr = wp_parse_args(
 		$attr,
 		array(
@@ -531,23 +453,18 @@ function get_header_image_tag( $attr = array() ) {
 			'alt' => get_bloginfo( 'name' ),
 		)
 	);
-
-	// Generate 'srcset' and 'sizes' if not already present.
 	if ( empty( $attr['srcset'] ) && ! empty( $header->attachment_id ) ) {
 		$image_meta = get_post_meta( $header->attachment_id, '_wp_attachment_metadata', true );
 		$size_array = array( $width, $height );
-
 		if ( is_array( $image_meta ) ) {
 			$srcset = wp_calculate_image_srcset( $size_array, $header->url, $image_meta, $header->attachment_id );
 			$sizes = ! empty( $attr['sizes'] ) ? $attr['sizes'] : wp_calculate_image_sizes( $size_array, $header->url, $image_meta, $header->attachment_id );
-
 			if ( $srcset && $sizes ) {
 				$attr['srcset'] = $srcset;
 				$attr['sizes'] = $sizes;
 			}
 		}
 	}
-
 	$attr = array_map( 'esc_attr', $attr );
 	$html = '<img';
 
@@ -557,44 +474,15 @@ function get_header_image_tag( $attr = array() ) {
 
 	$html .= ' />';
 
-	/**
-	 * Filter the markup of header images.
-	 *
-	 * @since 4.4.0
-	 *
-	 * @param string $html   The HTML image tag markup being filtered.
-	 * @param object $header The custom header object returned by 'get_custom_header()'.
-	 * @param array  $attr   Array of the attributes for the image tag.
-	 */
 	return apply_filters( 'get_header_image_tag', $html, $header, $attr );
 }
 
-/**
- * Display the image markup for a custom header image.
- *
- * @since 4.4.0
- *
- * @param array $attr Optional. Attributes for the image markup. Default empty.
- */
 function the_header_image_tag( $attr = array() ) {
 	echo get_header_image_tag( $attr );
 }
 
-/**
- * Get random header image data from registered images in theme.
- *
- * @since 3.4.0
- *
- * @access private
- *
- * @global array  $_wp_default_headers
- * @staticvar object $_wp_random_header
- *
- * @return object
- */
 function _get_random_header_data() {
 	static $_wp_random_header = null;
-
 	if ( empty( $_wp_random_header ) ) {
 		global $_wp_default_headers;
 		$header_image_mod = get_theme_mod( 'header_image', '' );
@@ -631,7 +519,6 @@ function get_random_header_image() {
 
 function is_random_header_image( $type = 'any' ) {
 	$header_image_mod = get_theme_mod( 'header_image', get_theme_support( 'custom-header', 'default-image' ) );
-
 	if ( 'any' == $type ) {
 		if ( 'random-default-image' == $header_image_mod || 'random-uploaded-image' == $header_image_mod || ( '' != get_random_header_image() && empty( $header_image_mod ) ) )
 			return true;
@@ -641,28 +528,16 @@ function is_random_header_image( $type = 'any' ) {
 		elseif ( 'default' == $type && empty( $header_image_mod ) && '' != get_random_header_image() )
 			return true;
 	}
-
 	return false;
 }
 
 function header_image() {
 	$image = get_header_image();
-	if ( $image ) {
-		echo esc_url( $image );
-	}
+	if ( $image ) { echo esc_url( $image ); }
 }
 
-/**
- * Get the header images uploaded for the current theme.
- *
- * @since 3.2.0
- *
- * @return array
- */
 function get_uploaded_header_images() {
 	$header_images = array();
-
-	// @todo caching
 	$headers = get_posts( array( 'post_type' => 'attachment', 'meta_key' => '_wp_attachment_is_custom_header', 'meta_value' => get_option('stylesheet'), 'orderby' => 'none', 'nopaging' => true ) );
 
 	if ( empty( $headers ) )
@@ -690,7 +565,6 @@ function get_uploaded_header_images() {
 
 function get_custom_header() {
 	global $_wp_default_headers;
-
 	if ( is_random_header_image() ) {
 		$data = _get_random_header_data();
 	} else {
@@ -724,7 +598,6 @@ function get_custom_header() {
 
 function register_default_headers( $headers ) {
 	global $_wp_default_headers;
-
 	$_wp_default_headers = array_merge( (array) $_wp_default_headers, (array) $headers );
 }
 
@@ -740,47 +613,29 @@ function unregister_default_headers( $header ) {
 	}
 }
 
-function get_background_image() {
-	return get_theme_mod('background_image', get_theme_support( 'custom-background', 'default-image' ) );
-}
-
-function get_background_color() {
-	return get_theme_mod('background_color', get_theme_support( 'custom-background', 'default-color' ) );
-}
-
 function _custom_background_cb() {
-
-	$background = set_url_scheme( get_background_image() );
-
-	$color = get_background_color();
-
+	$background = set_url_scheme( get_theme_mod('background_image', get_theme_support( 'custom-background', 'default-image' ) );
+	$color = get_theme_mod('background_color', get_theme_support( 'custom-background', 'default-color' ) );
 	if ( $color === get_theme_support( 'custom-background', 'default-color' ) ) {
 		$color = false;
 	}
-
 	if ( ! $background && ! $color )
 		return;
-
 	$style = $color ? "background-color: #$color;" : '';
-
 	if ( $background ) {
 		$image = " background-image: url('$background');";
-
 		$repeat = get_theme_mod( 'background_repeat', get_theme_support( 'custom-background', 'default-repeat' ) );
 		if ( ! in_array( $repeat, array( 'no-repeat', 'repeat-x', 'repeat-y', 'repeat' ) ) )
 			$repeat = 'repeat';
 		$repeat = " background-repeat: $repeat;";
-
 		$position = get_theme_mod( 'background_position_x', get_theme_support( 'custom-background', 'default-position-x' ) );
 		if ( ! in_array( $position, array( 'center', 'right', 'left' ) ) )
 			$position = 'left';
 		$position = " background-position: top $position;";
-
 		$attachment = get_theme_mod( 'background_attachment', get_theme_support( 'custom-background', 'default-attachment' ) );
 		if ( ! in_array( $attachment, array( 'fixed', 'scroll' ) ) )
 			$attachment = 'scroll';
 		$attachment = " background-attachment: $attachment;";
-
 		$style .= $image . $repeat . $position . $attachment;
 	}
 ?>
@@ -792,45 +647,33 @@ body.custom-background { <?php echo trim( $style ); ?> }
 
 function add_editor_style( $stylesheet = 'editor-style.css' ) {
 	add_theme_support( 'editor-style' );
-
-	if ( ! is_admin() )
-		return;
-
+	if ( ! is_admin() ) return;
 	global $editor_styles;
 	$editor_styles = (array) $editor_styles;
 	$stylesheet    = (array) $stylesheet;
-
 	$editor_styles = array_merge( $editor_styles, $stylesheet );
 }
 
 function remove_editor_styles() {
-	if ( ! current_theme_supports( 'editor-style' ) )
-		return false;
+	if ( ! current_theme_supports( 'editor-style' ) ) return false;
 	_remove_theme_support( 'editor-style' );
-	if ( is_admin() )
-		$GLOBALS['editor_styles'] = array();
+	if ( is_admin() ) $GLOBALS['editor_styles'] = array();
 	return true;
 }
 
 function get_editor_stylesheets() {
 	$stylesheets = array();
-	// load editor_style.css if the current theme supports it
 	if ( ! empty( $GLOBALS['editor_styles'] ) && is_array( $GLOBALS['editor_styles'] ) ) {
 		$editor_styles = $GLOBALS['editor_styles'];
-
 		$editor_styles = array_unique( array_filter( $editor_styles ) );
 		$style_uri = get_stylesheet_directory_uri();
 		$style_dir = get_stylesheet_directory();
-
-		// Support externally referenced styles (like, say, fonts).
 		foreach ( $editor_styles as $key => $file ) {
 			if ( preg_match( '~^(https?:)?//~', $file ) ) {
 				$stylesheets[] = esc_url_raw( $file );
 				unset( $editor_styles[ $key ] );
 			}
 		}
-
-		// Look in a parent theme first, that way child theme CSS overrides.
 		if ( is_child_theme() ) {
 			$template_uri = get_template_directory_uri();
 			$template_dir = get_template_directory();
@@ -841,14 +684,12 @@ function get_editor_stylesheets() {
 				}
 			}
 		}
-
 		foreach ( $editor_styles as $file ) {
 			if ( $file && file_exists( "$style_dir/$file" ) ) {
 				$stylesheets[] = "$style_uri/$file";
 			}
 		}
 	}
-
 	return apply_filters( 'editor_stylesheets', $stylesheets );
 }
 
@@ -995,23 +836,18 @@ function _custom_header_background_just_in_time() {
 	global $custom_image_header, $custom_background;
 	if ( current_theme_supports( 'custom-header' ) ) {
 		add_theme_support( 'custom-header', array( '__jit' => true ) );
-
 		$args = get_theme_support( 'custom-header' );
 		if ( $args[0]['wp-head-callback'] )
 			add_action( 'wp_head', $args[0]['wp-head-callback'] );
-
 		if ( is_admin() ) {
 			require_once( ABSPATH . 'wp-admin/custom-header.php' );
 			$custom_image_header = new Custom_Image_Header( $args[0]['admin-head-callback'], $args[0]['admin-preview-callback'] );
 		}
 	}
-
 	if ( current_theme_supports( 'custom-background' ) ) {
 		add_theme_support( 'custom-background', array( '__jit' => true ) );
-
 		$args = get_theme_support( 'custom-background' );
 		add_action( 'wp_head', $args[0]['wp-head-callback'] );
-
 		if ( is_admin() ) {
 			require_once( ABSPATH . 'wp-admin/custom-background.php' );
 			$custom_background = new Custom_Background( $args[0]['admin-head-callback'], $args[0]['admin-preview-callback'] );
@@ -1024,13 +860,9 @@ function _custom_logo_header_styles() {
 		$classes = (array) get_theme_support( 'custom-logo', 'header-text' );
 		$classes = array_map( 'sanitize_html_class', $classes );
 		$classes = '.' . implode( ', .', $classes );
-		?>
-
+	?>
 		<style id="custom-logo-css" type="text/css">
-			<?php echo $classes; ?> {
-				position: absolute;
-				clip: rect(1px, 1px, 1px, 1px);
-			}
+			<?php echo $classes; ?> {position: absolute;clip: rect(1px, 1px, 1px, 1px);}
 		</style>
 	<?php
 	}
@@ -1038,41 +870,34 @@ function _custom_logo_header_styles() {
 
 function get_theme_support( $feature ) {
 	global $_wp_theme_features;
-	if ( ! isset( $_wp_theme_features[ $feature ] ) )
-		return false;
-
+	if ( ! isset( $_wp_theme_features[ $feature ] ) ) return false;
 	if ( func_num_args() <= 1 )
 		return $_wp_theme_features[ $feature ];
-
 	$args = array_slice( func_get_args(), 1 );
 	switch ( $feature ) {
 		case 'custom-logo' :
 		case 'custom-header' :
 		case 'custom-background' :
-			if ( isset( $_wp_theme_features[ $feature ][0][ $args[0] ] ) )
-				return $_wp_theme_features[ $feature ][0][ $args[0] ];
+			if ( isset( $_wp_theme_features[ $feature ][0][ $args[0] ] ) ) return $_wp_theme_features[ $feature ][0][ $args[0] ];
 			return false;
-
 		default :
 			return $_wp_theme_features[ $feature ];
 	}
 }
 
 function remove_theme_support( $feature ) {
-	if ( in_array( $feature, array( 'editor-style', 'widgets', 'menus' ) ) )
-		return false;
+	if ( in_array( $feature, array( 'editor-style', 'widgets', 'menus' ) ) ) return false;
 	return _remove_theme_support( $feature );
 }
 
 function _remove_theme_support( $feature ) {
 	global $_wp_theme_features;
-
 	switch ( $feature ) {
 		case 'custom-header-uploads' :
 			if ( ! isset( $_wp_theme_features['custom-header'] ) )
 				return false;
 			add_theme_support( 'custom-header', array( 'uploads' => false ) );
-			return; // Do not continue - custom-header-uploads no longer exists.
+			return;
 	}
 
 	if ( ! isset( $_wp_theme_features[ $feature ] ) )
@@ -1098,7 +923,6 @@ function _remove_theme_support( $feature ) {
 			unset( $GLOBALS['custom_background'] );
 			break;
 	}
-
 	unset( $_wp_theme_features[ $feature ] );
 	return true;
 }
@@ -1144,19 +968,16 @@ function require_if_theme_supports( $feature, $include ) {
 function _delete_attachment_theme_mod( $id ) {
 	$attachment_image = wp_get_attachment_url( $id );
 	$header_image     = get_header_image();
-	$background_image = get_background_image();
+	$background_image = get_theme_mod('background_image', get_theme_support( 'custom-background', 'default-image' );
 	$custom_logo_id   = get_theme_mod( 'custom_logo' );
-
 	if ( $custom_logo_id && $custom_logo_id == $id ) {
 		remove_theme_mod( 'custom_logo' );
 		remove_theme_mod( 'header_text' );
 	}
-
 	if ( $header_image && $header_image == $attachment_image ) {
 		remove_theme_mod( 'header_image' );
 		remove_theme_mod( 'header_image_data' );
 	}
-
 	if ( $background_image && $background_image == $attachment_image ) {
 		remove_theme_mod( 'background_image' );
 	}

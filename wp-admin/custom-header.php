@@ -152,14 +152,11 @@ class Custom_Image_Header {
 
 	public function process_default_headers() {
 		global $_wp_default_headers;
-
 		if ( !isset($_wp_default_headers) )
 			return;
-
 		if ( ! empty( $this->default_headers ) ) {
 			return;
 		}
-
 		$this->default_headers = $_wp_default_headers;
 		$template_directory_uri = get_template_directory_uri();
 		$stylesheet_directory_uri = get_stylesheet_directory_uri();

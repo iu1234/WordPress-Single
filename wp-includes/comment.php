@@ -1110,19 +1110,14 @@ function wp_update_comment_count_now($post_id) {
 	return true;
 }
 
-function discover_pingback_server_uri( $url, $deprecated = '' ) {
-	if ( !empty( $deprecated ) )
-		_deprecated_argument( __FUNCTION__, '2.7' );
-
+function discover_pingback_server_uri( $url ) {
 	$pingback_str_dquote = 'rel="pingback"';
 	$pingback_str_squote = 'rel=\'pingback\'';
-
 	$parsed_url = parse_url($url);
 
 	if ( ! isset( $parsed_url['host'] ) )
 		return false;
-
-	$uploads_dir = wp_get_upload_dir();
+	$uploads_dir = wp_upload_dir( null, false );
 	if ( 0 === strpos($url, $uploads_dir['baseurl']) )
 		return false;
 
@@ -1133,14 +1128,9 @@ function discover_pingback_server_uri( $url, $deprecated = '' ) {
 
 	if ( wp_remote_retrieve_header( $response, 'x-pingback' ) )
 		return wp_remote_retrieve_header( $response, 'x-pingback' );
-
-	// Not an (x)html, sgml, or xml page, no use going further.
 	if ( preg_match('#(image|audio|video|model)/#is', wp_remote_retrieve_header( $response, 'content-type' )) )
 		return false;
-
-	// Now do a GET since we're going to look in the html headers (and we're sure it's not a binary file)
 	$response = wp_safe_remote_get( $url, array( 'timeout' => 2, 'httpversion' => '1.0' ) );
-
 	if ( is_wp_error( $response ) )
 		return false;
 
@@ -1156,13 +1146,10 @@ function discover_pingback_server_uri( $url, $deprecated = '' ) {
 		$pingback_href_end = @strpos($contents, $quote, $pingback_href_start);
 		$pingback_server_url_len = $pingback_href_end - $pingback_href_start;
 		$pingback_server_url = substr($contents, $pingback_href_start, $pingback_server_url_len);
-
-		// We may find rel="pingback" but an incomplete pingback URL
-		if ( $pingback_server_url_len > 0 ) { // We got it!
+		if ( $pingback_server_url_len > 0 ) {
 			return $pingback_server_url;
 		}
 	}
-
 	return false;
 }
 

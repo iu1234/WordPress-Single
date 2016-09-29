@@ -187,10 +187,6 @@ function wp_meta() {
 	do_action( 'wp_meta' );
 }
 
-function bloginfo( $show = '' ) {
-	echo get_bloginfo( $show, 'display' );
-}
-
 function get_bloginfo( $show = '', $filter = 'raw' ) {
 	switch( $show ) {
 		case 'url' :
@@ -246,7 +242,7 @@ function get_bloginfo( $show = '', $filter = 'raw' ) {
 	return $output;
 }
 
-function get_site_icon_url( $size = 512, $url = '', $blog_id = 0 ) {
+function get_site_icon_url( $size = 512, $url = '' ) {
 	$site_icon_id = get_option( 'site_icon' );
 	if ( $site_icon_id ) {
 		if ( $size >= 512 ) {
@@ -256,15 +252,11 @@ function get_site_icon_url( $size = 512, $url = '', $blog_id = 0 ) {
 		}
 		$url = wp_get_attachment_image_url( $site_icon_id, $size_data );
 	}
-	return apply_filters( 'get_site_icon_url', $url, $size, $blog_id );
+	return $url;
 }
 
-function site_icon_url( $size = 512, $url = '', $blog_id = 0 ) {
-	echo esc_url( get_site_icon_url( $size, $url, $blog_id ) );
-}
-
-function has_site_icon( $blog_id = 0 ) {
-	return (bool) get_site_icon_url( 512, '', $blog_id );
+function has_site_icon() {
+	return (bool) get_site_icon_url( 512, '' );
 }
 
 function has_custom_logo( $blog_id = 0 ) {
@@ -285,11 +277,9 @@ function get_custom_logo( $blog_id = 0 ) {
 		);
 	}
 	elseif ( is_customize_preview() ) {
-		$html = sprintf( '<a href="%1$s" class="custom-logo-link" style="display:none;"><img class="custom-logo"/></a>',
-			esc_url( home_url( '/' ) )
-		);
+		$html = sprintf( '<a href="%1$s" class="custom-logo-link" style="display:none;"><img class="custom-logo"/></a>', esc_url( home_url( '/' ) ) );
 	}
-	return apply_filters( 'get_custom_logo', $html );
+	return $html;
 }
 
 function wp_get_document_title() {
@@ -1130,9 +1120,7 @@ function wp_no_robots() {
 }
 
 function wp_site_icon() {
-	if ( ! has_site_icon() && ! is_customize_preview() ) {
-		return;
-	}
+	if ( ! has_site_icon() && ! is_customize_preview() ) { return; }
 	$meta_tags = array(
 		sprintf( '<link rel="icon" href="%s" sizes="32x32" />', esc_url( get_site_icon_url( 32 ) ) ),
 		sprintf( '<link rel="icon" href="%s" sizes="192x192" />', esc_url( get_site_icon_url( 192 ) ) ),
@@ -1141,10 +1129,7 @@ function wp_site_icon() {
 	);
 	$meta_tags = apply_filters( 'site_icon_meta_tags', $meta_tags );
 	$meta_tags = array_filter( $meta_tags );
-
-	foreach ( $meta_tags as $meta_tag ) {
-		echo "$meta_tag\n";
-	}
+	foreach ( $meta_tags as $meta_tag ) { echo "$meta_tag\n"; }
 }
 
 function user_can_richedit() {

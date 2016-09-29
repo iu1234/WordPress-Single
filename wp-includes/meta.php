@@ -1,14 +1,4 @@
 <?php
-/**
- * Core Metadata API
- *
- * Functions for retrieving and manipulating metadata of various WordPress object types. Metadata
- * for an object is a represented by a simple key-value pair. Objects may contain multiple
- * metadata entries that share the same key and differ only in their value.
- *
- * @package WordPress
- * @subpackage Meta
- */
 
 function add_metadata($meta_type, $object_id, $meta_key, $meta_value, $unique = false) {
 	global $wpdb;
@@ -16,13 +6,9 @@ function add_metadata($meta_type, $object_id, $meta_key, $meta_value, $unique = 
 		return false;
 	}
 	$object_id = absint( $object_id );
-	if ( ! $object_id ) {
-		return false;
-	}
+	if ( ! $object_id ) { return false;	}
 	$table = _get_meta_table( $meta_type );
-	if ( ! $table ) {
-		return false;
-	}
+	if ( ! $table ) { return false; }
 	$column = sanitize_key($meta_type . '_id');
 	$meta_key = wp_unslash($meta_key);
 	$meta_value = wp_unslash($meta_value);
@@ -62,25 +48,19 @@ function add_metadata($meta_type, $object_id, $meta_key, $meta_value, $unique = 
 
 function update_metadata($meta_type, $object_id, $meta_key, $meta_value, $prev_value = '') {
 	global $wpdb;
-
 	if ( ! $meta_type || ! $meta_key || ! is_numeric( $object_id ) ) {
 		return false;
 	}
-
 	$object_id = absint( $object_id );
 	if ( ! $object_id ) {
 		return false;
 	}
-
 	$table = _get_meta_table( $meta_type );
 	if ( ! $table ) {
 		return false;
 	}
-
 	$column = sanitize_key($meta_type . '_id');
 	$id_column = 'user' == $meta_type ? 'umeta_id' : 'meta_id';
-
-	// expected_slashed ($meta_key)
 	$raw_meta_key = $meta_key;
 	$meta_key = wp_unslash($meta_key);
 	$passed_value = $meta_value;
@@ -90,8 +70,6 @@ function update_metadata($meta_type, $object_id, $meta_key, $meta_value, $prev_v
 	$check = apply_filters( "update_{$meta_type}_metadata", null, $object_id, $meta_key, $meta_value, $prev_value );
 	if ( null !== $check )
 		return (bool) $check;
-
-	// Compare existing value to new value if no prev value given and the key exists only once.
 	if ( empty($prev_value) ) {
 		$old_value = get_metadata($meta_type, $object_id, $meta_key);
 		if ( count($old_value) == 1 ) {
@@ -99,15 +77,12 @@ function update_metadata($meta_type, $object_id, $meta_key, $meta_value, $prev_v
 				return false;
 		}
 	}
-
 	$meta_ids = $wpdb->get_col( $wpdb->prepare( "SELECT $id_column FROM $table WHERE meta_key = %s AND $column = %d", $meta_key, $object_id ) );
 	if ( empty( $meta_ids ) ) {
 		return add_metadata( $meta_type, $object_id, $raw_meta_key, $passed_value );
 	}
-
 	$_meta_value = $meta_value;
 	$meta_value = maybe_serialize( $meta_value );
-
 	$data  = compact( 'meta_value' );
 	$where = array( $column => $object_id, 'meta_key' => $meta_key );
 
@@ -160,7 +135,6 @@ function delete_metadata($meta_type, $object_id, $meta_key, $meta_value = '', $d
 
 	$type_column = sanitize_key($meta_type . '_id');
 	$id_column = 'user' == $meta_type ? 'umeta_id' : 'meta_id';
-	// expected_slashed ($meta_key)
 	$meta_key = wp_unslash($meta_key);
 	$meta_value = wp_unslash($meta_value);
 
@@ -215,15 +189,7 @@ function delete_metadata($meta_type, $object_id, $meta_key, $meta_value = '', $d
 
 	do_action( "deleted_{$meta_type}_meta", $meta_ids, $object_id, $meta_key, $_meta_value );
 
-	// Old-style action.
 	if ( 'post' == $meta_type ) {
-		/**
-		 * Fires immediately after deleting metadata for a post.
-		 *
-		 * @since 2.9.0
-		 *
-		 * @param array $meta_ids An array of deleted post metadata entry IDs.
-		 */
 		do_action( 'deleted_postmeta', $meta_ids );
 	}
 
@@ -466,7 +432,6 @@ function _get_meta_table($type) {
 
 function is_protected_meta( $meta_key, $meta_type = null ) {
 	$protected = ( '_' == $meta_key[0] );
-
 	return apply_filters( 'is_protected_meta', $protected, $meta_key, $meta_type );
 }
 

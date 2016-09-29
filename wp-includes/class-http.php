@@ -7,17 +7,6 @@
  * @since 2.7.0
  */
 
-/**
- * Core class used for managing HTTP transports and making HTTP requests.
- *
- * This class is used to consistently make outgoing HTTP requests easy for developers
- * while still being compatible with the many PHP configurations under which
- * WordPress runs.
- *
- * Debugging includes several actions, which pass different variables for debugging the HTTP API.
- *
- * @since 2.7.0
- */
 class WP_Http {
 
 	const HTTP_CONTINUE                   = 100;
@@ -268,7 +257,7 @@ class WP_Http {
 		 */
 		if ( $r['stream'] ) {
 			$r['blocking'] = true;
-			if ( ! wp_is_writable( dirname( $r['filename'] ) ) )
+			if ( ! @is_writable( dirname( $r['filename'] ) ) )
 				return new WP_Error( 'http_request_failed', 'Destination directory for file streaming does not exist or is not writable.' );
 		}
 

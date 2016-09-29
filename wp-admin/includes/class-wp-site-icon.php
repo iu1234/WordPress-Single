@@ -1,11 +1,4 @@
 <?php
-/**
- * Administration API: WP_Site_Icon class
- *
- * @package WordPress
- * @subpackage Administration
- * @since 4.3.0
- */
 
 class WP_Site_Icon {
 

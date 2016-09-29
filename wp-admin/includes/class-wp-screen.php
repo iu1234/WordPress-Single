@@ -1,11 +1,4 @@
 <?php
-/**
- * Screen API: WP_Screen class
- *
- * @package WordPress
- * @subpackage Administration
- * @since 4.4.0
- */
 
 final class WP_Screen {
 

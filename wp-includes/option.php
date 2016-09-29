@@ -1,19 +1,11 @@
 <?php
-/**
- * Option API
- *
- * @package WordPress
- * @subpackage Option
- */
 
 function get_option( $option, $default = false ) {
 	global $wpdb;
 	$option = trim( $option );
-	if ( empty( $option ) )
-		return false;
+	if ( empty( $option ) ) return false;
 	$pre = apply_filters( 'pre_option_' . $option, false, $option );
-	if ( false !== $pre )
-		return $pre;
+	if ( false !== $pre ) return $pre;
 	$notoptions = wp_cache_get( 'notoptions', 'options' );
 	if ( isset( $notoptions[ $option ] ) ) {
 		return apply_filters( 'default_option_' . $option, $default, $option );
@@ -43,7 +35,6 @@ function get_option( $option, $default = false ) {
 		return get_option( 'siteurl' );
 	if ( in_array( $option, array('siteurl', 'home', 'category_base', 'tag_base') ) )
 		$value = untrailingslashit( $value );
-
 	return apply_filters( 'option_' . $option, maybe_unserialize( $value ), $option );
 }
 

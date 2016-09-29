@@ -1,66 +1,33 @@
 <?php
-/**
- * Toolbar API: WP_Admin_Bar class
- *
- * @package WordPress
- * @subpackage Toolbar
- * @since 3.1.0
- */
 
-/**
- * Core class used to implement the Toolbar API.
- *
- * @since 3.1.0
- */
 class WP_Admin_Bar {
 	private $nodes = array();
 	private $bound = false;
 	public $user;
 
-	/**
-	 * @param string $name
-	 * @return string|array|void
-	 */
 	public function __get( $name ) {
 		switch ( $name ) {
 			case 'proto' :
-				return is_ssl() ? 'https://' : 'http://';
-
+				return 'http://';
 			case 'menu' :
-				_deprecated_argument( 'WP_Admin_Bar', '3.3', 'Modify admin bar nodes with WP_Admin_Bar::get_node(), WP_Admin_Bar::add_node(), and WP_Admin_Bar::remove_node(), not the <code>menu</code> property.' );
-				return array(); // Sorry, folks.
+				return array();
 		}
 	}
 
-	/**
-	 * @access public
-	 */
 	public function initialize() {
 		$this->user = new stdClass;
 
 		if ( is_user_logged_in() ) {
-			/* Populate settings we need for the menu based on the current user. */
 			$this->user->blogs = get_blogs_of_user( get_current_user_id() );
-			if ( is_multisite() ) {
-				$this->user->active_blog = get_active_blog_for_user( get_current_user_id() );
-				$this->user->domain = empty( $this->user->active_blog ) ? user_admin_url() : trailingslashit( get_home_url( $this->user->active_blog->blog_id ) );
-				$this->user->account_domain = $this->user->domain;
-			} else {
-				$this->user->active_blog = $this->user->blogs[get_current_blog_id()];
-				$this->user->domain = trailingslashit( home_url() );
-				$this->user->account_domain = $this->user->domain;
-			}
+			$this->user->active_blog = $this->user->blogs[get_current_blog_id()];
+			$this->user->domain = trailingslashit( home_url() );
+			$this->user->account_domain = $this->user->domain;
 		}
 
 		add_action( 'wp_head', 'wp_admin_bar_header' );
-
 		add_action( 'admin_head', 'wp_admin_bar_header' );
 
 		if ( current_theme_supports( 'admin-bar' ) ) {
-			/**
-			 * To remove the default padding styles from WordPress for the Toolbar, use the following code:
-			 * add_theme_support( 'admin-bar', array( 'callback' => '__return_false' ) );
-			 */
 			$admin_bar_args = get_theme_support( 'admin-bar' );
 			$header_callback = $admin_bar_args[0]['callback'];
 		}
@@ -73,24 +40,13 @@ class WP_Admin_Bar {
 		wp_enqueue_script( 'admin-bar' );
 		wp_enqueue_style( 'admin-bar' );
 
-		/**
-		 * Fires after WP_Admin_Bar is initialized.
-		 *
-		 * @since 3.1.0
-		 */
 		do_action( 'admin_bar_init' );
 	}
 
-	/**
-	 * @param array $node
-	 */
 	public function add_menu( $node ) {
 		$this->add_node( $node );
 	}
 
-	/**
-	 * @param string $id
-	 */
 	public function remove_menu( $id ) {
 		$this->remove_node( $id );
 	}
@@ -101,8 +57,6 @@ class WP_Admin_Bar {
 
 		if ( is_object( $args ) )
 			$args = get_object_vars( $args );
-
-		// Ensure we have a valid title.
 		if ( empty( $args['id'] ) ) {
 			if ( empty( $args['title'] ) )
 				return;
@@ -110,7 +64,6 @@ class WP_Admin_Bar {
 			_doing_it_wrong( __METHOD__, 'The menu ID should not be empty.', '3.3' );
 			$args['id'] = esc_attr( sanitize_title( trim( $args['title'] ) ) );
 		}
-
 		$defaults = array(
 			'id'     => false,
 			'title'  => false,
@@ -120,11 +73,8 @@ class WP_Admin_Bar {
 			'meta'   => array(),
 		);
 
-		// If the node already exists, keep any data that isn't provided.
 		if ( $maybe_defaults = $this->get_node( $args['id'] ) )
 			$defaults = get_object_vars( $maybe_defaults );
-
-		// Do the same for 'meta' items.
 		if ( ! empty( $defaults['meta'] ) && ! empty( $args['meta'] ) )
 			$args['meta'] = wp_parse_args( $args['meta'], $defaults['meta'] );
 
@@ -137,7 +87,6 @@ class WP_Admin_Bar {
 
 		if ( isset( $back_compat_parents[ $args['parent'] ] ) ) {
 			list( $new_parent, $version ) = $back_compat_parents[ $args['parent'] ];
-			_deprecated_argument( __METHOD__, $version, sprintf( 'Use <code>%s</code> as the parent for the <code>%s</code> admin bar node instead of <code>%s</code>.', $new_parent, $args['id'], $args['parent'] ) );
 			$args['parent'] = $new_parent;
 		}
 
@@ -455,29 +404,23 @@ class WP_Admin_Bar {
 	}
 
 	public function recursive_render( $id, $node ) {
-		_deprecated_function( __METHOD__, '3.3', 'WP_Admin_bar::render(), WP_Admin_Bar::_render_item()' );
 		$this->_render_item( $node );
 	}
 
 	public function add_menus() {
 		add_action( 'admin_bar_menu', 'wp_admin_bar_my_account_menu', 0 );
-		add_action( 'admin_bar_menu', 'wp_admin_bar_search_menu', 4 );
 		add_action( 'admin_bar_menu', 'wp_admin_bar_my_account_item', 7 );
-
 		add_action( 'admin_bar_menu', 'wp_admin_bar_sidebar_toggle', 0 );
 		add_action( 'admin_bar_menu', 'wp_admin_bar_my_sites_menu', 20 );
 		add_action( 'admin_bar_menu', 'wp_admin_bar_site_menu', 30 );
 		add_action( 'admin_bar_menu', 'wp_admin_bar_customize_menu', 40 );
-		add_action( 'admin_bar_menu', 'wp_admin_bar_updates_menu', 50 );
 
-		if ( ! is_network_admin() && ! is_user_admin() ) {
+		if ( ! is_user_admin() ) {
 			add_action( 'admin_bar_menu', 'wp_admin_bar_comments_menu', 60 );
 			add_action( 'admin_bar_menu', 'wp_admin_bar_new_content_menu', 70 );
 		}
 		add_action( 'admin_bar_menu', 'wp_admin_bar_edit_menu', 80 );
-
 		add_action( 'admin_bar_menu', 'wp_admin_bar_add_secondary_groups', 200 );
-
 		do_action( 'add_admin_bar_menus' );
 	}
 }

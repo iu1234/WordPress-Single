@@ -1,10 +1,4 @@
 <?php
-/**
- * Core User Role & Capabilities API
- *
- * @package WordPress
- * @subpackage Users
- */
 
 function map_meta_cap( $cap, $user_id ) {
 	$args = array_slice( func_get_args(), 2 );
@@ -42,23 +36,18 @@ function map_meta_cap( $cap, $user_id ) {
 
 		$post_type = get_post_type_object( $post->post_type );
 		if ( ! $post_type ) {
-			/* translators: 1: post type, 2: capability name */
-			_doing_it_wrong( __FUNCTION__, sprintf( __( 'The post type %1$s is not registered, so it may not be reliable to check the capability "%2$s" against a post of that type.' ), $post->post_type, $cap ), '4.4.0' );
+			_doing_it_wrong( __FUNCTION__, sprintf( 'The post type %1$s is not registered, so it may not be reliable to check the capability "%2$s" against a post of that type.', $post->post_type, $cap ), '4.4.0' );
 			$caps[] = 'edit_others_posts';
 			break;
 		}
 
 		if ( ! $post_type->map_meta_cap ) {
 			$caps[] = $post_type->cap->$cap;
-			// Prior to 3.1 we would re-call map_meta_cap here.
 			if ( 'delete_post' == $cap )
 				$cap = $post_type->cap->$cap;
 			break;
 		}
-
-		// If the post author is set and the user is the author...
 		if ( $post->post_author && $user_id == $post->post_author ) {
-			// If the post is published or scheduled...
 			if ( in_array( $post->post_status, array( 'publish', 'future' ), true ) ) {
 				$caps[] = $post_type->cap->delete_published_posts;
 			} elseif ( 'trash' == $post->post_status ) {
@@ -69,13 +58,10 @@ function map_meta_cap( $cap, $user_id ) {
 					$caps[] = $post_type->cap->delete_posts;
 				}
 			} else {
-				// If the post is draft...
 				$caps[] = $post_type->cap->delete_posts;
 			}
 		} else {
-			// The user is trying to edit someone else's post.
 			$caps[] = $post_type->cap->delete_others_posts;
-			// The post is published or scheduled, extra cap required.
 			if ( in_array( $post->post_status, array( 'publish', 'future' ), true ) ) {
 				$caps[] = $post_type->cap->delete_published_posts;
 			} elseif ( 'private' == $post->post_status ) {
@@ -83,8 +69,6 @@ function map_meta_cap( $cap, $user_id ) {
 			}
 		}
 		break;
-		// edit_post breaks down to edit_posts, edit_published_posts, or
-		// edit_others_posts
 	case 'edit_post':
 	case 'edit_page':
 		$post = get_post( $args[0] );
@@ -303,11 +287,10 @@ function map_meta_cap( $cap, $user_id ) {
 		break;
 	case 'delete_user':
 	case 'delete_users':
-		// If multisite only super admins can delete users.
-		if ( is_multisite() && ! is_super_admin( $user_id ) )
+		if ( ! is_super_admin( $user_id ) )
 			$caps[] = 'do_not_allow';
 		else
-			$caps[] = 'delete_users'; // delete_user maps to delete_users.
+			$caps[] = 'delete_users';
 		break;
 	case 'create_users':
 		if ( !is_multisite() )
@@ -341,52 +324,26 @@ function map_meta_cap( $cap, $user_id ) {
 		$caps[] = $cap;
 	}
 
-	/**
-	 * Filter a user's capabilities depending on specific context and/or privilege.
-	 *
-	 * @since 2.8.0
-	 *
-	 * @param array  $caps    Returns the user's actual capabilities.
-	 * @param string $cap     Capability name.
-	 * @param int    $user_id The user ID.
-	 * @param array  $args    Adds the context to the cap. Typically the object ID.
-	 */
 	return apply_filters( 'map_meta_cap', $caps, $cap, $user_id, $args );
 }
 
 function current_user_can( $capability ) {
 	$current_user = wp_get_current_user();
-
 	if ( empty( $current_user ) )
 		return false;
-
 	$args = array_slice( func_get_args(), 1 );
 	$args = array_merge( array( $capability ), $args );
-
 	return call_user_func_array( array( $current_user, 'has_cap' ), $args );
 }
 
 function current_user_can_for_blog( $blog_id, $capability ) {
-	$switched = is_multisite() ? switch_to_blog( $blog_id ) : false;
-
 	$current_user = wp_get_current_user();
-
 	if ( empty( $current_user ) ) {
-		if ( $switched ) {
-			restore_current_blog();
-		}
 		return false;
 	}
-
 	$args = array_slice( func_get_args(), 2 );
 	$args = array_merge( array( $capability ), $args );
-
 	$can = call_user_func_array( array( $current_user, 'has_cap' ), $args );
-
-	if ( $switched ) {
-		restore_current_blog();
-	}
-
 	return $can;
 }
 
@@ -444,7 +401,6 @@ function remove_role( $role ) {
 
 function get_super_admins() {
 	global $super_admins;
-
 	if ( isset($super_admins) )
 		return $super_admins;
 	else
@@ -460,14 +416,6 @@ function is_super_admin( $user_id = false ) {
 	if ( ! $user || ! $user->exists() )
 		return false;
 
-	if ( is_multisite() ) {
-		$super_admins = get_super_admins();
-		if ( is_array( $super_admins ) && in_array( $user->user_login, $super_admins ) )
-			return true;
-	} else {
-		if ( $user->has_cap('delete_users') )
-			return true;
-	}
-
+	if ( $user->has_cap('delete_users') ) return true;
 	return false;
 }

@@ -130,7 +130,7 @@ function create_initial_post_types() {
 
 function get_attached_file( $attachment_id, $unfiltered = false ) {
 	$file = get_post_meta( $attachment_id, '_wp_attached_file', true );
-	if ( $file && 0 !== strpos( $file, '/' ) && ! preg_match( '|^.:\\\|', $file ) && ( ( $uploads = wp_get_upload_dir() ) && false === $uploads['error'] ) ) {
+	if ( $file && 0 !== strpos( $file, '/' ) && ! preg_match( '|^.:\\\|', $file ) && ( ( $uploads = wp_upload_dir( null, false ) ) && false === $uploads['error'] ) ) {
 		$file = $uploads['basedir'] . "/$file";
 	}
 	if ( $unfiltered ) {
@@ -151,7 +151,7 @@ function update_attached_file( $attachment_id, $file ) {
 
 function _wp_relative_upload_path( $path ) {
 	$new_path = $path;
-	$uploads = wp_get_upload_dir();
+	$uploads = wp_upload_dir( null, false );
 	if ( 0 === strpos( $new_path, $uploads['basedir'] ) ) {
 			$new_path = str_replace( $uploads['basedir'], '', $new_path );
 			$new_path = ltrim( $new_path, '/' );
@@ -2492,33 +2492,23 @@ function wp_delete_attachment( $post_id, $force_delete = false ) {
 	$post_meta_ids = $wpdb->get_col( $wpdb->prepare( "SELECT meta_id FROM $wpdb->postmeta WHERE post_id = %d ", $post_id ));
 	foreach ( $post_meta_ids as $mid )
 		delete_metadata_by_mid( 'post', $mid );
-
-	/** This action is documented in wp-includes/post.php */
 	do_action( 'delete_post', $post_id );
 	$result = $wpdb->delete( $wpdb->posts, array( 'ID' => $post_id ) );
 	if ( ! $result ) {
 		return false;
 	}
-	/** This action is documented in wp-includes/post.php */
 	do_action( 'deleted_post', $post_id );
-
-	$uploadpath = wp_get_upload_dir();
-
+	$uploadpath = wp_upload_dir( null, false );
 	if ( ! empty($meta['thumb']) ) {
-		// Don't delete the thumb if another attachment uses it.
 		if (! $wpdb->get_row( $wpdb->prepare( "SELECT meta_id FROM $wpdb->postmeta WHERE meta_key = '_wp_attachment_metadata' AND meta_value LIKE %s AND post_id <> %d", '%' . $wpdb->esc_like( $meta['thumb'] ) . '%', $post_id)) ) {
 			$thumbfile = str_replace(basename($file), $meta['thumb'], $file);
-			/** This filter is documented in wp-includes/functions.php */
 			$thumbfile = apply_filters( 'wp_delete_file', $thumbfile );
 			@ unlink( path_join($uploadpath['basedir'], $thumbfile) );
 		}
 	}
-
-	// Remove intermediate and backup images if there are any.
 	if ( isset( $meta['sizes'] ) && is_array( $meta['sizes'] ) ) {
 		foreach ( $meta['sizes'] as $size => $sizeinfo ) {
 			$intermediate_file = str_replace( basename( $file ), $sizeinfo['file'], $file );
-			/** This filter is documented in wp-includes/functions.php */
 			$intermediate_file = apply_filters( 'wp_delete_file', $intermediate_file );
 			@ unlink( path_join( $uploadpath['basedir'], $intermediate_file ) );
 		}
@@ -2527,16 +2517,12 @@ function wp_delete_attachment( $post_id, $force_delete = false ) {
 	if ( is_array($backup_sizes) ) {
 		foreach ( $backup_sizes as $size ) {
 			$del_file = path_join( dirname($meta['file']), $size['file'] );
-			/** This filter is documented in wp-includes/functions.php */
 			$del_file = apply_filters( 'wp_delete_file', $del_file );
 			@ unlink( path_join($uploadpath['basedir'], $del_file) );
 		}
 	}
-
 	wp_delete_file( $file );
-
 	clean_post_cache( $post );
-
 	return $post;
 }
 
@@ -2573,45 +2559,25 @@ function wp_get_attachment_url( $post_id = 0 ) {
 		return false;
 
 	$url = '';
-	// Get attached file.
 	if ( $file = get_post_meta( $post->ID, '_wp_attached_file', true ) ) {
-		// Get upload directory.
-		if ( ( $uploads = wp_get_upload_dir() ) && false === $uploads['error'] ) {
-			// Check that the upload base exists in the file location.
+		if ( ( $uploads = wp_upload_dir( null, false ) ) && false === $uploads['error'] ) {
 			if ( 0 === strpos( $file, $uploads['basedir'] ) ) {
-				// Replace file location with url location.
 				$url = str_replace($uploads['basedir'], $uploads['baseurl'], $file);
 			} elseif ( false !== strpos($file, 'wp-content/uploads') ) {
-				// Get the directory name relative to the basedir (back compat for pre-2.7 uploads)
 				$url = trailingslashit( $uploads['baseurl'] . '/' . _wp_get_attachment_relative_path( $file ) ) . basename( $file );
 			} else {
-				// It's a newly-uploaded file, therefore $file is relative to the basedir.
 				$url = $uploads['baseurl'] . "/$file";
 			}
 		}
 	}
 
-	/*
-	 * If any of the above options failed, Fallback on the GUID as used pre-2.7,
-	 * not recommended to rely upon this.
-	 */
 	if ( empty($url) ) {
 		$url = get_the_guid( $post->ID );
 	}
 
-	// On SSL front end, URLs should be HTTPS.
 	if ( is_ssl() && ! is_admin() && 'wp-login.php' !== $GLOBALS['pagenow'] ) {
 		$url = set_url_scheme( $url );
 	}
-
-	/**
-	 * Filter the attachment URL.
-	 *
-	 * @since 2.1.0
-	 *
-	 * @param string $url     URL for the given attachment.
-	 * @param int    $post_id Attachment ID.
-	 */
 	$url = apply_filters( 'wp_get_attachment_url', $url, $post->ID );
 
 	if ( empty( $url ) )
