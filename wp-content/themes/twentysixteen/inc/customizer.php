@@ -93,13 +93,6 @@ function twentysixteen_header_style() {
 }
 endif; // twentysixteen_header_style
 
-/**
- * Adds postMessage support for site title and description for the Customizer.
- *
- * @since Twenty Sixteen 1.0
- *
- * @param WP_Customize_Manager $wp_customize The Customizer object.
- */
 function twentysixteen_customize_register( $wp_customize ) {
 	$color_scheme = twentysixteen_get_color_scheme();
 
@@ -127,7 +120,7 @@ function twentysixteen_customize_register( $wp_customize ) {
 	) );
 
 	$wp_customize->add_control( 'color_scheme', array(
-		'label'    => __( 'Base Color Scheme', 'twentysixteen' ),
+		'label'    => 'Base Color Scheme',
 		'section'  => 'colors',
 		'type'     => 'select',
 		'choices'  => twentysixteen_get_color_scheme_choices(),
@@ -142,7 +135,7 @@ function twentysixteen_customize_register( $wp_customize ) {
 	) );
 
 	$wp_customize->add_control( new WP_Customize_Color_Control( $wp_customize, 'page_background_color', array(
-		'label'       => __( 'Page Background Color', 'twentysixteen' ),
+		'label'       => 'Page Background Color',
 		'section'     => 'colors',
 	) ) );
 
@@ -157,7 +150,7 @@ function twentysixteen_customize_register( $wp_customize ) {
 	) );
 
 	$wp_customize->add_control( new WP_Customize_Color_Control( $wp_customize, 'link_color', array(
-		'label'       => __( 'Link Color', 'twentysixteen' ),
+		'label'       => 'Link Color',
 		'section'     => 'colors',
 	) ) );
 
@@ -169,7 +162,7 @@ function twentysixteen_customize_register( $wp_customize ) {
 	) );
 
 	$wp_customize->add_control( new WP_Customize_Color_Control( $wp_customize, 'main_text_color', array(
-		'label'       => __( 'Main Text Color', 'twentysixteen' ),
+		'label'       => 'Main Text Color',
 		'section'     => 'colors',
 	) ) );
 
@@ -181,76 +174,24 @@ function twentysixteen_customize_register( $wp_customize ) {
 	) );
 
 	$wp_customize->add_control( new WP_Customize_Color_Control( $wp_customize, 'secondary_text_color', array(
-		'label'       => __( 'Secondary Text Color', 'twentysixteen' ),
+		'label'       => 'Secondary Text Color',
 		'section'     => 'colors',
 	) ) );
 }
 add_action( 'customize_register', 'twentysixteen_customize_register', 11 );
 
-/**
- * Render the site title for the selective refresh partial.
- *
- * @since Twenty Sixteen 1.2
- * @see twentysixteen_customize_register()
- *
- * @return void
- */
 function twentysixteen_customize_partial_blogname() {
 	bloginfo( 'name' );
 }
 
-/**
- * Render the site tagline for the selective refresh partial.
- *
- * @since Twenty Sixteen 1.2
- * @see twentysixteen_customize_register()
- *
- * @return void
- */
 function twentysixteen_customize_partial_blogdescription() {
 	bloginfo( 'description' );
 }
 
-/**
- * Registers color schemes for Twenty Sixteen.
- *
- * Can be filtered with {@see 'twentysixteen_color_schemes'}.
- *
- * The order of colors in a colors array:
- * 1. Main Background Color.
- * 2. Page Background Color.
- * 3. Link Color.
- * 4. Main Text Color.
- * 5. Secondary Text Color.
- *
- * @since Twenty Sixteen 1.0
- *
- * @return array An associative array of color scheme options.
- */
 function twentysixteen_get_color_schemes() {
-	/**
-	 * Filter the color schemes registered for use with Twenty Sixteen.
-	 *
-	 * The default schemes include 'default', 'dark', 'gray', 'red', and 'yellow'.
-	 *
-	 * @since Twenty Sixteen 1.0
-	 *
-	 * @param array $schemes {
-	 *     Associative array of color schemes data.
-	 *
-	 *     @type array $slug {
-	 *         Associative array of information for setting up the color scheme.
-	 *
-	 *         @type string $label  Color scheme label.
-	 *         @type array  $colors HEX codes for default colors prepended with a hash symbol ('#').
-	 *                              Colors are defined in the following order: Main background, page
-	 *                              background, link, main text, secondary text.
-	 *     }
-	 * }
-	 */
 	return apply_filters( 'twentysixteen_color_schemes', array(
 		'default' => array(
-			'label'  => __( 'Default', 'twentysixteen' ),
+			'label'  => 'Default',
 			'colors' => array(
 				'#1a1a1a',
 				'#ffffff',
@@ -260,7 +201,7 @@ function twentysixteen_get_color_schemes() {
 			),
 		),
 		'dark' => array(
-			'label'  => __( 'Dark', 'twentysixteen' ),
+			'label'  => 'Dark',
 			'colors' => array(
 				'#262626',
 				'#1a1a1a',
@@ -270,7 +211,7 @@ function twentysixteen_get_color_schemes() {
 			),
 		),
 		'gray' => array(
-			'label'  => __( 'Gray', 'twentysixteen' ),
+			'label'  => 'Gray',
 			'colors' => array(
 				'#616a73',
 				'#4d545c',
@@ -280,7 +221,7 @@ function twentysixteen_get_color_schemes() {
 			),
 		),
 		'red' => array(
-			'label'  => __( 'Red', 'twentysixteen' ),
+			'label'  => 'Red',
 			'colors' => array(
 				'#ffffff',
 				'#ff675f',
@@ -290,7 +231,7 @@ function twentysixteen_get_color_schemes() {
 			),
 		),
 		'yellow' => array(
-			'label'  => __( 'Yellow', 'twentysixteen' ),
+			'label'  => 'Yellow',
 			'colors' => array(
 				'#3b3721',
 				'#ffef8e',
@@ -303,15 +244,6 @@ function twentysixteen_get_color_schemes() {
 }
 
 if ( ! function_exists( 'twentysixteen_get_color_scheme' ) ) :
-/**
- * Retrieves the current Twenty Sixteen color scheme.
- *
- * Create your own twentysixteen_get_color_scheme() function to override in a child theme.
- *
- * @since Twenty Sixteen 1.0
- *
- * @return array An associative array of either the current or default color scheme HEX values.
- */
 function twentysixteen_get_color_scheme() {
 	$color_scheme_option = get_theme_mod( 'color_scheme', 'default' );
 	$color_schemes       = twentysixteen_get_color_schemes();
@@ -325,16 +257,6 @@ function twentysixteen_get_color_scheme() {
 endif; // twentysixteen_get_color_scheme
 
 if ( ! function_exists( 'twentysixteen_get_color_scheme_choices' ) ) :
-/**
- * Retrieves an array of color scheme choices registered for Twenty Sixteen.
- *
- * Create your own twentysixteen_get_color_scheme_choices() function to override
- * in a child theme.
- *
- * @since Twenty Sixteen 1.0
- *
- * @return array Array of color schemes.
- */
 function twentysixteen_get_color_scheme_choices() {
 	$color_schemes                = twentysixteen_get_color_schemes();
 	$color_scheme_control_options = array();
@@ -349,17 +271,6 @@ endif; // twentysixteen_get_color_scheme_choices
 
 
 if ( ! function_exists( 'twentysixteen_sanitize_color_scheme' ) ) :
-/**
- * Handles sanitization for Twenty Sixteen color schemes.
- *
- * Create your own twentysixteen_sanitize_color_scheme() function to override
- * in a child theme.
- *
- * @since Twenty Sixteen 1.0
- *
- * @param string $value Color scheme name value.
- * @return string Color scheme name.
- */
 function twentysixteen_sanitize_color_scheme( $value ) {
 	$color_schemes = twentysixteen_get_color_scheme_choices();
 
@@ -371,17 +282,9 @@ function twentysixteen_sanitize_color_scheme( $value ) {
 }
 endif; // twentysixteen_sanitize_color_scheme
 
-/**
- * Enqueues front-end CSS for color scheme.
- *
- * @since Twenty Sixteen 1.0
- *
- * @see wp_add_inline_style()
- */
 function twentysixteen_color_scheme_css() {
 	$color_scheme_option = get_theme_mod( 'color_scheme', 'default' );
 
-	// Don't do anything if the default color scheme is selected.
 	if ( 'default' === $color_scheme_option ) {
 		return;
 	}
@@ -413,37 +316,17 @@ function twentysixteen_color_scheme_css() {
 }
 add_action( 'wp_enqueue_scripts', 'twentysixteen_color_scheme_css' );
 
-/**
- * Binds the JS listener to make Customizer color_scheme control.
- *
- * Passes color scheme data as colorScheme global.
- *
- * @since Twenty Sixteen 1.0
- */
 function twentysixteen_customize_control_js() {
 	wp_enqueue_script( 'color-scheme-control', get_template_directory_uri() . '/js/color-scheme-control.js', array( 'customize-controls', 'iris', 'underscore', 'wp-util' ), '20160412', true );
 	wp_localize_script( 'color-scheme-control', 'colorScheme', twentysixteen_get_color_schemes() );
 }
 add_action( 'customize_controls_enqueue_scripts', 'twentysixteen_customize_control_js' );
 
-/**
- * Binds JS handlers to make the Customizer preview reload changes asynchronously.
- *
- * @since Twenty Sixteen 1.0
- */
 function twentysixteen_customize_preview_js() {
 	wp_enqueue_script( 'twentysixteen-customize-preview', get_template_directory_uri() . '/js/customize-preview.js', array( 'customize-preview' ), '20160412', true );
 }
 add_action( 'customize_preview_init', 'twentysixteen_customize_preview_js' );
 
-/**
- * Returns CSS for the color schemes.
- *
- * @since Twenty Sixteen 1.0
- *
- * @param array $colors Color scheme colors.
- * @return string Color scheme CSS.
- */
 function twentysixteen_get_color_scheme_css( $colors ) {
 	$colors = wp_parse_args( $colors, array(
 		'background_color'      => '',
@@ -774,13 +657,6 @@ function twentysixteen_color_scheme_css_template() {
 }
 add_action( 'customize_controls_print_footer_scripts', 'twentysixteen_color_scheme_css_template' );
 
-/**
- * Enqueues front-end CSS for the page background color.
- *
- * @since Twenty Sixteen 1.0
- *
- * @see wp_add_inline_style()
- */
 function twentysixteen_page_background_color_css() {
 	$color_scheme          = twentysixteen_get_color_scheme();
 	$default_color         = $color_scheme[1];

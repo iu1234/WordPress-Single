@@ -245,10 +245,7 @@ function _sort_uname_callback( $a, $b ) {
 function get_dropins() {
 	$dropins = array();
 	$plugin_files = array();
-
 	$_dropins = _get_dropins();
-
-	// These exist in the wp-content directory
 	if ( $plugins_dir = @ opendir( WP_CONTENT_DIR ) ) {
 		while ( ( $file = readdir( $plugins_dir ) ) !== false ) {
 			if ( isset( $_dropins[ $file ] ) )
@@ -257,43 +254,27 @@ function get_dropins() {
 	} else {
 		return $dropins;
 	}
-
 	@closedir( $plugins_dir );
-
-	if ( empty($plugin_files) )
-		return $dropins;
-
+	if ( empty($plugin_files) ) return $dropins;
 	foreach ( $plugin_files as $plugin_file ) {
-		if ( !is_readable( WP_CONTENT_DIR . "/$plugin_file" ) )
-			continue;
-		$plugin_data = get_plugin_data( WP_CONTENT_DIR . "/$plugin_file", false, false ); //Do not apply markup/translate as it'll be cached.
-		if ( empty( $plugin_data['Name'] ) )
-			$plugin_data['Name'] = $plugin_file;
+		if ( !is_readable( WP_CONTENT_DIR . "/$plugin_file" ) ) continue;
+		$plugin_data = get_plugin_data( WP_CONTENT_DIR . "/$plugin_file", false, false );
+		if ( empty( $plugin_data['Name'] ) ) $plugin_data['Name'] = $plugin_file;
 		$dropins[ $plugin_file ] = $plugin_data;
 	}
-
 	uksort( $dropins, 'strnatcasecmp' );
-
 	return $dropins;
 }
 
 function _get_dropins() {
 	$dropins = array(
-		'advanced-cache.php' => array( __( 'Advanced caching plugin.'       ), 'WP_CACHE' ), // WP_CACHE
-		'db.php'             => array( __( 'Custom database class.'         ), true ), // auto on load
-		'db-error.php'       => array( __( 'Custom database error message.' ), true ), // auto on error
-		'install.php'        => array( __( 'Custom install script.'         ), true ), // auto on install
-		'maintenance.php'    => array( __( 'Custom maintenance message.'    ), true ), // auto on maintenance
-		'object-cache.php'   => array( __( 'External object cache.'         ), true ), // auto on load
+		'advanced-cache.php' => array( 'Advanced caching plugin.', 'WP_CACHE' ),
+		'db.php'             => array( 'Custom database class.', true ),
+		'db-error.php'       => array( 'Custom database error message.', true ),
+		'install.php'        => array( 'Custom install script.', true ),
+		'maintenance.php'    => array( 'Custom maintenance message.', true ),
+		'object-cache.php'   => array( 'External object cache.', true ),
 	);
-
-	if ( is_multisite() ) {
-		$dropins['sunrise.php'       ] = array( __( 'Executed before Multisite is loaded.' ), 'SUNRISE' ); // SUNRISE
-		$dropins['blog-deleted.php'  ] = array( __( 'Custom site deleted message.'   ), true ); // auto on deleted blog
-		$dropins['blog-inactive.php' ] = array( __( 'Custom site inactive message.'  ), true ); // auto on inactive blog
-		$dropins['blog-suspended.php'] = array( __( 'Custom site suspended message.' ), true ); // auto on archived or spammed blog
-	}
-
 	return $dropins;
 }
 
@@ -307,7 +288,7 @@ function activate_plugin( $plugin, $redirect = '', $network_wide = false, $silen
 	if ( is_multisite() && ( $network_wide || is_network_only_plugin($plugin) ) ) {
 		$network_wide = true;
 		$current = get_site_option( 'active_sitewide_plugins', array() );
-		$_GET['networkwide'] = 1; // Back compat for plugins looking for this value.
+		$_GET['networkwide'] = 1;
 	} else {
 		$current = get_option( 'active_plugins', array() );
 	}

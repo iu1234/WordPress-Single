@@ -1,12 +1,12 @@
 <?php
 
 function get_option( $option, $default = false ) {
-	global $wpdb;
+	global $wpdb, $wp_object_cache;
 	$option = trim( $option );
 	if ( empty( $option ) ) return false;
 	$pre = apply_filters( 'pre_option_' . $option, false, $option );
 	if ( false !== $pre ) return $pre;
-	$notoptions = wp_cache_get( 'notoptions', 'options' );
+	$notoptions = $wp_object_cache->get( 'notoptions', 'options' );
 	if ( isset( $notoptions[ $option ] ) ) {
 		return apply_filters( 'default_option_' . $option, $default, $option );
 	}
@@ -14,7 +14,7 @@ function get_option( $option, $default = false ) {
 	if ( isset( $alloptions[$option] ) ) {
 		$value = $alloptions[$option];
 	} else {
-		$value = wp_cache_get( $option, 'options' );
+		$value = $wp_object_cache->get( $option, 'options' );
 
 		if ( false === $value ) {
 			$row = $wpdb->get_row( $wpdb->prepare( "SELECT option_value FROM $wpdb->options WHERE option_name = %s LIMIT 1", $option ) );
@@ -48,8 +48,8 @@ function form_option( $option ) {
 }
 
 function wp_load_alloptions() {
-	global $wpdb;
-	$alloptions = wp_cache_get( 'alloptions', 'options' );
+	global $wpdb, , $wp_object_cache;
+	$alloptions = $wp_object_cache->get( 'alloptions', 'options' );
 	if ( !$alloptions ) {
 		$suppress = $wpdb->suppress_errors();
 		if ( !$alloptions_db = $wpdb->get_results( "SELECT option_name, option_value FROM $wpdb->options WHERE autoload = 'yes'" ) )
@@ -82,7 +82,7 @@ function wp_load_core_site_options( $site_id = null ) {
 }
 
 function update_option( $option, $value, $autoload = null ) {
-	global $wpdb;
+	global $wpdb, $wp_object_cache;
 	$option = trim($option);
 	if ( empty($option) )
 		return false;
@@ -112,7 +112,7 @@ function update_option( $option, $value, $autoload = null ) {
 	$result = $wpdb->update( $wpdb->options, $update_args, array( 'option_name' => $option ) );
 	if ( ! $result )
 		return false;
-	$notoptions = wp_cache_get( 'notoptions', 'options' );
+	$notoptions = $wp_object_cache->get( 'notoptions', 'options' );
 	if ( is_array( $notoptions ) && isset( $notoptions[$option] ) ) {
 		unset( $notoptions[$option] );
 		wp_cache_set( 'notoptions', $notoptions, 'options' );
@@ -130,7 +130,7 @@ function update_option( $option, $value, $autoload = null ) {
 }
 
 function add_option( $option, $value = '', $autoload = 'yes' ) {
-	global $wpdb;
+	global $wpdb, $wp_object_cache;
 	$option = trim($option);
 	if ( empty($option) )
 		return false;
@@ -139,7 +139,7 @@ function add_option( $option, $value = '', $autoload = 'yes' ) {
 		$value = clone $value;
 
 	$value = sanitize_option( $option, $value );
-	$notoptions = wp_cache_get( 'notoptions', 'options' );
+	$notoptions = $wp_object_cache->get( 'notoptions', 'options' );
 	if ( !is_array( $notoptions ) || !isset( $notoptions[$option] ) )
 		if ( apply_filters( 'default_option_' . $option, false ) !== get_option( $option ) )
 			return false;
@@ -160,7 +160,7 @@ function add_option( $option, $value = '', $autoload = 'yes' ) {
 	} else {
 		wp_cache_set( $option, $serialized_value, 'options' );
 	}
-	$notoptions = wp_cache_get( 'notoptions', 'options' );
+	$notoptions = $wp_object_cache->get( 'notoptions', 'options' );
 	if ( is_array( $notoptions ) && isset( $notoptions[$option] ) ) {
 		unset( $notoptions[$option] );
 		wp_cache_set( 'notoptions', $notoptions, 'options' );
@@ -413,7 +413,7 @@ function update_network_option( $network_id, $option, $value ) {
 	}
 
 	$notoptions_key = "$network_id:notoptions";
-	$notoptions = wp_cache_get( $notoptions_key, 'site-options' );
+	$notoptions = $wp_object_cache->get( $notoptions_key, 'site-options' );
 	if ( is_array( $notoptions ) && isset( $notoptions[ $option ] ) ) {
 		unset( $notoptions[ $option ] );
 		wp_cache_set( $notoptions_key, $notoptions, 'site-options' );

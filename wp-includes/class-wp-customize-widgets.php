@@ -426,23 +426,22 @@ final class WP_Customize_Widgets {
 
 	public function output_widget_control_templates() {
 		?>
-		<div id="widgets-left"><!-- compatibility with JS which looks for widget templates here -->
+		<div id="widgets-left">
 		<div id="available-widgets">
 			<div class="customize-section-title">
 				<button class="customize-section-back" tabindex="-1">
-					<span class="screen-reader-text">Back</span>
+					<span class="screen-reader-text">返回</span>
 				</button>
 				<h3>
 					<span class="customize-action"><?php
-						/* translators: &#9656; is the unicode right-pointing triangle, and %s is the section title in the Customizer */
-						echo sprintf( 'Customizing &#9656; %s', esc_html( $this->manager->get_panel( 'widgets' )->title ) );
+						echo sprintf( '自定义 &#9656; %s', esc_html( $this->manager->get_panel( 'widgets' )->title ) );
 					?></span>
-					Add a Widget
+					侧边栏
 				</h3>
 			</div>
 			<div id="available-widgets-filter">
-				<label class="screen-reader-text" for="widgets-search">Search Widgets</label>
-				<input type="search" id="widgets-search" placeholder="<?php esc_attr_e( 'Search widgets&hellip;' ) ?>" />
+				<label class="screen-reader-text" for="widgets-search">搜索小工具</label>
+				<input type="search" id="widgets-search" placeholder="搜索小工具&hellip;" />
 			</div>
 			<div id="available-widgets-list">
 			<?php foreach ( $this->get_available_widgets() as $available_widget ): ?>
@@ -450,9 +449,9 @@ final class WP_Customize_Widgets {
 					<?php echo $available_widget['control_tpl']; ?>
 				</div>
 			<?php endforeach; ?>
-			</div><!-- #available-widgets-list -->
-		</div><!-- #available-widgets -->
-		</div><!-- #widgets-left -->
+			</div>
+		</div>
+		</div>
 		<?php
 	}
 
@@ -1111,8 +1110,6 @@ final class WP_Customize_Widgets {
 
 		if ( isset( $this->_captured_options[ $option_name ] ) ) {
 			$value = $this->_captured_options[ $option_name ];
-
-			/** This filter is documented in wp-includes/option.php */
 			$value = apply_filters( 'option_' . $option_name, $value );
 		}
 
@@ -1123,7 +1120,6 @@ final class WP_Customize_Widgets {
 		if ( ! $this->_is_capturing_option_updates ) {
 			return;
 		}
-
 		remove_filter( 'pre_update_option', array( $this, 'capture_filter_pre_update_option' ), 10 );
 
 		foreach ( array_keys( $this->_captured_options ) as $option_name ) {
@@ -1132,21 +1128,5 @@ final class WP_Customize_Widgets {
 
 		$this->_captured_options = array();
 		$this->_is_capturing_option_updates = false;
-	}
-
-	public function setup_widget_addition_previews() {
-		_deprecated_function( __METHOD__, '4.2.0' );
-	}
-
-	public function prepreview_added_sidebars_widgets() {
-		_deprecated_function( __METHOD__, '4.2.0' );
-	}
-
-	public function prepreview_added_widget_instance() {
-		_deprecated_function( __METHOD__, '4.2.0' );
-	}
-
-	public function remove_prepreview_filters() {
-		_deprecated_function( __METHOD__, '4.2.0' );
 	}
 }

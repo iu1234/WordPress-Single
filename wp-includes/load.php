@@ -146,6 +146,12 @@ function wp_set_wpdb_vars() {
 	);
 }
 
+function wp_start_object_cache() {
+	require_once ( ABSPATH . WPINC . '/cache.php' );
+	$GLOBALS['wp_object_cache'] = new WP_Object_Cache();
+	$wp_object_cache->add_global_groups( array( 'users', 'userlogins', 'usermeta', 'user_meta', 'useremail', 'userslugs', 'site-transient', 'site-options', 'site-lookup', 'blog-lookup', 'blog-details', 'global-posts', 'blog-id-cache' ) );
+}
+
 function wp_get_active_and_valid_plugins() {
 	$plugins = array();
 	$active_plugins = (array) get_option( 'active_plugins', array() );

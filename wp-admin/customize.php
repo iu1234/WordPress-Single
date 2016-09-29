@@ -10,28 +10,15 @@
 define( 'IFRAME_REQUEST', true );
 
 require_once( __DIR__ . '/admin.php' );
-
 if ( ! current_user_can( 'customize' ) ) {
-	wp_die(
-		'<h1>Cheatin&#8217; uh?</h1>' .
-		'<p>You are not allowed to customize the appearance of this site.</p>',
-		403
-	);
+	wp_die(	'<h1>Cheatin&#8217; uh?</h1><p>You are not allowed to customize the appearance of this site.</p>',	403	);
 }
-
 wp_reset_vars( array( 'url', 'return', 'autofocus' ) );
-if ( ! empty( $url ) ) {
-	$wp_customize->set_preview_url( wp_unslash( $url ) );
-}
-if ( ! empty( $return ) ) {
-	$wp_customize->set_return_url( wp_unslash( $return ) );
-}
-if ( ! empty( $autofocus ) && is_array( $autofocus ) ) {
-	$wp_customize->set_autofocus( wp_unslash( $autofocus ) );
-}
+if ( ! empty( $url ) ) { $wp_customize->set_preview_url( wp_unslash( $url ) ); }
+if ( ! empty( $return ) ) {	$wp_customize->set_return_url( wp_unslash( $return ) ); }
+if ( ! empty( $autofocus ) && is_array( $autofocus ) ) { $wp_customize->set_autofocus( wp_unslash( $autofocus ) ); }
 
 global $wp_scripts, $wp_customize;
-
 $registered = $wp_scripts->registered;
 $wp_scripts = new WP_Scripts;
 $wp_scripts->registered = $registered;
@@ -56,8 +43,9 @@ $body_class = 'wp-core-ui wp-customizer js';
 
 if ( wp_is_mobile() ) :
 	$body_class .= ' mobile';
-
-	?><meta name="viewport" id="viewport-meta" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=1.2" /><?php
+?>
+	<meta name="viewport" id="viewport-meta" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=1.2" />
+<?php
 endif;
 
 if ( $wp_customize->is_ios() ) {
@@ -89,26 +77,25 @@ do_action( 'customize_controls_print_scripts' );
 			?>
 			<span class="spinner"></span>
 			<a class="customize-controls-preview-toggle" href="#">
-				<span class="controls">Customize</span>
-				<span class="preview">Preview</span>
+				<span class="controls">自定义</span>
+				<span class="preview">预览</span>
 			</a>
 			<a class="customize-controls-close" href="<?php echo esc_url( $wp_customize->get_return_url() ); ?>">
-				<span class="screen-reader-text">Cancel</span>
+				<span class="screen-reader-text">取消</span>
 			</a>
 		</div>
 
-		<div id="widgets-right" class="wp-clearfix"><!-- For Widget Customizer, many widgets try to look for instances under div#widgets-right, so we have to add that ID to a container div in the Customizer for compat -->
+		<div id="widgets-right" class="wp-clearfix">
 		<div class="wp-full-overlay-sidebar-content" tabindex="-1">
 			<div id="customize-info" class="accordion-section customize-info">
 				<div class="accordion-section-title">
 					<span class="preview-notice"><?php
-						echo sprintf( 'You are customizing %s', '<strong class="panel-title site-title">' . get_bloginfo( 'name' ) . '</strong>' );
+						echo sprintf( '您正在自定义 %s', '<strong class="panel-title site-title">' . get_bloginfo( 'name' ) . '</strong>' );
 					?></span>
 					<button class="customize-help-toggle dashicons dashicons-editor-help" aria-expanded="false"><span class="screen-reader-text"><?php _e( 'Help' ); ?></span></button>
 				</div>
-				<div class="customize-panel-description">The Customizer allows you to preview changes to your site before publishing them. You can also navigate to different pages on your site to preview them.</div>
+				<div class="customize-panel-description">编辑器将可以让您在发布前预览您对站点的修改，您也可以在预览时查看站点的各个页面。</div>
 			</div>
-
 			<div id="customize-theme-controls">
 				<ul></ul>
 			</div>
@@ -136,7 +123,7 @@ do_action( 'customize_controls_print_scripts' );
 				<?php endforeach; ?>
 			</div>
 			<?php endif; ?>
-			<button type="button" class="collapse-sidebar button-secondary" aria-expanded="true" aria-label="<?php esc_attr_e( 'Collapse Sidebar' ); ?>">
+			<button type="button" class="collapse-sidebar button-secondary" aria-expanded="true" aria-label="折叠侧边栏">
 				<span class="collapse-sidebar-arrow"></span>
 				<span class="collapse-sidebar-label">Collapse</span>
 			</button>

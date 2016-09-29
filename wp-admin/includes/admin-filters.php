@@ -85,15 +85,11 @@ add_action( 'customize_controls_print_footer_scripts', 'customize_themes_print_t
 // add_action('install_themes_updated', 'display_themes');
 add_action( 'install_themes_pre_theme-information', 'install_theme_information' );
 
-// User hooks.
 add_action( 'admin_init', 'default_password_nag_handler' );
 
 add_action( 'admin_notices', 'default_password_nag' );
 
 add_action( 'profile_update', 'default_password_nag_edit_user', 10, 2 );
-
-add_action( 'admin_init', 'wp_plugin_update_rows' );
-add_action( 'admin_init', 'wp_theme_update_rows'  );
 
 add_action( 'admin_notices', 'maintenance_nag', 10 );
 

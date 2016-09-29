@@ -566,7 +566,7 @@
 					} );
 				} else {
 					// There is no panel, so embed the section in the root of the customizer
-					parentContainer = $( '#customize-theme-controls' ).children( 'ul' ); // @todo This should be defined elsewhere, and to be configurable
+					parentContainer = $( '#customize-theme-controls' ).children( 'ul' );
 					if ( ! section.container.parent().is( parentContainer ) ) {
 						parentContainer.append( section.container );
 					}

@@ -30,6 +30,7 @@ require( ABSPATH . WPINC . '/plugin.php' );
 
 require_wp_db();
 wp_set_wpdb_vars();
+wp_start_object_cache();
 
 require( ABSPATH . WPINC . '/default-filters.php' );
 
