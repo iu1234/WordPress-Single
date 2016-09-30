@@ -235,16 +235,11 @@ function wp_delete_user( $id, $reassign = null ) {
 		}
 	}
 
-	// FINALLY, delete user
-	if ( is_multisite() ) {
-		remove_user_from_blog( $id, get_current_blog_id() );
-	} else {
-		$meta = $wpdb->get_col( $wpdb->prepare( "SELECT umeta_id FROM $wpdb->usermeta WHERE user_id = %d", $id ) );
+	$meta = $wpdb->get_col( $wpdb->prepare( "SELECT umeta_id FROM $wpdb->usermeta WHERE user_id = %d", $id ) );
 		foreach ( $meta as $mid )
 			delete_metadata_by_mid( 'user', $mid );
 
 		$wpdb->delete( $wpdb->users, array( 'ID' => $id ) );
-	}
 
 	clean_user_cache( $user );
 
@@ -255,18 +250,14 @@ function wp_delete_user( $id, $reassign = null ) {
 
 function wp_revoke_user($id) {
 	$id = (int) $id;
-
 	$user = new WP_User($id);
 	$user->remove_all_caps();
 }
 
 function default_password_nag_handler($errors = false) {
 	global $user_ID;
-	// Short-circuit it.
 	if ( ! get_user_option('default_password_nag') )
 		return;
-
-	// get_user_setting = JS saved UI setting. else no-js-fallback code.
 	if ( 'hide' == get_user_setting('default_password_nag') || isset($_GET['default_password_nag']) && '0' == $_GET['default_password_nag'] ) {
 		delete_user_setting('default_password_nag');
 		update_user_option($user_ID, 'default_password_nag', false, true);

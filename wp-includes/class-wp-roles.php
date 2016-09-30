@@ -1,11 +1,4 @@
 <?php
-/**
- * User API: WP_Roles class
- *
- * @package WordPress
- * @subpackage Users
- * @since 4.4.0
- */
 
 class WP_Roles {
 
@@ -32,17 +25,14 @@ class WP_Roles {
 
 	protected function _init() {
 		global $wpdb, $wp_user_roles;
-		$this->role_key = $wpdb->get_blog_prefix() . 'user_roles';
+		$this->role_key = 'user_roles';
 		if ( ! empty( $wp_user_roles ) ) {
 			$this->roles = $wp_user_roles;
 			$this->use_db = false;
 		} else {
 			$this->roles = get_option( $this->role_key );
 		}
-
-		if ( empty( $this->roles ) )
-			return;
-
+		if ( empty( $this->roles ) ) return;
 		$this->role_objects = array();
 		$this->role_names =  array();
 		foreach ( array_keys( $this->roles ) as $role ) {
@@ -54,14 +44,10 @@ class WP_Roles {
 	public function reinit() {
 		if ( ! $this->use_db )
 			return;
-
 		global $wpdb;
-
-		$this->role_key = $wpdb->get_blog_prefix() . 'user_roles';
+		$this->role_key = 'user_roles';
 		$this->roles = get_option( $this->role_key );
-		if ( empty( $this->roles ) )
-			return;
-
+		if ( empty( $this->roles ) ) return;
 		$this->role_objects = array();
 		$this->role_names =  array();
 		foreach ( array_keys( $this->roles ) as $role ) {

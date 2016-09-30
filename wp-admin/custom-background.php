@@ -1,10 +1,4 @@
 <?php
-/**
- * The custom background script.
- *
- * @package WordPress
- * @subpackage Administration
- */
 
 class Custom_Background {
 
@@ -17,11 +11,8 @@ class Custom_Background {
 	public function __construct($admin_header_callback = '', $admin_image_div_callback = '') {
 		$this->admin_header_callback = $admin_header_callback;
 		$this->admin_image_div_callback = $admin_image_div_callback;
-
 		add_action( 'admin_menu', array( $this, 'init' ) );
-
 		add_action( 'wp_ajax_custom-background-add', array( $this, 'ajax_background_add' ) );
-
 		add_action( 'wp_ajax_set-background-image', array( $this, 'wp_set_background_image' ) );
 	}
 
@@ -45,10 +36,10 @@ class Custom_Background {
 			'id'      => 'overview',
 			'title'   => 'Overview',
 			'content' =>
-				'<p>' . __( 'You can customize the look of your site without touching any of your theme&#8217;s code by using a custom background. Your background can be an image or a color.' ) . '</p>' .
-				'<p>' . __( 'To use a background image, simply upload it or choose an image that has already been uploaded to your Media Library by clicking the &#8220;Choose Image&#8221; button. You can display a single instance of your image, or tile it to fill the screen. You can have your background fixed in place, so your site content moves on top of it, or you can have it scroll with your site.' ) . '</p>' .
-				'<p>' . __( 'You can also choose a background color by clicking the Select Color button and either typing in a legitimate HTML hex value, e.g. &#8220;#ff0000&#8221; for red, or by choosing a color using the color picker.' ) . '</p>' .
-				'<p>' . __( 'Don&#8217;t forget to click on the Save Changes button when you are finished.' ) . '</p>'
+				'<p>You can customize the look of your site without touching any of your theme&#8217;s code by using a custom background. Your background can be an image or a color.</p>' .
+				'<p>To use a background image, simply upload it or choose an image that has already been uploaded to your Media Library by clicking the &#8220;Choose Image&#8221; button. You can display a single instance of your image, or tile it to fill the screen. You can have your background fixed in place, so your site content moves on top of it, or you can have it scroll with your site.</p>' .
+				'<p>You can also choose a background color by clicking the Select Color button and either typing in a legitimate HTML hex value, e.g. &#8220;#ff0000&#8221; for red, or by choosing a color using the color picker.</p>' .
+				'<p>Don&#8217;t forget to click on the Save Changes button when you are finished.</p>'
 		) );
 
 		wp_enqueue_media();

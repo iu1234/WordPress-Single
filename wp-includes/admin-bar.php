@@ -141,16 +141,6 @@ function wp_admin_bar_site_menu( $wp_admin_bar ) {
 			'title'  => 'Visit Site',
 			'href'   => home_url( '/' ),
 		) );
-
-		if ( is_blog_admin() && is_multisite() && current_user_can( 'manage_sites' ) ) {
-			$wp_admin_bar->add_menu( array(
-				'parent' => 'site-name',
-				'id'     => 'edit-site',
-				'title'  => 'Edit Site',
-				'href'   => network_admin_url( 'site-info.php?id=' . get_current_blog_id() ),
-			) );
-		}
-
 	} else if ( current_user_can( 'read' ) ) {
 		$wp_admin_bar->add_menu( array(
 			'parent' => 'site-name',

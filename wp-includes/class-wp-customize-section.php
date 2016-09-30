@@ -1,11 +1,4 @@
 <?php
-/**
- * WordPress Customize Section classes
- *
- * @package WordPress
- * @subpackage Customize
- * @since 3.4.0
- */
 
 class WP_Customize_Section {
 
@@ -38,11 +31,8 @@ class WP_Customize_Section {
 	public function __construct( $manager, $id, $args = array() ) {
 		$keys = array_keys( get_object_vars( $this ) );
 		foreach ( $keys as $key ) {
-			if ( isset( $args[ $key ] ) ) {
-				$this->$key = $args[ $key ];
-			}
+			if ( isset( $args[ $key ] ) ) { $this->$key = $args[ $key ]; }
 		}
-
 		$this->manager = $manager;
 		$this->id = $id;
 		if ( empty( $this->active_callback ) ) {
@@ -50,8 +40,7 @@ class WP_Customize_Section {
 		}
 		self::$instance_count += 1;
 		$this->instance_number = self::$instance_count;
-
-		$this->controls = array(); // Users cannot customize the $controls array.
+		$this->controls = array();
 	}
 
 	final public function active() {

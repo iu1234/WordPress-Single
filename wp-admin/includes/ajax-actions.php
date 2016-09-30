@@ -1,16 +1,7 @@
 <?php
-/**
- * Administration API: Core Ajax handlers
- *
- * @package WordPress
- * @subpackage Administration
- * @since 2.1.0
- */
 
 function wp_ajax_nopriv_heartbeat() {
 	$response = array();
-
-	// screen_id is the same as $current_screen->id and the JS global 'pagenow'.
 	if ( ! empty($_POST['screen_id']) )
 		$screen_id = sanitize_key($_POST['screen_id']);
 	else
@@ -25,10 +16,7 @@ function wp_ajax_nopriv_heartbeat() {
 	$response = apply_filters( 'heartbeat_nopriv_send', $response, $screen_id );
 
 	do_action( 'heartbeat_nopriv_tick', $response, $screen_id );
-
-	// Send the current time according to the server.
 	$response['server_time'] = time();
-
 	wp_send_json($response);
 }
 
@@ -172,19 +160,15 @@ function wp_ajax_autocomplete_user() {
 		$type = 'add';
 	}
 
-	// Check the desired field for value
-	// Current allowed values are `user_email` and `user_login`
 	if ( isset( $_REQUEST['autocomplete_field'] ) && 'user_email' === $_REQUEST['autocomplete_field'] ) {
 		$field = $_REQUEST['autocomplete_field'];
 	} else {
 		$field = 'user_login';
 	}
-
-	// Exclude current users of this blog
 	if ( isset( $_REQUEST['site_id'] ) ) {
 		$id = absint( $_REQUEST['site_id'] );
 	} else {
-		$id = get_current_blog_id();
+		$id = 0;
 	}
 
 	$include_blog_users = ( $type == 'search' ? get_users( array( 'blog_id' => $id, 'fields' => 'ID' ) ) : array() );
@@ -200,8 +184,7 @@ function wp_ajax_autocomplete_user() {
 
 	foreach ( $users as $user ) {
 		$return[] = array(
-			/* translators: 1: user_login, 2: user_email */
-			'label' => sprintf( _x( '%1$s (%2$s)', 'user autocomplete result' ), $user->user_login, $user->user_email ),
+			'label' => sprintf( '%1$s (%2$s)', $user->user_login, $user->user_email ),
 			'value' => $user->$field,
 		);
 	}

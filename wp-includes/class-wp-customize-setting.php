@@ -1,11 +1,4 @@
 <?php
-/**
- * WordPress Customize Setting classes
- *
- * @package WordPress
- * @subpackage Customize
- * @since 3.4.0
- */
 
 class WP_Customize_Setting {
 
@@ -82,14 +75,13 @@ class WP_Customize_Setting {
 		}
 		if ( ! isset( self::$aggregated_multidimensionals[ $this->type ][ $id_base ] ) ) {
 			self::$aggregated_multidimensionals[ $this->type ][ $id_base ] = array(
-				'previewed_instances'       => array(), // Calling preview() will add the $setting to the array.
-				'preview_applied_instances' => array(), // Flags for which settings have had their values applied.
-				'root_value'                => $this->get_root_value( array() ), // Root value for initial state, manipulated by preview and update calls.
+				'previewed_instances'       => array(),
+				'preview_applied_instances' => array(),
+				'root_value'                => $this->get_root_value( array() ),
 			);
 		}
 
 		if ( ! empty( $this->id_data['keys'] ) ) {
-			// Note the preview-applied flag is cleared at priority 9 to ensure it is cleared before a deferred-preview runs.
 			add_action( "customize_post_value_set_{$this->id}", array( $this, '_clear_aggregated_multidimensional_preview_applied_flag' ), 9 );
 			$this->is_multidimensional_aggregated = true;
 		}
@@ -105,17 +97,15 @@ class WP_Customize_Setting {
 		if ( ! isset( $this->_previewed_blog_id ) ) {
 			return false;
 		}
-		return ( get_current_blog_id() === $this->_previewed_blog_id );
+		return ( 0 === $this->_previewed_blog_id );
 	}
 
 	protected $_original_value;
 
 	public function preview() {
 		if ( ! isset( $this->_previewed_blog_id ) ) {
-			$this->_previewed_blog_id = get_current_blog_id();
+			$this->_previewed_blog_id = 0;
 		}
-
-		// Prevent re-previewing an already-previewed setting.
 		if ( $this->is_previewed ) {
 			return true;
 		}

@@ -1,12 +1,4 @@
 <?php
-/**
- * WordPress Query API
- *
- * The query API attempts to get which part of WordPress the user is on. It
- * also provides functionality for getting URL query information.
- * @package WordPress
- * @subpackage Query
- */
 
 class WP_Query {
 
@@ -111,9 +103,7 @@ class WP_Query {
 	private $compat_methods = array( 'init_query_flags', 'parse_tax_query' );
 	
 	public function __construct($query = '') {
-		if ( ! empty($query) ) {
-			$this->query($query);
-		}
+		if ( ! empty($query) ) { $this->query($query); }
 	}
 
 	private function init_query_flags() {
@@ -622,12 +612,9 @@ class WP_Query {
 		global $wpdb;
 
 		$search = '';
-
-		// added slashes screw with quote grouping when done early, so done later
 		$q['s'] = stripslashes( $q['s'] );
 		if ( empty( $_GET['s'] ) && $this->is_main_query() )
 			$q['s'] = urldecode( $q['s'] );
-		// there are no line breaks in <input /> fields
 		$q['s'] = str_replace( array( "\r", "\n" ), '', $q['s'] );
 		$q['search_terms_count'] = 1;
 		if ( ! empty( $q['sentence'] ) ) {
@@ -636,7 +623,6 @@ class WP_Query {
 			if ( preg_match_all( '/".*?("|$)|((?<=[\t ",+])|^)[^\t ",+]+/', $q['s'], $matches ) ) {
 				$q['search_terms_count'] = count( $matches[0] );
 				$q['search_terms'] = $this->parse_search_terms( $matches[0] );
-				// if the search string has only short terms or stopwords, or is 10+ terms long, match it as sentence
 				if ( empty( $q['search_terms'] ) || count( $q['search_terms'] ) > 9 )
 					$q['search_terms'] = array( $q['s'] );
 			} else {
@@ -2057,11 +2043,9 @@ class WP_Query {
 		$tax_array = array_intersect( array_keys( $wp_taxonomies ), (array) $taxonomy );
 		$term_array = (array) $term;
 
-		// Check that the taxonomy matches.
 		if ( ! ( isset( $queried_object->taxonomy ) && count( $tax_array ) && in_array( $queried_object->taxonomy, $tax_array ) ) )
 			return false;
 
-		// Only a Taxonomy provided.
 		if ( empty( $term ) )
 			return true;
 
@@ -2222,12 +2206,8 @@ class WP_Query {
 			$post = get_post( $post );
 		}
 
-		if ( ! $post ) {
-			return;
-		}
-
+		if ( ! $post ) { return; }
 		$id = (int) $post->ID;
-
 		$authordata = get_user_by('id', $post->post_author);
 		$currentday = mysql2date('d.m.y', $post->post_date, false);
 		$currentmonth = mysql2date('m', $post->post_date, false);
@@ -2248,8 +2228,6 @@ class WP_Query {
 			$content = str_replace( "\n<!--nextpage-->\n", '<!--nextpage-->', $content );
 			$content = str_replace( "\n<!--nextpage-->", '<!--nextpage-->', $content );
 			$content = str_replace( "<!--nextpage-->\n", '<!--nextpage-->', $content );
-
-			// Ignore nextpage at the beginning of the content.
 			if ( 0 === strpos( $content, '<!--nextpage-->' ) )
 				$content = substr( $content, 15 );
 
@@ -2287,11 +2265,8 @@ class WP_Query {
 
 function wp_old_slug_redirect() {
 	global $wp_query;
-
 	if ( is_404() && '' !== $wp_query->query_vars['name'] ) :
 		global $wpdb;
-
-		// Guess the current post_type based on the query vars.
 		if ( get_query_var( 'post_type' ) ) {
 			$post_type = get_query_var( 'post_type' );
 		} elseif ( get_query_var( 'attachment' ) ) {
@@ -2308,7 +2283,6 @@ function wp_old_slug_redirect() {
 			$post_type = reset( $post_type );
 		}
 
-		// Do not attempt redirect for hierarchical post types
 		if ( is_post_type_hierarchical( $post_type ) )
 			return;
 

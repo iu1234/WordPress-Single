@@ -760,16 +760,13 @@ window.wp = window.wp || {};
 
 	/**
 	 * Get all customize settings.
-	 *
 	 * @return {object}
 	 */
 	api.get = function() {
 		var result = {};
-
 		this.each( function( obj, key ) {
 			result[ key ] = obj.get();
 		});
-
 		return result;
 	};
 

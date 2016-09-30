@@ -1,12 +1,4 @@
 <?php
-/**
- * Comment template functions
- *
- * These functions are meant to live inside of the WordPress loop.
- *
- * @package WordPress
- * @subpackage Template
- */
 
 function get_comment_author( $comment_ID = 0 ) {
 	$comment = get_comment( $comment_ID );
@@ -360,16 +352,14 @@ function get_comments_number_text( $zero = false, $one = false, $more = false ) 
 
 	if ( $number > 1 ) {
 		if ( false === $more ) {
-			/* translators: %s: number of comments */
 			$output = sprintf( _n( '%s Comment', '%s Comments', $number ), number_format_i18n( $number ) );
 		} else {
-			// % Comments
 			$output = str_replace( '%', number_format_i18n( $number ), $more );
 		}
 	} elseif ( $number == 0 ) {
-		$output = ( false === $zero ) ? __( 'No Comments' ) : $zero;
-	} else { // must be one
-		$output = ( false === $one ) ? __( '1 Comment' ) : $one;
+		$output = ( false === $zero ) ? 'No Comments' : $zero;
+	} else {
+		$output = ( false === $one ) ? '1 Comment' : $one;
 	}
 
 	return apply_filters( 'comments_number', $output, $number );
@@ -377,27 +367,22 @@ function get_comments_number_text( $zero = false, $one = false, $more = false ) 
 
 function get_comment_text( $comment_ID = 0, $args = array() ) {
 	$comment = get_comment( $comment_ID );
-
 	return apply_filters( 'get_comment_text', $comment->comment_content, $comment, $args );
 }
 
 function comment_text( $comment_ID = 0, $args = array() ) {
 	$comment = get_comment( $comment_ID );
-
 	$comment_text = get_comment_text( $comment, $args );
-
 	echo apply_filters( 'comment_text', $comment_text, $comment, $args );
 }
 
 function get_comment_time( $d = '', $gmt = false, $translate = true ) {
 	$comment = get_comment();
-
 	$comment_date = $gmt ? $comment->comment_date_gmt : $comment->comment_date;
 	if ( '' == $d )
 		$date = mysql2date(get_option('time_format'), $comment_date, $translate);
 	else
 		$date = mysql2date($d, $comment_date, $translate);
-
 	return apply_filters( 'get_comment_time', $date, $d, $gmt, $translate, $comment );
 }
 
@@ -430,155 +415,12 @@ function comment_type( $commenttxt = false, $trackbacktxt = false, $pingbacktxt 
 	}
 }
 
-/**
- * Retrieve The current post's trackback URL.
- *
- * There is a check to see if permalink's have been enabled and if so, will
- * retrieve the pretty path. If permalinks weren't enabled, the ID of the
- * current post is used and appended to the correct page to go to.
- *
- * @since 1.5.0
- *
- * @return string The trackback URL after being filtered.
- */
-function get_trackback_url() {
-	if ( '' != get_option('permalink_structure') )
-		$tb_url = trailingslashit(get_permalink()) . user_trailingslashit('trackback', 'single_trackback');
-	else
-		$tb_url = get_option('siteurl') . '/wp-trackback.php?p=' . get_the_ID();
-
-	/**
-	 * Filter the returned trackback URL.
-	 *
-	 * @since 2.2.0
-	 *
-	 * @param string $tb_url The trackback URL.
-	 */
-	return apply_filters( 'trackback_url', $tb_url );
-}
-
-/**
- * Display the current post's trackback URL.
- *
- * @since 0.71
- *
- * @param bool $deprecated_echo Not used.
- * @return void|string Should only be used to echo the trackback URL, use get_trackback_url()
- *                     for the result instead.
- */
-function trackback_url( $deprecated_echo = true ) {
-	if ( true !== $deprecated_echo ) {
-		_deprecated_argument( __FUNCTION__, '2.5',
-			/* translators: %s: get_trackback_url() */
-			sprintf( __( 'Use %s instead if you do not want the value echoed.' ),
-				'<code>get_trackback_url()</code>'
-			)
-		);
-	}
-
-	if ( $deprecated_echo ) {
-		echo get_trackback_url();
-	} else {
-		return get_trackback_url();
-	}
-}
-
-/**
- * Generate and display the RDF for the trackback information of current post.
- *
- * Deprecated in 3.0.0, and restored in 3.0.1.
- *
- * @since 0.71
- *
- * @param int $deprecated Not used (Was $timezone = 0).
- */
-function trackback_rdf( $deprecated = '' ) {
-	if ( ! empty( $deprecated ) ) {
-		_deprecated_argument( __FUNCTION__, '2.5' );
-	}
-
-	if ( isset( $_SERVER['HTTP_USER_AGENT'] ) && false !== stripos( $_SERVER['HTTP_USER_AGENT'], 'W3C_Validator' ) ) {
-		return;
-	}
-
-	echo '<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-			xmlns:dc="http://purl.org/dc/elements/1.1/"
-			xmlns:trackback="http://madskills.com/public/xml/rss/module/trackback/">
-		<rdf:Description rdf:about="';
-	the_permalink();
-	echo '"'."\n";
-	echo '    dc:identifier="';
-	the_permalink();
-	echo '"'."\n";
-	echo '    dc:title="'.str_replace('--', '&#x2d;&#x2d;', wptexturize(strip_tags(get_the_title()))).'"'."\n";
-	echo '    trackback:ping="'.get_trackback_url().'"'." />\n";
-	echo '</rdf:RDF>';
-}
-
-/**
- * Whether the current post is open for comments.
- *
- * @since 1.5.0
- *
- * @param int|WP_Post $post_id Post ID or WP_Post object. Default current post.
- * @return bool True if the comments are open.
- */
 function comments_open( $post_id = null ) {
-
 	$_post = get_post($post_id);
-
 	$open = ( 'open' == $_post->comment_status );
-
-	/**
-	 * Filter whether the current post is open for comments.
-	 *
-	 * @since 2.5.0
-	 *
-	 * @param bool        $open    Whether the current post is open for comments.
-	 * @param int|WP_Post $post_id The post ID or WP_Post object.
-	 */
 	return apply_filters( 'comments_open', $open, $post_id );
 }
 
-/**
- * Whether the current post is open for pings.
- *
- * @since 1.5.0
- *
- * @param int|WP_Post $post_id Post ID or WP_Post object. Default current post.
- * @return bool True if pings are accepted
- */
-function pings_open( $post_id = null ) {
-
-	$_post = get_post($post_id);
-
-	$open = ( 'open' == $_post->ping_status );
-
-	/**
-	 * Filter whether the current post is open for pings.
-	 *
-	 * @since 2.5.0
-	 *
-	 * @param bool        $open    Whether the current post is open for pings.
-	 * @param int|WP_Post $post_id The post ID or WP_Post object.
-	 */
-	return apply_filters( 'pings_open', $open, $post_id );
-}
-
-/**
- * Display form token for unfiltered comments.
- *
- * Will only display nonce token if the current user has permissions for
- * unfiltered html. Won't display the token for other users.
- *
- * The function was backported to 2.0.10 and was added to versions 2.1.3 and
- * above. Does not exist in versions prior to 2.0.10 in the 2.0 branch and in
- * the 2.1 branch, prior to 2.1.3. Technically added in 2.2.0.
- *
- * Backported to 2.0.10.
- *
- * @since 2.1.3
- */
 function wp_comment_form_unfiltered_html_nonce() {
 	$post = get_post();
 	$post_id = $post ? $post->ID : 0;
@@ -589,72 +431,21 @@ function wp_comment_form_unfiltered_html_nonce() {
 	}
 }
 
-/**
- * Load the comment template specified in $file.
- *
- * Will not display the comments template if not on single post or page, or if
- * the post does not have comments.
- *
- * Uses the WordPress database object to query for the comments. The comments
- * are passed through the 'comments_array' filter hook with the list of comments
- * and the post ID respectively.
- *
- * The $file path is passed through a filter hook called, 'comments_template'
- * which includes  and $file combined. Tries the $filtered path
- * first and if it fails it will require the default comment template from the
- * default theme. If either does not exist, then the WordPress process will be
- * halted. It is advised for that reason, that the default theme is not deleted.
- *
- * Will not try to get the comments if the post has none.
- *
- * @since 1.5.0
- *
- * @global WP_Query   $wp_query
- * @global WP_Post    $post
- * @global wpdb       $wpdb
- * @global int        $id
- * @global WP_Comment $comment
- * @global string     $user_login
- * @global int        $user_ID
- * @global string     $user_identity
- * @global bool       $overridden_cpage
- * @global bool       $withcomments
- *
- * @param string $file              Optional. The file to load. Default '/comments.php'.
- * @param bool   $separate_comments Optional. Whether to separate the comments by comment type.
- *                                  Default false.
- */
 function comments_template( $file = '/comments.php', $separate_comments = false ) {
 	global $wp_query, $withcomments, $post, $wpdb, $id, $comment, $user_login, $user_ID, $user_identity, $overridden_cpage;
-
 	if ( !(is_single() || is_page() || $withcomments) || empty($post) )
 		return;
-
 	if ( empty($file) )
 		$file = '/comments.php';
 
 	$req = get_option('require_name_email');
 
-	/*
-	 * Comment author information fetched from the comment cookies.
-	 */
 	$commenter = wp_get_current_commenter();
 
-	/*
-	 * The name of the current comment author escaped for use in attributes.
-	 * Escaped by sanitize_comment_cookies().
-	 */
 	$comment_author = $commenter['comment_author'];
 
-	/*
-	 * The email address of the current comment author escaped for use in attributes.
-	 * Escaped by sanitize_comment_cookies().
-	 */
 	$comment_author_email = $commenter['comment_author_email'];
 
-	/*
-	 * The url of the current comment author escaped for use in attributes.
-	 */
 	$comment_author_url = esc_url($commenter['comment_author_url']);
 
 	$comment_args = array(
@@ -663,7 +454,7 @@ function comments_template( $file = '/comments.php', $separate_comments = false 
 		'status'  => 'approve',
 		'post_id' => $post->ID,
 		'no_found_rows' => false,
-		'update_comment_meta_cache' => false, // We lazy-load comment meta for performance.
+		'update_comment_meta_cache' => false,
 	);
 
 	if ( get_option('thread_comments') ) {
@@ -716,34 +507,10 @@ function comments_template( $file = '/comments.php', $separate_comments = false 
 		}
 	}
 
-	/**
-	 * Filters the arguments used to query comments in comments_template().
-	 *
-	 * @since 4.5.0
-	 *
-	 * @see WP_Comment_Query::__construct()
-	 *
-	 * @param array $comment_args {
-	 *     Array of WP_Comment_Query arguments.
-	 *
-	 *     @type string|array $orderby                   Field(s) to order by.
-	 *     @type string       $order                     Order of results. Accepts 'ASC' or 'DESC'.
-	 *     @type string       $status                    Comment status.
-	 *     @type array        $include_unapproved        Array of IDs or email addresses whose unapproved comments
-	 *                                                   will be included in results.
-	 *     @type int          $post_id                   ID of the post.
-	 *     @type bool         $no_found_rows             Whether to refrain from querying for found rows.
-	 *     @type bool         $update_comment_meta_cache Whether to prime cache for comment meta.
-	 *     @type bool|string  $hierarchical              Whether to query for comments hierarchically.
-	 *     @type int          $offset                    Comment offset.
-	 *     @type int          $number                    Number of comments to fetch.
-	 * }
-	 */
 	$comment_args = apply_filters( 'comments_template_query_args', $comment_args );
 	$comment_query = new WP_Comment_Query( $comment_args );
 	$_comments = $comment_query->comments;
 
-	// Trees must be flattened before they're passed to the walker.
 	if ( $comment_args['hierarchical'] ) {
 		$comments_flat = array();
 		foreach ( $_comments as $_comment ) {
@@ -762,14 +529,6 @@ function comments_template( $file = '/comments.php', $separate_comments = false 
 		$comments_flat = $_comments;
 	}
 
-	/**
-	 * Filter the comments array.
-	 *
-	 * @since 2.1.0
-	 *
-	 * @param array $comments Array of comments supplied to the comments template.
-	 * @param int   $post_ID  Post ID.
-	 */
 	$wp_query->comments = apply_filters( 'comments_array', $comments_flat, $post->ID );
 
 	$comments = &$wp_query->comments;
@@ -980,7 +739,6 @@ function comment_form_title( $noreplytext = false, $replytext = false, $linktopa
 	if ( 0 == $replytoid )
 		echo $noreplytext;
 	else {
-		// Sets the global so that template tags can be used in the comment form.
 		$comment = get_comment($replytoid);
 		$author = ( $linktoparent ) ? '<a href="#comment-' . get_comment_ID() . '">' . get_comment_author( $comment ) . '</a>' : get_comment_author( $comment );
 		printf( $replytext, $author );
@@ -1016,7 +774,6 @@ function wp_list_comments( $args = array(), $comments = null ) {
 
 	$r = apply_filters( 'wp_list_comments_args', $r );
 
-	// Figure out what comments we'll be looping through ($_comments)
 	if ( null !== $comments ) {
 		$comments = (array) $comments;
 		if ( empty($comments) )
@@ -1059,7 +816,6 @@ function wp_list_comments( $args = array(), $comments = null ) {
 				}
 			}
 
-		// Otherwise, fall back on the comments from `$wp_query->comments`.
 		} else {
 			if ( empty($wp_query->comments) )
 				return;
@@ -1079,10 +835,6 @@ function wp_list_comments( $args = array(), $comments = null ) {
 				if ( 'newest' === $default_comments_page ) {
 					$r['cpage'] = $cpage;
 
-				/*
-				 * When first page shows oldest comments, post permalink is the same as
-				 * the comment permalink.
-				 */
 				} elseif ( $cpage == 1 ) {
 					$r['cpage'] = '';
 				} else {
@@ -1120,7 +872,7 @@ function wp_list_comments( $args = array(), $comments = null ) {
 			set_query_var( 'cpage', $r['page'] );
 		}
 	}
-	// Validation check
+
 	$r['page'] = intval($r['page']);
 	if ( 0 == $r['page'] && 0 != $r['per_page'] )
 		$r['page'] = 1;
@@ -1172,36 +924,24 @@ function comment_form( $args = array(), $post_id = null ) {
 		            '<input id="url" name="url" ' . ( $html5 ? 'type="url"' : 'type="text"' ) . ' value="' . esc_attr( $commenter['comment_author_url'] ) . '" size="30" maxlength="200" /></p>',
 	);
 
-	$required_text = sprintf( ' ' . __('Required fields are marked %s'), '<span class="required">*</span>' );
+	$required_text = sprintf( ' Required fields are marked %s', '<span class="required">*</span>' );
 
-	/**
-	 * Filter the default comment form fields.
-	 *
-	 * @since 3.0.0
-	 *
-	 * @param array $fields The default comment fields.
-	 */
 	$fields = apply_filters( 'comment_form_default_fields', $fields );
 	$defaults = array(
 		'fields'               => $fields,
-		'comment_field'        => '<p class="comment-form-comment"><label for="comment">' . _x( 'Comment', 'noun' ) . '</label> <textarea id="comment" name="comment" cols="45" rows="8" maxlength="65525" aria-required="true" required="required"></textarea></p>',
-		/** This filter is documented in wp-includes/link-template.php */
+		'comment_field'        => '<p class="comment-form-comment"><label for="comment">Comment</label> <textarea id="comment" name="comment" cols="45" rows="8" maxlength="65525" aria-required="true" required="required"></textarea></p>',
 		'must_log_in'          => '<p class="must-log-in">' . sprintf(
-		                              /* translators: %s: login URL */
-		                              __( 'You must be <a href="%s">logged in</a> to post a comment.' ),
+		                              'You must be <a href="%s">logged in</a> to post a comment.',
 		                              wp_login_url( apply_filters( 'the_permalink', get_permalink( $post_id ) ) )
 		                          ) . '</p>',
-		/** This filter is documented in wp-includes/link-template.php */
 		'logged_in_as'         => '<p class="logged-in-as">' . sprintf(
-		                              /* translators: 1: edit user link, 2: accessibility text, 3: user name, 4: logout URL */
-		                              __( '<a href="%1$s" aria-label="%2$s">Logged in as %3$s</a>. <a href="%4$s">Log out?</a>' ),
+		                              '<a href="%1$s" aria-label="%2$s">Logged in as %3$s</a>. <a href="%4$s">Log out?</a>',
 		                              get_edit_user_link(),
-		                              /* translators: %s: user name */
-		                              esc_attr( sprintf( __( 'Logged in as %s. Edit your profile.' ), $user_identity ) ),
+		                              esc_attr( sprintf( 'Logged in as %s. Edit your profile.', $user_identity ) ),
 		                              $user_identity,
 		                              wp_logout_url( apply_filters( 'the_permalink', get_permalink( $post_id ) ) )
 		                          ) . '</p>',
-		'comment_notes_before' => '<p class="comment-notes"><span id="email-notes">' . __( 'Your email address will not be published.' ) . '</span>'. ( $req ? $required_text : '' ) . '</p>',
+		'comment_notes_before' => '<p class="comment-notes"><span id="email-notes">Your email address will not be published.</span>'. ( $req ? $required_text : '' ) . '</p>',
 		'comment_notes_after'  => '',
 		'id_form'              => 'commentform',
 		'id_submit'            => 'submit',
@@ -1223,7 +963,6 @@ function comment_form( $args = array(), $post_id = null ) {
 
 	$args = wp_parse_args( $args, apply_filters( 'comment_form_defaults', $defaults ) );
 
-	// Ensure that the filtered args contain all required default values.
 	$args = array_merge( $defaults, $args );
 
 	if ( comments_open( $post_id ) ) : ?>
@@ -1248,13 +987,7 @@ function comment_form( $args = array(), $post_id = null ) {
 			else : ?>
 				<form action="<?php echo site_url( '/wp-comments-post.php' ); ?>" method="post" id="<?php echo esc_attr( $args['id_form'] ); ?>" class="<?php echo esc_attr( $args['class_form'] ); ?>"<?php echo $html5 ? ' novalidate' : ''; ?>>
 					<?php
-					/**
-					 * Fires at the top of the comment form, inside the form tag.
-					 *
-					 * @since 3.0.0
-					 */
 					do_action( 'comment_form_top' );
-
 					if ( is_user_logged_in() ) :
 						echo apply_filters( 'comment_form_logged_in', $args['logged_in_as'], $commenter, $user_identity );
 						do_action( 'comment_form_logged_in_after', $commenter, $user_identity );
@@ -1262,20 +995,8 @@ function comment_form( $args = array(), $post_id = null ) {
 						echo $args['comment_notes_before'];
 					endif;
 					$comment_fields = array( 'comment' => $args['comment_field'] ) + (array) $args['fields'];
-
-					/**
-					 * Filter the comment form fields, including the textarea.
-					 *
-					 * @since 4.4.0
-					 *
-					 * @param array $comment_fields The comment fields.
-					 */
 					$comment_fields = apply_filters( 'comment_form_fields', $comment_fields );
-
-					// Get an array of field names, excluding the textarea
 					$comment_field_keys = array_diff( array_keys( $comment_fields ), array( 'comment' ) );
-
-					// Get the first and the last field name, excluding the textarea
 					$first_field = reset( $comment_field_keys );
 					$last_field  = end( $comment_field_keys );
 

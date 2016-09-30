@@ -1,10 +1,4 @@
 <?php
-/**
- * Core Taxonomy API
- *
- * @package WordPress
- * @subpackage Taxonomy
- */
 
 function create_initial_taxonomies() {
 	global $wp_rewrite;
@@ -1352,7 +1346,7 @@ function wp_get_object_terms($object_ids, $taxonomies, $args = array()) {
 
 	foreach ( $taxonomies as $taxonomy ) {
 		if ( ! taxonomy_exists($taxonomy) )
-			return new WP_Error('invalid_taxonomy', __('Invalid taxonomy'));
+			return new WP_Error('invalid_taxonomy', 'Invalid taxonomy');
 	}
 
 	if ( !is_array($object_ids) )
@@ -2662,7 +2656,7 @@ function get_term_link( $term, $taxonomy = '' ) {
 	}
 
 	if ( !is_object($term) )
-		$term = new WP_Error('invalid_term', __('Empty Term'));
+		$term = new WP_Error('invalid_term', 'Empty Term');
 
 	if ( is_wp_error( $term ) )
 		return $term;
@@ -2726,8 +2720,7 @@ function get_the_taxonomies( $post = 0, $args = array() ) {
 	$post = get_post( $post );
 
 	$args = wp_parse_args( $args, array(
-		/* translators: %s: taxonomy label, %l: list of terms formatted as per $term_template */
-		'template' => __( '%s: %l.' ),
+		'template' => '%s: %l.',
 		'term_template' => '<a href="%1$s">%2$s</a>',
 	) );
 
@@ -2776,7 +2769,7 @@ function get_post_taxonomies( $post = 0 ) {
 
 function is_object_in_term( $object_id, $taxonomy, $terms = null ) {
 	if ( !$object_id = (int) $object_id )
-		return new WP_Error( 'invalid_object', __( 'Invalid object ID' ) );
+		return new WP_Error( 'invalid_object', 'Invalid object ID' );
 
 	$object_terms = get_object_term_cache( $object_id, $taxonomy );
 	if ( false === $object_terms ) {

@@ -1,10 +1,4 @@
 <?php
-/**
- * Core User API
- *
- * @package WordPress
- * @subpackage Users
- */
 
 function wp_signon( $credentials = array(), $secure_cookie = '' ) {
 	if ( empty($credentials) ) {
@@ -208,10 +202,7 @@ function get_user_option( $option, $user = 0, $deprecated = '' ) {
 	if ( ! $user = get_user_by( 'id', $user ) )
 		return false;
 
-	$prefix = $wpdb->get_blog_prefix();
-	if ( $user->has_prop( $prefix . $option ) ) // Blog specific
-		$result = $user->get( $prefix . $option );
-	elseif ( $user->has_prop( $option ) ) // User specific and cross-blog
+	if ( $user->has_prop( $option ) )
 		$result = $user->get( $option );
 	else
 		$result = false;
@@ -221,28 +212,18 @@ function get_user_option( $option, $user = 0, $deprecated = '' ) {
 
 function update_user_option( $user_id, $option_name, $newvalue, $global = false ) {
 	global $wpdb;
-
-	if ( !$global )
-		$option_name = $wpdb->get_blog_prefix() . $option_name;
-
 	return update_user_meta( $user_id, $option_name, $newvalue );
 }
 
 function delete_user_option( $user_id, $option_name, $global = false ) {
 	global $wpdb;
-
-	if ( !$global )
-		$option_name = $wpdb->get_blog_prefix() . $option_name;
 	return delete_user_meta( $user_id, $option_name );
 }
 
 function get_users( $args = array() ) {
-
 	$args = wp_parse_args( $args );
 	$args['count_total'] = false;
-
 	$user_search = new WP_User_Query($args);
-
 	return (array) $user_search->get_results();
 }
 
@@ -259,7 +240,7 @@ function get_blogs_of_user( $user_id, $all = false ) {
 	if ( empty( $keys ) )
 		return array();
 
-	$blog_id = get_current_blog_id();
+	$blog_id = 0;
 	$blogs = array( $blog_id => new stdClass );
 	$blogs[ $blog_id ]->userblog_id = $blog_id;
 	$blogs[ $blog_id ]->blogname = get_option('blogname');
@@ -366,26 +347,18 @@ function update_user_meta($user_id, $meta_key, $meta_value, $prev_value = '') {
 function count_users($strategy = 'time') {
 	global $wpdb;
 
-	// Initialize
-	$id = get_current_blog_id();
-	$blog_prefix = $wpdb->get_blog_prefix($id);
+	$id = 0;
 	$result = array();
-
 	if ( 'time' == $strategy ) {
 		$avail_roles = wp_roles()->get_names();
 
-		// Build a CPU-intensive query that will return concise information.
 		$select_count = array();
 		foreach ( $avail_roles as $this_role => $name ) {
 			$select_count[] = $wpdb->prepare( "COUNT(NULLIF(`meta_value` LIKE %s, false))", '%' . $wpdb->esc_like( '"' . $this_role . '"' ) . '%');
 		}
 		$select_count[] = "COUNT(NULLIF(`meta_value` = 'a:0:{}', false))";
 		$select_count = implode(', ', $select_count);
-
-		// Add the meta_value index to the selection list, then run the query.
-		$row = $wpdb->get_row( "SELECT $select_count, COUNT(*) FROM $wpdb->usermeta WHERE meta_key = '{$blog_prefix}capabilities'", ARRAY_N );
-
-		// Run the previous loop again to associate results with role names.
+		$row = $wpdb->get_row( "SELECT $select_count, COUNT(*) FROM $wpdb->usermeta WHERE meta_key = 'capabilities'", ARRAY_N );
 		$col = 0;
 		$role_counts = array();
 		foreach ( $avail_roles as $this_role => $name ) {
@@ -396,8 +369,6 @@ function count_users($strategy = 'time') {
 		}
 
 		$role_counts['none'] = (int) $row[$col++];
-
-		// Get the meta_value index from the end of the result set.
 		$total_users = (int) $row[$col];
 
 		$result['total_users'] = $total_users;
@@ -406,9 +377,7 @@ function count_users($strategy = 'time') {
 		$avail_roles = array(
 			'none' => 0,
 		);
-
-		$users_of_blog = $wpdb->get_col( "SELECT meta_value FROM $wpdb->usermeta WHERE meta_key = '{$blog_prefix}capabilities'" );
-
+		$users_of_blog = $wpdb->get_col( "SELECT meta_value FROM $wpdb->usermeta WHERE meta_key = 'capabilities'" );
 		foreach ( $users_of_blog as $caps_meta ) {
 			$b_roles = maybe_unserialize($caps_meta);
 			if ( ! is_array( $b_roles ) )
@@ -1103,13 +1072,12 @@ function wp_destroy_all_sessions() {
 function wp_get_users_with_no_role() {
 	global $wpdb;
 
-	$prefix = $wpdb->get_blog_prefix();
 	$regex  = implode( '|', wp_roles()->get_names() );
 	$regex  = preg_replace( '/[^a-zA-Z_\|-]/', '', $regex );
 	$users  = $wpdb->get_col( $wpdb->prepare( "
 		SELECT user_id
 		FROM $wpdb->usermeta
-		WHERE meta_key = '{$prefix}capabilities'
+		WHERE meta_key = 'capabilities'
 		AND meta_value NOT REGEXP %s
 	", $regex ) );
 
@@ -1119,9 +1087,7 @@ function wp_get_users_with_no_role() {
 function _wp_get_current_user() {
 	global $current_user;
 	if ( ! empty( $current_user ) ) {
-		if ( $current_user instanceof WP_User ) {
-			return $current_user;
-		}
+		if ( $current_user instanceof WP_User ) { return $current_user; }
 		if ( is_object( $current_user ) && isset( $current_user->ID ) ) {
 			$cur_id = $current_user->ID;
 			$current_user = null;

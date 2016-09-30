@@ -1,11 +1,5 @@
 <?php
-/**
- * WP_Theme Class
- *
- * @package WordPress
- * @subpackage Theme
- * @since 3.4.0
- */
+
 final class WP_Theme implements ArrayAccess {
 
 	public $update = false;
@@ -664,14 +658,14 @@ final class WP_Theme implements ArrayAccess {
 	public static function get_allowed_on_site( $blog_id = null ) {
 		static $allowed_themes = array();
 
-		if ( ! $blog_id || ! is_multisite() )
-			$blog_id = get_current_blog_id();
+		if ( ! $blog_id )
+			$blog_id = 0;
 
 		if ( isset( $allowed_themes[ $blog_id ] ) ) {
 			return (array) apply_filters( 'site_allowed_themes', $allowed_themes[ $blog_id ], $blog_id );
 		}
 
-		$current = $blog_id == get_current_blog_id();
+		$current = $blog_id == 0;
 
 		if ( $current ) {
 			$allowed_themes[ $blog_id ] = get_option( 'allowedthemes' );

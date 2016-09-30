@@ -130,9 +130,7 @@ do_action( 'customize_controls_print_scripts' );
 		</div>
 	</form>
 	<div id="customize-preview" class="wp-full-overlay-main"></div>
-	<?php
-	do_action( 'customize_controls_print_footer_scripts' );
-	?>
+	<?php do_action( 'customize_controls_print_footer_scripts' ); ?>
 </div>
 </body>
 </html>

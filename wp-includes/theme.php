@@ -737,8 +737,7 @@ function add_theme_support( $feature ) {
 		case 'custom-header-uploads' :
 			return add_theme_support( 'custom-header', array( 'uploads' => true ) );
 		case 'custom-header' :
-			if ( ! is_array( $args ) )
-				$args = array( 0 => array() );
+			if ( ! is_array( $args ) ) $args = array( 0 => array() );
 			$defaults = array(
 				'default-image' => '',
 				'random-default' => false,
@@ -751,42 +750,34 @@ function add_theme_support( $feature ) {
 				'uploads' => true,
 				'wp-head-callback' => '',
 				'admin-head-callback' => '',
-				'admin-preview-callback' => '',
+				'admin-preview-callback' => ''
 			);
 			$jit = isset( $args[0]['__jit'] );
 			unset( $args[0]['__jit'] );
-			if ( isset( $_wp_theme_features['custom-header'] ) )
-				$args[0] = wp_parse_args( $_wp_theme_features['custom-header'][0], $args[0] );
-			if ( $jit )
-				$args[0] = wp_parse_args( $args[0], $defaults );
+			if ( isset( $_wp_theme_features['custom-header'] ) ) $args[0] = wp_parse_args( $_wp_theme_features['custom-header'][0], $args[0] );
+			if ( $jit )	$args[0] = wp_parse_args( $args[0], $defaults );
 			if ( defined( 'NO_HEADER_TEXT' ) )
 				$args[0]['header-text'] = ! NO_HEADER_TEXT;
 			elseif ( isset( $args[0]['header-text'] ) )
 				define( 'NO_HEADER_TEXT', empty( $args[0]['header-text'] ) );
-
 			if ( defined( 'HEADER_IMAGE_WIDTH' ) )
 				$args[0]['width'] = (int) HEADER_IMAGE_WIDTH;
 			elseif ( isset( $args[0]['width'] ) )
 				define( 'HEADER_IMAGE_WIDTH', (int) $args[0]['width'] );
-
 			if ( defined( 'HEADER_IMAGE_HEIGHT' ) )
 				$args[0]['height'] = (int) HEADER_IMAGE_HEIGHT;
 			elseif ( isset( $args[0]['height'] ) )
 				define( 'HEADER_IMAGE_HEIGHT', (int) $args[0]['height'] );
-
 			if ( defined( 'HEADER_TEXTCOLOR' ) )
 				$args[0]['default-text-color'] = HEADER_TEXTCOLOR;
 			elseif ( isset( $args[0]['default-text-color'] ) )
 				define( 'HEADER_TEXTCOLOR', $args[0]['default-text-color'] );
-
 			if ( defined( 'HEADER_IMAGE' ) )
 				$args[0]['default-image'] = HEADER_IMAGE;
 			elseif ( isset( $args[0]['default-image'] ) )
 				define( 'HEADER_IMAGE', $args[0]['default-image'] );
-
 			if ( $jit && ! empty( $args[0]['default-image'] ) )
 				$args[0]['random-default'] = false;
-
 			if ( $jit ) {
 				if ( empty( $args[0]['width'] ) && empty( $args[0]['flex-width'] ) )
 					$args[0]['flex-width'] = true;
@@ -837,8 +828,7 @@ function _custom_header_background_just_in_time() {
 	if ( current_theme_supports( 'custom-header' ) ) {
 		add_theme_support( 'custom-header', array( '__jit' => true ) );
 		$args = get_theme_support( 'custom-header' );
-		if ( $args[0]['wp-head-callback'] )
-			add_action( 'wp_head', $args[0]['wp-head-callback'] );
+		if ( $args[0]['wp-head-callback'] ) add_action( 'wp_head', $args[0]['wp-head-callback'] );
 		if ( is_admin() ) {
 			require_once( ABSPATH . 'wp-admin/custom-header.php' );
 			$custom_image_header = new Custom_Image_Header( $args[0]['admin-head-callback'], $args[0]['admin-preview-callback'] );
@@ -929,12 +919,9 @@ function _remove_theme_support( $feature ) {
 
 function current_theme_supports( $feature ) {
 	global $_wp_theme_features;
-	if ( 'custom-header-uploads' == $feature )
-		return current_theme_supports( 'custom-header', 'uploads' );
-	if ( !isset( $_wp_theme_features[$feature] ) )
-		return false;
-	if ( func_num_args() <= 1 )
-		return true;
+	if ( 'custom-header-uploads' == $feature ) return current_theme_supports( 'custom-header', 'uploads' );
+	if ( !isset( $_wp_theme_features[$feature] ) ) return false;
+	if ( func_num_args() <= 1 )	return true;
 	$args = array_slice( func_get_args(), 1 );
 	switch ( $feature ) {
 		case 'post-thumbnails':
@@ -953,7 +940,6 @@ function current_theme_supports( $feature ) {
 		case 'custom-background':
 			return ( isset( $_wp_theme_features[ $feature ][0][ $args[0] ] ) && $_wp_theme_features[ $feature ][0][ $args[0] ] );
 	}
-
 	return apply_filters( "current_theme_supports-{$feature}", true, $args, $_wp_theme_features[$feature] );
 }
 

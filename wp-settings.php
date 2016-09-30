@@ -1,19 +1,10 @@
 <?php
-/**
- * Used to set up and fix common variables and include
- * the WordPress procedural and class library.
- *
- * Allows for some configuration in (see default-constants.php)
- *
- * @internal This file must be parsable by PHP4.
- *
- * @package WordPress
- */
 
 define( 'WPINC', 'wp-includes' );
 
 require( ABSPATH . WPINC . '/load.php' );
 require( ABSPATH . WPINC . '/default-constants.php' );
+
 wp_initial_constants();
 
 date_default_timezone_set( 'UTC' );
@@ -109,6 +100,7 @@ require( ABSPATH . WPINC . '/rest-api/class-wp-rest-request.php' );
 
 wp_plugin_directory_constants();
 wp_cookie_constants();
+
 $GLOBALS['wp_plugin_paths'] = array();
 require( ABSPATH . WPINC . '/vars.php' );
 create_initial_taxonomies();
@@ -121,9 +113,9 @@ foreach ( wp_get_active_and_valid_plugins() as $plugin ) {
 unset( $plugin );
 wp_set_internal_encoding();
 do_action( 'plugins_loaded' );
-wp_functionality_constants();
 wp_magic_quotes();
 do_action( 'sanitize_comment_cookies' );
+
 $GLOBALS['wp_the_query'] = new WP_Query();
 $GLOBALS['wp_query'] = $GLOBALS['wp_the_query'];
 $GLOBALS['wp_rewrite'] = new WP_Rewrite();
@@ -132,7 +124,6 @@ $GLOBALS['wp_widget_factory'] = new WP_Widget_Factory();
 $GLOBALS['wp_roles'] = new WP_Roles();
 
 do_action( 'setup_theme' );
-wp_templating_constants();
 
 require_once( ABSPATH . WPINC . '/locale.php' );
 $GLOBALS['wp_locale'] = new WP_Locale();

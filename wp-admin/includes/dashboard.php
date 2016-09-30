@@ -1,10 +1,4 @@
 <?php
-/**
- * WordPress Dashboard Widget Administration Screen API
- *
- * @package WordPress
- * @subpackage Administration
- */
 
 function wp_dashboard_setup() {
 	global $wp_registered_widgets, $wp_registered_widget_controls, $wp_dashboard_control_callbacks;
@@ -200,26 +194,22 @@ function wp_dashboard_right_now() {
 
 function wp_dashboard_quick_press( $error_msg = false ) {
 	global $post_ID;
-
 	if ( ! current_user_can( 'edit_posts' ) ) {
 		return;
 	}
-
-	/* Check if a new auto-draft (= no new post_ID) is needed or if the old can be used */
-	$last_post_id = (int) get_user_option( 'dashboard_quick_press_last_post_id' ); // Get the last post_ID
+	$last_post_id = (int) get_user_option( 'dashboard_quick_press_last_post_id' );
 	if ( $last_post_id ) {
 		$post = get_post( $last_post_id );
-		if ( empty( $post ) || $post->post_status != 'auto-draft' ) { // auto-draft doesn't exists anymore
+		if ( empty( $post ) || $post->post_status != 'auto-draft' ) {
 			$post = get_default_post_to_edit( 'post', true );
-			update_user_option( get_current_user_id(), 'dashboard_quick_press_last_post_id', (int) $post->ID ); // Save post_ID
+			update_user_option( get_current_user_id(), 'dashboard_quick_press_last_post_id', (int) $post->ID );
 		} else {
-			$post->post_title = ''; // Remove the auto draft title
+			$post->post_title = '';
 		}
 	} else {
 		$post = get_default_post_to_edit( 'post' , true);
 		$user_id = get_current_user_id();
-		// Don't create an option if this is a super admin who does not belong to this site.
-		if ( ! ( is_super_admin( $user_id ) && ! in_array( get_current_blog_id(), array_keys( get_blogs_of_user( $user_id ) ) ) ) )
+		if ( ! ( is_super_admin( $user_id ) && ! in_array( 0, array_keys( get_blogs_of_user( $user_id ) ) ) ) )
 			update_user_option( $user_id, 'dashboard_quick_press_last_post_id', (int) $post->ID ); // Save post_ID
 	}
 
@@ -234,26 +224,21 @@ function wp_dashboard_quick_press( $error_msg = false ) {
 
 		<div class="input-text-wrap" id="title-wrap">
 			<label class="screen-reader-text prompt" for="title" id="title-prompt-text">
-
-				<?php
-				/** This filter is documented in wp-admin/edit-form-advanced.php */
-				echo apply_filters( 'enter_title_here', __( 'Title' ), $post );
-				?>
+				<?php echo apply_filters( 'enter_title_here', 'Title', $post ); ?>
 			</label>
 			<input type="text" name="post_title" id="title" autocomplete="off" />
 		</div>
 
 		<div class="textarea-wrap" id="description-wrap">
-			<label class="screen-reader-text prompt" for="content" id="content-prompt-text"><?php _e( 'What&#8217;s on your mind?' ); ?></label>
+			<label class="screen-reader-text prompt" for="content" id="content-prompt-text">What&#8217;s on your mind?</label>
 			<textarea name="content" id="content" class="mceEditor" rows="3" cols="15" autocomplete="off"></textarea>
 		</div>
-
 		<p class="submit">
 			<input type="hidden" name="action" id="quickpost-action" value="post-quickdraft-save" />
 			<input type="hidden" name="post_ID" value="<?php echo $post_ID; ?>" />
 			<input type="hidden" name="post_type" value="post" />
 			<?php wp_nonce_field( 'add-post' ); ?>
-			<?php submit_button( __( 'Save Draft' ), 'primary', 'save', false, array( 'id' => 'save-post' ) ); ?>
+			<?php submit_button( 'Save Draft', 'primary', 'save', false, array( 'id' => 'save-post' ) ); ?>
 			<br class="clear" />
 		</p>
 
@@ -283,7 +268,7 @@ function wp_dashboard_recent_drafts( $drafts = false ) {
 
 	echo '<div class="drafts">';
 	if ( count( $drafts ) > 3 ) {
-		echo '<p class="view-all"><a href="' . esc_url( admin_url( 'edit.php?post_status=draft' ) ) . '" aria-label="' . __( 'View all drafts' ) . '">' . _x( 'View all', 'drafts' ) . "</a></p>\n";
+		echo '<p class="view-all"><a href="' . esc_url( admin_url( 'edit.php?post_status=draft' ) ) . '" aria-label="View all drafts">' . "View all</a></p>\n";
  	}
 	echo '<h2 class="hide-if-no-js">Drafts' . "</h2>\n<ul>";
 
@@ -293,8 +278,8 @@ function wp_dashboard_recent_drafts( $drafts = false ) {
 		$title = _draft_or_post_title( $draft->ID );
 		echo "<li>\n";
 		/* translators: %s: post title */
-		echo '<div class="draft-title"><a href="' . esc_url( $url ) . '" aria-label="' . esc_attr( sprintf( __( 'Edit &#8220;%s&#8221;' ), $title ) ) . '">' . esc_html( $title ) . '</a>';
-		echo '<time datetime="' . get_the_time( 'c', $draft ) . '">' . get_the_time( __( 'F j, Y' ), $draft ) . '</time></div>';
+		echo '<div class="draft-title"><a href="' . esc_url( $url ) . '" aria-label="' . esc_attr( sprintf( 'Edit &#8220;%s&#8221;', $title ) ) . '">' . esc_html( $title ) . '</a>';
+		echo '<time datetime="' . get_the_time( 'c', $draft ) . '">' . get_the_time( 'F j, Y', $draft ) . '</time></div>';
 		if ( $the_content = wp_trim_words( $draft->post_content, 10 ) ) {
 			echo '<p>' . $the_content . '</p>';
  		}
@@ -317,7 +302,6 @@ function _wp_dashboard_recent_comments_row( &$comment, $show_date = true ) {
 
 	$actions_string = '';
 	if ( current_user_can( 'edit_comment', $comment->comment_ID ) ) {
-		// Pre-order it: Approve | Reply | Edit | Spam | Trash.
 		$actions = array(
 			'approve' => '', 'unapprove' => '',
 			'reply' => '',
@@ -349,7 +333,7 @@ function _wp_dashboard_recent_comments_row( &$comment, $show_date = true ) {
 		}
 
 		if ( '1' === $comment->comment_approved ) {
-			$actions['view'] = '<a class="comment-link" href="' . esc_url( get_comment_link( $comment ) ) . '" aria-label="' . esc_attr__( 'View this comment' ) . '">' . __( 'View' ) . '</a>';
+			$actions['view'] = '<a class="comment-link" href="' . esc_url( get_comment_link( $comment ) ) . '" aria-label="View this comment">View</a>';
 		}
 
 		$actions = apply_filters( 'comment_row_actions', array_filter($actions), $comment );
@@ -377,21 +361,18 @@ function _wp_dashboard_recent_comments_row( &$comment, $show_date = true ) {
 			<div class="dashboard-comment-wrap has-row-actions">
 			<p class="comment-meta">
 			<?php
-				// Comments might not have a post they relate to, e.g. programmatically created ones.
 				if ( $comment_post_link ) {
 					printf(
-						/* translators: 1: comment author, 2: post link, 3: notification if the comment is pending */
-						__( 'From %1$s on %2$s %3$s' ),
+						'From %1$s on %2$s %3$s',
 						'<cite class="comment-author">' . get_comment_author_link( $comment ) . '</cite>',
 						$comment_post_link,
-						'<span class="approve">' . __( '[Pending]' ) . '</span>'
+						'<span class="approve">[Pending]</span>'
 					);
 				} else {
 					printf(
-						/* translators: 1: comment author, 2: notification if the comment is pending */
-						__( 'From %1$s %2$s' ),
+						'From %1$s %2$s',
 						'<cite class="comment-author">' . get_comment_author_link( $comment ) . '</cite>',
-						'<span class="approve">' . __( '[Pending]' ) . '</span>'
+						'<span class="approve">[Pending]</span>'
 					);
 				}
 			?>
@@ -407,18 +388,16 @@ function _wp_dashboard_recent_comments_row( &$comment, $show_date = true ) {
 			<?php
 				if ( $comment_post_link ) {
 					printf(
-						/* translators: 1: type of comment, 2: post link, 3: notification if the comment is pending */
-						_x( '%1$s on %2$s %3$s', 'dashboard' ),
+						'%1$s on %2$s %3$s',
 						"<strong>$type</strong>",
 						$comment_post_link,
-						'<span class="approve">' . __( '[Pending]' ) . '</span>'
+						'<span class="approve">[Pending]</span>'
 					);
 				} else {
 					printf(
-						/* translators: 1: type of comment, 2: notification if the comment is pending */
-						_x( '%1$s %2$s', 'dashboard' ),
+						'%1$s %2$s',
 						"<strong>$type</strong>",
-						'<span class="approve">' . __( '[Pending]' ) . '</span>'
+						'<span class="approve">[Pending]</span>'
 					);
 				}
 			?>
@@ -502,16 +481,11 @@ function wp_dashboard_recent_posts( $args ) {
 			} elseif ( date( 'Y-m-d', $time ) == $tomorrow ) {
 				$relative = 'Tomorrow';
 			} elseif ( date( 'Y', $time ) !== date( 'Y', current_time( 'timestamp' ) ) ) {
-				/* translators: date and time format for recent posts on the dashboard, from a different calendar year, see http://php.net/date */
 				$relative = date_i18n( 'M jS Y', $time );
 			} else {
-				/* translators: date and time format for recent posts on the dashboard, see http://php.net/date */
 				$relative = date_i18n( 'M jS', $time );
 			}
-
-			// Use the post edit link for those who can edit, the permalink otherwise.
 			$recent_post_link = current_user_can( 'edit_post', get_the_ID() ) ? get_edit_post_link() : get_permalink();
-
 			$draft_or_post_title = _draft_or_post_title();
 			printf(
 				'<li><span>%1$s</span> <a href="%2$s" aria-label="%3$s">%4$s</a></li>',

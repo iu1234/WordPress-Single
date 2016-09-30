@@ -1,10 +1,4 @@
 <?php
-/**
- * WordPress Link Template Functions
- *
- * @package WordPress
- * @subpackage Template
- */
 
 function the_permalink( $post = 0 ) {
 	echo esc_url( apply_filters( 'the_permalink', get_permalink( $post ), $post ) );
@@ -16,7 +10,6 @@ function user_trailingslashit($string, $type_of_url = '') {
 		$string = trailingslashit($string);
 	else
 		$string = untrailingslashit($string);
-
 	return apply_filters( 'user_trailingslashit', $string, $type_of_url );
 }
 
@@ -1646,11 +1639,11 @@ function set_url_scheme( $url, $scheme = null ) {
 	$orig_scheme = $scheme;
 
 	if ( ! $scheme ) {
-		$scheme = is_ssl() ? 'https' : 'http';
+		$scheme = 'http';
 	} elseif ( $scheme === 'admin' || $scheme === 'login' || $scheme === 'login_post' || $scheme === 'rpc' ) {
-		$scheme = is_ssl() || force_ssl_admin() ? 'https' : 'http';
+		$scheme = 'http';
 	} elseif ( $scheme !== 'http' && $scheme !== 'https' && $scheme !== 'relative' ) {
-		$scheme = is_ssl() ? 'https' : 'http';
+		$scheme = 'http';
 	}
 
 	$url = trim( $url );
@@ -1677,7 +1670,7 @@ function get_dashboard_url( $user_id = 0, $path = '', $scheme = 'admin' ) {
 	} elseif ( ! is_multisite() ) {
 		$url = admin_url( $path, $scheme );
 	} else {
-		$current_blog = get_current_blog_id();
+		$current_blog = 0;
 		if ( $current_blog  && ( is_super_admin( $user_id ) || in_array( $current_blog, array_keys( $blogs ) ) ) ) {
 			$url = admin_url( $path, $scheme );
 		} else {

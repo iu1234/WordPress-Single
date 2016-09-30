@@ -1,11 +1,4 @@
 <?php
-/**
- * User API: WP_User class
- *
- * @package WordPress
- * @subpackage Users
- * @since 4.4.0
- */
 
 class WP_User {
 
@@ -203,7 +196,7 @@ class WP_User {
 		global $wpdb;
 
 		if ( empty($cap_key) )
-			$this->cap_key = $wpdb->get_blog_prefix() . 'capabilities';
+			$this->cap_key = 'capabilities';
 		else
 			$this->cap_key = $cap_key;
 
@@ -217,19 +210,14 @@ class WP_User {
 
 	public function get_role_caps() {
 		$wp_roles = wp_roles();
-
-		//Filter out caps that are not role names and assign to $this->roles
 		if ( is_array( $this->caps ) )
 			$this->roles = array_filter( array_keys( $this->caps ), array( $wp_roles, 'is_role' ) );
-
-		//Build $allcaps from role caps, overlay user's $caps
 		$this->allcaps = array();
 		foreach ( (array) $this->roles as $role ) {
 			$the_role = $wp_roles->get_role( $role );
 			$this->allcaps = array_merge( (array) $this->allcaps, (array) $the_role->capabilities );
 		}
 		$this->allcaps = array_merge( (array) $this->allcaps, (array) $this->caps );
-
 		return $this->allcaps;
 	}
 
@@ -290,7 +278,7 @@ class WP_User {
 	public function update_user_level_from_caps() {
 		global $wpdb;
 		$this->user_level = array_reduce( array_keys( $this->allcaps ), array( $this, 'level_reduction' ), 0 );
-		update_user_meta( $this->ID, $wpdb->get_blog_prefix() . 'user_level', $this->user_level );
+		update_user_meta( $this->ID, 'user_level', $this->user_level );
 	}
 
 	public function add_cap( $cap, $grant = true ) {
@@ -314,7 +302,7 @@ class WP_User {
 		global $wpdb;
 		$this->caps = array();
 		delete_user_meta( $this->ID, $this->cap_key );
-		delete_user_meta( $this->ID, $wpdb->get_blog_prefix() . 'user_level' );
+		delete_user_meta( $this->ID, 'user_level' );
 		$this->get_role_caps();
 	}
 
@@ -342,7 +330,7 @@ class WP_User {
 	public function for_blog( $blog_id = '' ) {
 		global $wpdb;
 		if ( ! empty( $blog_id ) )
-			$cap_key = $wpdb->get_blog_prefix( $blog_id ) . 'capabilities';
+			$cap_key = 'capabilities';
 		else
 			$cap_key = '';
 		$this->_init_caps( $cap_key );

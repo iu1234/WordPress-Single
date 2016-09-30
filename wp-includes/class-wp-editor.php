@@ -1,12 +1,4 @@
 <?php
-/**
- * Facilitates adding of the WordPress editor as used on the Write and Edit screens.
- *
- * @package WordPress
- * @since 3.3.0
- *
- * Private, not included by default. See wp_editor() in wp-includes/general-template.php.
- */
 
 final class _WP_Editors {
 
@@ -427,12 +419,8 @@ final class _WP_Editors {
 				if ( ! empty( $mce_external_plugins ) ) {
 					self::$first_init['external_plugins'] = wp_json_encode( $mce_external_plugins );
 				}
-
-				$suffix = SCRIPT_DEBUG ? '' : '.min';
 				$version = 'ver=' . $wp_version;
-				$dashicons = includes_url( "css/dashicons$suffix.css?$version" );
-
-				// WordPress default stylesheet and dashicons
+				$dashicons = includes_url( "css/dashicons.css?$version" );
 				$mce_css = array(
 					$dashicons,
 					self::$baseurl . '/skins/wordpress/wp-content.css?' . $version
@@ -905,9 +893,6 @@ final class _WP_Editors {
 			'theme' => 'modern',
 			'language' => self::$mce_locale
 		);
-
-		$suffix = SCRIPT_DEBUG ? '' : '.min';
-
 		do_action( 'before_wp_tiny_mce', self::$mce_settings );
 		?>
 
@@ -938,7 +923,7 @@ final class _WP_Editors {
 				echo "<script type='text/javascript' src='{$baseurl}/wp-tinymce.php?c=1&amp;$version'></script>\n";
 			} else {
 				echo "<script type='text/javascript' src='{$baseurl}/tinymce{$mce_suffix}.js?$version'></script>\n";
-				echo "<script type='text/javascript' src='{$baseurl}/plugins/compat3x/plugin{$suffix}.js?$version'></script>\n";
+				echo "<script type='text/javascript' src='{$baseurl}/plugins/compat3x/plugin.js?$version'></script>\n";
 			}
 
 			echo "<script type='text/javascript'>\n" . self::wp_mce_translation() . "</script>\n";

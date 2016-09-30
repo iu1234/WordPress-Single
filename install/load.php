@@ -115,11 +115,6 @@ function wp_magic_quotes() {
 	$_REQUEST = array_merge( $_GET, $_POST );
 }
 
-function get_current_blog_id() {
-	global $blog_id;
-	return absint($blog_id);
-}
-
 function wp_installing( $is_installing = null ) {
 	static $installing = null;
 

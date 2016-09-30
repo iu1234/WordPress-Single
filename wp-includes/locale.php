@@ -1,10 +1,4 @@
 <?php
-/**
- * Date and Time Locale object
- *
- * @package WordPress
- * @subpackage i18n
- */
 
 class WP_Locale {
 
@@ -30,7 +24,6 @@ class WP_Locale {
 	}
 
 	public function init() {
-
 		$this->weekday[0] = 'Sunday';
 		$this->weekday[1] = 'Monday';
 		$this->weekday[2] = 'Tuesday';
@@ -38,7 +31,6 @@ class WP_Locale {
 		$this->weekday[4] = 'Thursday';
 		$this->weekday[5] = 'Friday';
 		$this->weekday[6] = 'Saturday';
-
 		$this->weekday_initial[ 'Sunday' ]    = 'S';
 		$this->weekday_initial[ 'Monday' ]    = 'M';
 		$this->weekday_initial[ 'Tuesday' ]   = 'T';
@@ -46,7 +38,6 @@ class WP_Locale {
 		$this->weekday_initial[ 'Thursday' ]  = 'T';
 		$this->weekday_initial[ 'Friday' ]    = 'F';
 		$this->weekday_initial[ 'Saturday' ]  = 'S';
-
 		$this->weekday_abbrev['Sunday']    = 'Sun';
 		$this->weekday_abbrev['Monday']    = 'Mon';
 		$this->weekday_abbrev['Tuesday']   = 'Tue';
@@ -54,7 +45,6 @@ class WP_Locale {
 		$this->weekday_abbrev['Thursday']  = 'Thu';
 		$this->weekday_abbrev['Friday']    = 'Fri';
 		$this->weekday_abbrev['Saturday']  = 'Sat';
-
 		$this->month['01'] = 'January';
 		$this->month['02'] = 'February';
 		$this->month['03'] = 'March';
@@ -67,7 +57,6 @@ class WP_Locale {
 		$this->month['10'] = 'October';
 		$this->month['11'] = 'November';
 		$this->month['12'] = 'December';
-
 		$this->month_genitive['01'] = 'January';
 		$this->month_genitive['02'] = 'February';
 		$this->month_genitive['03'] = 'March';
@@ -80,7 +69,6 @@ class WP_Locale {
 		$this->month_genitive['10'] = 'October';
 		$this->month_genitive['11'] = 'November';
 		$this->month_genitive['12'] = 'December';
-
 		$this->month_abbrev[ 'January' ]   = 'Jan';
 		$this->month_abbrev[ 'February' ]  = 'Feb';
 		$this->month_abbrev[ 'March' ]     = 'Mar';
@@ -93,20 +81,14 @@ class WP_Locale {
 		$this->month_abbrev[ 'October' ]   = 'Oct';
 		$this->month_abbrev[ 'November' ]  = 'Nov';
 		$this->month_abbrev[ 'December' ]  = 'Dec';
-
 		$this->meridiem['am'] = 'am';
 		$this->meridiem['pm'] = 'pm';
 		$this->meridiem['AM'] = 'AM';
 		$this->meridiem['PM'] = 'PM';
-
 		$thousands_sep = 'number_format_thousands_sep';
-
 		$thousands_sep = str_replace( ' ', '&nbsp;', $thousands_sep );
-
 		$this->number_format['thousands_sep'] = ( 'number_format_thousands_sep' === $thousands_sep ) ? ',' : $thousands_sep;
-
 		$decimal_point = 'number_format_decimal_point';
-
 		$this->number_format['decimal_point'] = ( 'number_format_decimal_point' === $decimal_point ) ? '.' : $decimal_point;
 
 	}

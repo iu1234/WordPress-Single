@@ -1,15 +1,4 @@
 <?php
-/**
- * API for fetching the HTML to embed remote content based on a provided URL
- *
- * Used internally by the WP_Embed class, but is designed to be generic.
- *
- * @link https://codex.wordpress.org/oEmbed oEmbed Codex Article
- * @link http://oembed.com/ oEmbed Homepage
- *
- * @package WordPress
- * @subpackage oEmbed
- */
 
 class WP_oEmbed {
 
@@ -171,12 +160,10 @@ class WP_oEmbed {
 				'application/xml+oembed' => 'xml',
 			) );
 
-			// Strip <body>
 			if ( $html_head_end = stripos( $html, '</head>' ) ) {
 				$html = substr( $html, 0, $html_head_end );
 			}
 
-			// Do a quick check
 			$tagfound = false;
 			foreach ( $linktypes as $linktype => $format ) {
 				if ( stripos($html, $linktype) ) {
@@ -191,8 +178,6 @@ class WP_oEmbed {
 
 					if ( !empty($atts['type']) && !empty($linktypes[$atts['type']]) && !empty($atts['href']) ) {
 						$providers[$linktypes[$atts['type']]] = htmlspecialchars_decode( $atts['href'] );
-
-						// Stop here if it's JSON (that's all we need)
 						if ( 'json' == $linktypes[$atts['type']] )
 							break;
 					}
@@ -200,7 +185,6 @@ class WP_oEmbed {
 			}
 		}
 
-		// JSON is preferred to XML
 		if ( !empty($providers['json']) )
 			return $providers['json'];
 		elseif ( !empty($providers['xml']) )
@@ -229,10 +213,7 @@ class WP_oEmbed {
 
 	private function _fetch_with_format( $provider_url_with_args, $format ) {
 		$provider_url_with_args = add_query_arg( 'format', $format, $provider_url_with_args );
-
-		/** This filter is documented in wp-includes/class-oembed.php */
 		$args = apply_filters( 'oembed_remote_get_args', array(), $provider_url_with_args );
-
 		$response = wp_safe_remote_get( $provider_url_with_args, $args );
 		if ( 501 == wp_remote_retrieve_response_code( $response ) )
 			return new WP_Error( 'not-implemented' );
@@ -250,15 +231,11 @@ class WP_oEmbed {
 	private function _parse_xml( $response_body ) {
 		if ( ! function_exists( 'libxml_disable_entity_loader' ) )
 			return false;
-
 		$loader = libxml_disable_entity_loader( true );
 		$errors = libxml_use_internal_errors( true );
-
 		$return = $this->_parse_xml_body( $response_body );
-
 		libxml_use_internal_errors( $errors );
 		libxml_disable_entity_loader( $loader );
-
 		return $return;
 	}
 

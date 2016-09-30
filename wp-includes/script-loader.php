@@ -1,20 +1,4 @@
 <?php
-/**
- * WordPress scripts and styles default loader.
- *
- * Several constants are used to manage the loading, concatenating and compression of scripts and CSS:
- * define('SCRIPT_DEBUG', true); loads the development (non-minified) versions of all scripts and CSS, and disables compression and concatenation,
- * define('CONCATENATE_SCRIPTS', false); disables compression and concatenation of scripts and CSS,
- * define('COMPRESS_SCRIPTS', false); disables compression of scripts,
- * define('COMPRESS_CSS', false); disables compression of CSS,
- * define('ENFORCE_GZIP', true); forces gzip for compression (default is deflate).
- *
- * The globals $concatenate_scripts, $compress_scripts and $compress_css can be set by plugins
- * to temporarily override the above settings. Also a compression test is run once and the result is saved
- * as option 'can_compress_scripts' (0/1). The test will run again if that option is deleted.
- *
- * @package WordPress
- */
 
 require( ABSPATH . WPINC . '/class.wp-dependencies.php' );
 require( ABSPATH . WPINC . '/class.wp-scripts.php' );
@@ -630,8 +614,8 @@ function wp_prototype_before_jquery( $js_array ) {
 
 function wp_just_in_time_script_localization() {
 	wp_localize_script( 'autosave', 'autosaveL10n', array(
-		'autosaveInterval' => AUTOSAVE_INTERVAL,
-		'blog_id' => get_current_blog_id(),
+		'autosaveInterval' => 1200,
+		'blog_id' => 0,
 	) );
 }
 
@@ -814,7 +798,7 @@ function script_concat_settings() {
 
 	if ( ! isset($concatenate_scripts) ) {
 		$concatenate_scripts = defined('CONCATENATE_SCRIPTS') ? CONCATENATE_SCRIPTS : true;
-		if ( ( ! is_admin() && ! did_action( 'login_init' ) ) || ( defined('SCRIPT_DEBUG') && SCRIPT_DEBUG ) )
+		if ( ! is_admin() && ! did_action( 'login_init' ) )
 			$concatenate_scripts = false;
 	}
 

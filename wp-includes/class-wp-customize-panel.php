@@ -40,7 +40,6 @@ class WP_Customize_Panel {
 				$this->$key = $args[ $key ];
 			}
 		}
-
 		$this->manager = $manager;
 		$this->id = $id;
 		if ( empty( $this->active_callback ) ) {
@@ -48,8 +47,7 @@ class WP_Customize_Panel {
 		}
 		self::$instance_count += 1;
 		$this->instance_number = self::$instance_count;
-
-		$this->sections = array(); // Users cannot customize the $sections array.
+		$this->sections = array();
 	}
 
 	final public function active() {

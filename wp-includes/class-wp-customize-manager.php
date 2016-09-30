@@ -108,10 +108,7 @@ final class WP_Customize_Manager {
 
 	public function doing_ajax( $action = null ) {
 		$doing_ajax = ( defined( 'DOING_AJAX' ) && DOING_AJAX );
-		if ( ! $doing_ajax ) {
-			return false;
-		}
-
+		if ( ! $doing_ajax ) { return false; }
 		if ( ! $action ) {
 			return true;
 		} else {
@@ -132,9 +129,7 @@ final class WP_Customize_Manager {
 	}
 
 	public function wp_die_handler() {
-		if ( $this->doing_ajax() || isset( $_POST['customized'] ) ) {
-			return '_ajax_wp_die_handler';
-		}
+		if ( $this->doing_ajax() || isset( $_POST['customized'] ) ) { return '_ajax_wp_die_handler'; }
 		return '_default_wp_die_handler';
 	}
 
@@ -485,10 +480,8 @@ final class WP_Customize_Manager {
 			$class = 'WP_Customize_Setting';
 			$args = apply_filters( 'customize_dynamic_setting_args', $args, $id );
 			$class = apply_filters( 'customize_dynamic_setting_class', $class, $id, $args );
-
 			$setting = new $class( $this, $id, $args );
 		}
-
 		$this->settings[ $setting->id ] = $setting;
 		return $setting;
 	}
@@ -499,19 +492,14 @@ final class WP_Customize_Manager {
 			if ( $this->get_setting( $setting_id ) ) {
 				continue;
 			}
-
 			$setting_args = false;
 			$setting_class = 'WP_Customize_Setting';
-
 			$setting_args = apply_filters( 'customize_dynamic_setting_args', $setting_args, $setting_id );
 			if ( false === $setting_args ) {
 				continue;
 			}
-
 			$setting_class = apply_filters( 'customize_dynamic_setting_class', $setting_class, $setting_id, $setting_args );
-
 			$setting = new $setting_class( $this, $setting_id, $setting_args );
-
 			$this->add_setting( $setting );
 			$new_settings[] = $setting;
 		}
@@ -551,7 +539,6 @@ final class WP_Customize_Manager {
 				$id,
 				'<a href="#"><code>customize_loaded_components</code></a>'
 			);
-
 			_doing_it_wrong( __METHOD__, $message, '4.5' );
 		}
 		unset( $this->panels[ $id ] );
@@ -574,7 +561,6 @@ final class WP_Customize_Manager {
 		} else {
 			$section = new WP_Customize_Section( $this, $id, $args );
 		}
-
 		$this->sections[ $section->id ] = $section;
 		return $section;
 	}
@@ -928,17 +914,12 @@ final class WP_Customize_Manager {
 			) ) );
 		}
 
-		$this->add_section( 'title_tagline', array(
-			'title'    => 'Site Identity',
-			'priority' => 20,
-		) );
-
+		$this->add_section( 'title_tagline', array( 'title' => 'Site Identity', 'priority' => 20 ) );
 		$this->add_setting( 'blogname', array(
 			'default'    => get_option( 'blogname' ),
 			'type'       => 'option',
 			'capability' => 'manage_options',
 		) );
-
 		$this->add_control( 'blogname', array(
 			'label'      => 'Site Title',
 			'section'    => 'title_tagline',
@@ -970,24 +951,15 @@ final class WP_Customize_Manager {
 			) );
 		}
 
-		$this->add_setting( 'site_icon', array(
-			'type'       => 'option',
-			'capability' => 'manage_options',
-			'transport'  => 'postMessage',
-		) );
-
+		$this->add_setting( 'site_icon', array( 'type' => 'option', 'capability' => 'manage_options', 'transport'  => 'postMessage' ) );
 		$this->add_control( new WP_Customize_Site_Icon_Control( $this, 'site_icon', array(
 			'label'       => 'Site Icon',
-			'description' => sprintf(
-				'The Site Icon is used as a browser and app icon for your site. Icons must be square, and at least %s pixels wide and tall.',
-				'<strong>512</strong>'
-			),
+			'description' => sprintf( '站点图标将被用作您的站点的浏览器和app图标。它必须为方形，且宽高至少 %s 像素。', '<strong>512</strong>' ),
 			'section'     => 'title_tagline',
 			'priority'    => 60,
 			'height'      => 512,
 			'width'       => 512,
 		) ) );
-
 		$this->add_setting( 'custom_logo', array(
 			'theme_supports' => array( 'custom-logo' ),
 			'transport'      => 'postMessage',
@@ -1020,11 +992,7 @@ final class WP_Customize_Manager {
 			'container_inclusive' => true,
 		) );
 
-		$this->add_section( 'colors', array(
-			'title'          => 'Colors',
-			'priority'       => 40,
-		) );
-
+		$this->add_section( 'colors', array( 'title' => 'Colors', 'priority' => 40 ) );
 		$this->add_setting( 'header_textcolor', array(
 			'theme_supports' => array( 'custom-header', 'header-text' ),
 			'default'        => get_theme_support( 'custom-header', 'default-text-color' ),
@@ -1204,13 +1172,10 @@ final class WP_Customize_Manager {
 	}
 
 	public function _sanitize_header_textcolor( $color ) {
-		if ( 'blank' === $color )
-			return 'blank';
-
+		if ( 'blank' === $color ) return 'blank';
 		$color = sanitize_hex_color_no_hash( $color );
 		if ( empty( $color ) )
 			$color = get_theme_support( 'custom-header', 'default-text-color' );
-
 		return $color;
 	}
 

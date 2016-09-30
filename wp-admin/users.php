@@ -1,11 +1,4 @@
 <?php
-/**
- * User administration panel
- *
- * @package WordPress
- * @subpackage Administration
- * @since 1.0.0
- */
 
 require_once( __DIR__ . '/admin.php' );
 
@@ -35,33 +28,33 @@ get_current_screen()->add_help_tab( array(
 get_current_screen()->add_help_tab( array(
 	'id'      => 'screen-display',
 	'title'   => 'Screen Display',
-	'content' => '<p>' . __('You can customize the display of this screen in a number of ways:') . '</p>' .
+	'content' => '<p>You can customize the display of this screen in a number of ways:</p>' .
 					'<ul>' .
-					'<li>' . __('You can hide/display columns based on your needs and decide how many users to list per screen using the Screen Options tab.') . '</li>' .
-					'<li>' . __('You can filter the list of users by User Role using the text links in the upper left to show All, Administrator, Editor, Author, Contributor, or Subscriber. The default view is to show all users. Unused User Roles are not listed.') . '</li>' .
-					'<li>' . __('You can view all posts made by a user by clicking on the number under the Posts column.') . '</li>' .
+					'<li>You can hide/display columns based on your needs and decide how many users to list per screen using the Screen Options tab.</li>' .
+					'<li>You can filter the list of users by User Role using the text links in the upper left to show All, Administrator, Editor, Author, Contributor, or Subscriber. The default view is to show all users. Unused User Roles are not listed.</li>' .
+					'<li>You can view all posts made by a user by clicking on the number under the Posts column.</li>' .
 					'</ul>'
 ) );
 
-$help = '<p>' . __('Hovering over a row in the users list will display action links that allow you to manage users. You can perform the following actions:') . '</p>' .
+$help = '<p>Hovering over a row in the users list will display action links that allow you to manage users. You can perform the following actions:</p>' .
 	'<ul>' .
-	'<li>' . __('Edit takes you to the editable profile screen for that user. You can also reach that screen by clicking on the username.') . '</li>';
+	'<li>Edit takes you to the editable profile screen for that user. You can also reach that screen by clicking on the username.</li>';
 
-$help .= '<li>' . __( 'Delete brings you to the Delete Users screen for confirmation, where you can permanently remove a user from your site and delete their content. You can also delete multiple users at once by using Bulk Actions.' ) . '</li>';
+$help .= '<li>Delete brings you to the Delete Users screen for confirmation, where you can permanently remove a user from your site and delete their content. You can also delete multiple users at once by using Bulk Actions.</li>';
 
 $help .= '</ul>';
 
 get_current_screen()->add_help_tab( array(
 	'id'      => 'actions',
-	'title'   => __('Actions'),
+	'title'   => 'Actions',
 	'content' => $help,
 ) );
 unset( $help );
 
 get_current_screen()->set_screen_reader_content( array(
-	'heading_views'      => __( 'Filter users list' ),
-	'heading_pagination' => __( 'Users list navigation' ),
-	'heading_list'       => __( 'Users list' ),
+	'heading_views'      => 'Filter users list',
+	'heading_pagination' => 'Users list navigation',
+	'heading_list'       => 'Users list',
 ) );
 
 if ( empty($_REQUEST) ) {
@@ -78,12 +71,11 @@ $update = '';
 
 switch ( $wp_list_table->current_action() ) {
 
-/* Bulk Dropdown menu Role changes */
 case 'promote':
 	check_admin_referer('bulk-users');
 
 	if ( ! current_user_can( 'promote_users' ) )
-		wp_die( __( 'You can&#8217;t edit that user.' ) );
+		wp_die( 'You can&#8217;t edit that user.' );
 
 	if ( empty($_REQUEST['users']) ) {
 		wp_redirect($redirect);
@@ -108,8 +100,7 @@ case 'promote':
 		$id = (int) $id;
 
 		if ( ! current_user_can('promote_user', $id) )
-			wp_die(__('You can&#8217;t edit that user.'));
-		// The new role of the current user must also have the promote_users cap or be a multisite super admin
+			wp_die( 'You can&#8217;t edit that user.' );
 		if ( $id == $current_user->ID && ! $wp_roles->role_objects[ $role ]->has_cap('promote_users')
 			&& ! ( is_super_admin() ) ) {
 				$update = 'err_admin_role';
@@ -276,7 +267,7 @@ case 'doremove':
 	}
 
 	if ( ! current_user_can( 'remove_users' ) )
-		wp_die( __( 'You can&#8217;t remove users.' ) );
+		wp_die( 'You can&#8217;t remove users.' );
 
 	$userids = $_REQUEST['users'];
 
@@ -302,7 +293,7 @@ case 'remove':
 
 	check_admin_referer('bulk-users');
 
-	wp_die( __( 'You can&#8217;t remove users.' ) );
+	wp_die( 'You can&#8217;t remove users.' );
 
 	if ( empty($_REQUEST['users']) && empty($_REQUEST['user']) ) {
 		wp_redirect($redirect);
@@ -310,7 +301,7 @@ case 'remove':
 	}
 
 	if ( !current_user_can('remove_users') )
-		$error = new WP_Error('edit_users', __('You can&#8217;t remove users.'));
+		$error = new WP_Error('edit_users', 'You can&#8217;t remove users.' );
 
 	if ( empty($_REQUEST['users']) )
 		$userids = array(intval($_REQUEST['user']));
@@ -324,12 +315,12 @@ case 'remove':
 <?php echo $referer; ?>
 
 <div class="wrap">
-<h1><?php _e( 'Remove Users from Site' ); ?></h1>
+<h1>Remove Users from Site</h1>
 
 <?php if ( 1 == count( $userids ) ) : ?>
-	<p><?php _e( 'You have specified this user for removal:' ); ?></p>
+	<p>You have specified this user for removal:</p>
 <?php else : ?>
-	<p><?php _e( 'You have specified these users for removal:' ); ?></p>
+	<p>You have specified these users for removal:</p>
 <?php endif; ?>
 
 <ul>
@@ -339,14 +330,11 @@ case 'remove':
 		$id = (int) $id;
  		$user = get_user_by( 'id', $id );
 		if ( $id == $current_user->ID && !is_super_admin() ) {
-			/* translators: 1: user id, 2: user login */
-			echo "<li>" . sprintf(__('ID #%1$s: %2$s <strong>The current user will not be removed.</strong>'), $id, $user->user_login) . "</li>\n";
+			echo "<li>" . sprintf('ID #%1$s: %2$s <strong>The current user will not be removed.</strong>', $id, $user->user_login) . "</li>\n";
 		} elseif ( !current_user_can('remove_user', $id) ) {
-			/* translators: 1: user id, 2: user login */
-			echo "<li>" . sprintf(__('ID #%1$s: %2$s <strong>You don&#8217;t have permission to remove this user.</strong>'), $id, $user->user_login) . "</li>\n";
+			echo "<li>" . sprintf('ID #%1$s: %2$s <strong>You don&#8217;t have permission to remove this user.</strong>', $id, $user->user_login) . "</li>\n";
 		} else {
-			/* translators: 1: user id, 2: user login */
-			echo "<li><input type=\"hidden\" name=\"users[]\" value=\"{$id}\" />" . sprintf(__('ID #%1$s: %2$s'), $id, $user->user_login) . "</li>\n";
+			echo "<li><input type=\"hidden\" name=\"users[]\" value=\"{$id}\" />" . sprintf('ID #%1$s: %2$s', $id, $user->user_login) . "</li>\n";
 			$go_remove = true;
 		}
  	}
@@ -354,7 +342,7 @@ case 'remove':
 </ul>
 <?php if ( $go_remove ) : ?>
 		<input type="hidden" name="action" value="doremove" />
-		<?php submit_button( __('Confirm Removal'), 'primary' ); ?>
+		<?php submit_button( 'Confirm Removal', 'primary' ); ?>
 <?php else : ?>
 	<p><?php _e('There are no valid users selected for removal.'); ?></p>
 <?php endif; ?>
@@ -396,30 +384,30 @@ default:
 		case 'add':
 			if ( isset( $_GET['id'] ) && ( $user_id = $_GET['id'] ) && current_user_can( 'edit_user', $user_id ) ) {
 				/* translators: %s: edit page url */
-				$messages[] = '<div id="message" class="updated notice is-dismissible"><p>' . sprintf( __( 'New user created. <a href="%s">Edit user</a>' ),
+				$messages[] = '<div id="message" class="updated notice is-dismissible"><p>' . sprintf( 'New user created. <a href="%s">Edit user</a>',
 					esc_url( add_query_arg( 'wp_http_referer', urlencode( wp_unslash( $_SERVER['REQUEST_URI'] ) ),
 						self_admin_url( 'user-edit.php?user_id=' . $user_id ) ) ) ) . '</p></div>';
 			} else {
-				$messages[] = '<div id="message" class="updated notice is-dismissible"><p>' . __( 'New user created.' ) . '</p></div>';
+				$messages[] = '<div id="message" class="updated notice is-dismissible"><p>New user created.</p></div>';
 			}
 			break;
 		case 'promote':
-			$messages[] = '<div id="message" class="updated notice is-dismissible"><p>' . __('Changed roles.') . '</p></div>';
+			$messages[] = '<div id="message" class="updated notice is-dismissible"><p>Changed roles</p></div>';
 			break;
 		case 'err_admin_role':
-			$messages[] = '<div id="message" class="error notice is-dismissible"><p>' . __('The current user&#8217;s role must have user editing capabilities.') . '</p></div>';
-			$messages[] = '<div id="message" class="updated notice is-dismissible"><p>' . __('Other user roles have been changed.') . '</p></div>';
+			$messages[] = '<div id="message" class="error notice is-dismissible"><p>The current user&#8217;s role must have user editing capabilities.</p></div>';
+			$messages[] = '<div id="message" class="updated notice is-dismissible"><p>Other user roles have been changed.</p></div>';
 			break;
 		case 'err_admin_del':
-			$messages[] = '<div id="message" class="error notice is-dismissible"><p>' . __('You can&#8217;t delete the current user.') . '</p></div>';
-			$messages[] = '<div id="message" class="updated notice is-dismissible"><p>' . __('Other users have been deleted.') . '</p></div>';
+			$messages[] = '<div id="message" class="error notice is-dismissible"><p>You can&#8217;t delete the current user.</p></div>';
+			$messages[] = '<div id="message" class="updated notice is-dismissible"><p>Other users have been deleted.</p></div>';
 			break;
 		case 'remove':
-			$messages[] = '<div id="message" class="updated notice is-dismissible fade"><p>' . __('User removed from this site.') . '</p></div>';
+			$messages[] = '<div id="message" class="updated notice is-dismissible fade"><p>User removed from this site.</p></div>';
 			break;
 		case 'err_admin_remove':
-			$messages[] = '<div id="message" class="error notice is-dismissible"><p>' . __("You can't remove the current user.") . '</p></div>';
-			$messages[] = '<div id="message" class="updated notice is-dismissible fade"><p>' . __('Other users have been removed.') . '</p></div>';
+			$messages[] = '<div id="message" class="error notice is-dismissible"><p>你不能移除当前用户</p></div>';
+			$messages[] = '<div id="message" class="updated notice is-dismissible fade"><p>Other users have been removed.</p></div>';
 			break;
 		}
 	endif; ?>
@@ -450,8 +438,7 @@ if ( current_user_can( 'create_users' ) ) { ?>
 <?php
 
 if ( strlen( $usersearch ) ) {
-	/* translators: %s: search keywords */
-	printf( '<span class="subtitle">' . __( 'Search results for &#8220;%s&#8221;' ) . '</span>', esc_html( $usersearch ) );
+	printf( '<span class="subtitle">Search results for &#8220;%s&#8221;</span>', esc_html( $usersearch ) );
 }
 ?>
 </h1>
@@ -460,7 +447,7 @@ if ( strlen( $usersearch ) ) {
 
 <form method="get">
 
-<?php $wp_list_table->search_box( __( 'Search Users' ), 'user' ); ?>
+<?php $wp_list_table->search_box( 'Search Users', 'user' ); ?>
 
 <?php $wp_list_table->display(); ?>
 </form>
@@ -470,6 +457,6 @@ if ( strlen( $usersearch ) ) {
 <?php
 break;
 
-} // end of the $doaction switch
+}
 
 include( ABSPATH . 'wp-admin/admin-footer.php' );

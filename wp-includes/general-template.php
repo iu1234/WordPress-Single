@@ -275,8 +275,7 @@ function get_custom_logo( $blog_id = 0 ) {
 				'itemprop' => 'logo',
 			) )
 		);
-	}
-	elseif ( is_customize_preview() ) {
+	} elseif ( is_customize_preview() ) {
 		$html = sprintf( '<a href="%1$s" class="custom-logo-link" style="display:none;"><img class="custom-logo"/></a>', esc_url( home_url( '/' ) ) );
 	}
 	return $html;
@@ -330,9 +329,7 @@ function wp_get_document_title() {
 }
 
 function _wp_render_title_tag() {
-	if ( ! current_theme_supports( 'title-tag' ) ) {
-		return;
-	}
+	if ( ! current_theme_supports( 'title-tag' ) ) { return; }
 	echo '<title>' . wp_get_document_title() . '</title>' . "\n";
 }
 
@@ -1127,7 +1124,6 @@ function wp_site_icon() {
 		sprintf( '<link rel="apple-touch-icon-precomposed" href="%s" />', esc_url( get_site_icon_url( 180 ) ) ),
 		sprintf( '<meta name="msapplication-TileImage" content="%s" />', esc_url( get_site_icon_url( 270 ) ) ),
 	);
-	$meta_tags = apply_filters( 'site_icon_meta_tags', $meta_tags );
 	$meta_tags = array_filter( $meta_tags );
 	foreach ( $meta_tags as $meta_tag ) { echo "$meta_tag\n"; }
 }

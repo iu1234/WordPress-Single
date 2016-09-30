@@ -1,10 +1,4 @@
 <?php
-/**
- * Core Post API
- *
- * @package WordPress
- * @subpackage Post
- */
 
 function create_initial_post_types() {
 	register_post_type( 'post', array(
@@ -1817,14 +1811,12 @@ function check_and_publish_future_post( $post_id ) {
 
 	$time = strtotime( $post->post_date_gmt . ' GMT' );
 
-	// Uh oh, someone jumped the gun!
 	if ( $time > time() ) {
 		wp_clear_scheduled_hook( 'publish_future_post', array( $post_id ) ); // clear anything else in the system
 		wp_schedule_single_event( $time, 'publish_future_post', array( $post_id ) );
 		return;
 	}
 
-	// wp_publish_post(_ returns no meaningful value.
 	wp_publish_post( $post_id );
 }
 
@@ -3000,16 +2992,12 @@ function clean_attachment_cache( $id, $clean_terms = false ) {
 
 function _transition_post_status( $new_status, $old_status, $post ) {
 	global $wpdb;
-
 	if ( $old_status != 'publish' && $new_status == 'publish' ) {
-		// Reset GUID if transitioning to publish and it is empty.
 		if ( '' == get_the_guid($post->ID) )
 			$wpdb->update( $wpdb->posts, array( 'guid' => get_permalink( $post->ID ) ), array( 'ID' => $post->ID ) );
 
 		do_action('private_to_published', $post->ID);
 	}
-
-	// If published posts changed clear the lastpostmodified cache.
 	if ( 'publish' == $new_status || 'publish' == $old_status) {
 		foreach ( array( 'server', 'gmt', 'blog' ) as $timezone ) {
 			wp_cache_delete( "lastpostmodified:$timezone", 'timeinfo' );
@@ -3022,8 +3010,6 @@ function _transition_post_status( $new_status, $old_status, $post ) {
 		wp_cache_delete( _count_posts_cache_key( $post->post_type ), 'counts' );
 		wp_cache_delete( _count_posts_cache_key( $post->post_type, 'readable' ), 'counts' );
 	}
-
-	// Always clears the hook in case the post status bounced from future to draft.
 	wp_clear_scheduled_hook('publish_future_post', array( $post->ID ) );
 }
 
@@ -3033,13 +3019,10 @@ function _future_post_hook( $deprecated, $post ) {
 }
 
 function _publish_post_hook( $post_id ) {
-	if ( defined('WP_IMPORTING') )
-		return;
-
+	if ( defined('WP_IMPORTING') ) return;
 	if ( get_option('default_pingback_flag') )
 		add_post_meta( $post_id, '_pingme', '1' );
 	add_post_meta( $post_id, '_encloseme', '1' );
-
 	wp_schedule_single_event(time(), 'do_pings');
 }
 

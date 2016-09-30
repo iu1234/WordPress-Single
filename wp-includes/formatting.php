@@ -1,11 +1,4 @@
 <?php
-/**
- * Main WordPress Formatting API.
- *
- * Handles many functions for formatting output.
- *
- * @package WordPress
- */
 
 function wptexturize( $text, $reset = false ) {
 	global $wp_cockneyreplace, $shortcode_tags;
@@ -1248,24 +1241,19 @@ function sanitize_html_class( $class, $fallback = '' ) {
 	return apply_filters( 'sanitize_html_class', $sanitized, $class, $fallback );
 }
 
-function convert_chars( $content, $deprecated = '' ) {
-	if ( ! empty( $deprecated ) ) {
-		_deprecated_argument( __FUNCTION__, '0.71' );
-	}
-
+function convert_chars( $content ) {
 	if ( strpos( $content, '&' ) !== false ) {
 		$content = preg_replace( '/&([^#])(?![a-z1-4]{1,8};)/i', '&#038;$1', $content );
 	}
-
 	return $content;
 }
 
 function convert_invalid_entities( $content ) {
 	$wp_htmltranswinuni = array(
-		'&#128;' => '&#8364;', // the Euro sign
+		'&#128;' => '&#8364;',
 		'&#129;' => '',
-		'&#130;' => '&#8218;', // these are Windows CP1252 specific characters
-		'&#131;' => '&#402;',  // they would look weird on non-Windows browsers
+		'&#130;' => '&#8218;',
+		'&#131;' => '&#402;',
 		'&#132;' => '&#8222;',
 		'&#133;' => '&#8230;',
 		'&#134;' => '&#8224;',
@@ -1674,72 +1662,39 @@ function translate_smiley( $matches ) {
 	return sprintf( '<img src="%s" alt="%s" class="wp-smiley" style="height: 1em; max-height: 1em;" />', esc_url( $src_url ), esc_attr( $smiley ) );
 }
 
-function is_email( $email, $deprecated = false ) {
-	if ( ! empty( $deprecated ) )
-		_deprecated_argument( __FUNCTION__, '3.0' );
-
+function is_email( $email ) {
 	if ( strlen( $email ) < 3 ) {
 		return apply_filters( 'is_email', false, $email, 'email_too_short' );
 	}
-
 	if ( strpos( $email, '@', 1 ) === false ) {
 		return apply_filters( 'is_email', false, $email, 'email_no_at' );
 	}
-
-	// Split out the local and domain parts
 	list( $local, $domain ) = explode( '@', $email, 2 );
-
-	// LOCAL PART
-	// Test for invalid characters
 	if ( !preg_match( '/^[a-zA-Z0-9!#$%&\'*+\/=?^_`{|}~\.-]+$/', $local ) ) {
-		/** This filter is documented in wp-includes/formatting.php */
 		return apply_filters( 'is_email', false, $email, 'local_invalid_chars' );
 	}
-
-	// DOMAIN PART
-	// Test for sequences of periods
 	if ( preg_match( '/\.{2,}/', $domain ) ) {
-		/** This filter is documented in wp-includes/formatting.php */
 		return apply_filters( 'is_email', false, $email, 'domain_period_sequence' );
 	}
-
-	// Test for leading and trailing periods and whitespace
 	if ( trim( $domain, " \t\n\r\0\x0B." ) !== $domain ) {
-		/** This filter is documented in wp-includes/formatting.php */
 		return apply_filters( 'is_email', false, $email, 'domain_period_limits' );
 	}
-
-	// Split the domain into subs
 	$subs = explode( '.', $domain );
-
-	// Assume the domain will have at least two subs
 	if ( 2 > count( $subs ) ) {
-		/** This filter is documented in wp-includes/formatting.php */
 		return apply_filters( 'is_email', false, $email, 'domain_no_periods' );
 	}
-
-	// Loop through each sub
 	foreach ( $subs as $sub ) {
-		// Test for leading and trailing hyphens and whitespace
 		if ( trim( $sub, " \t\n\r\0\x0B-" ) !== $sub ) {
-			/** This filter is documented in wp-includes/formatting.php */
 			return apply_filters( 'is_email', false, $email, 'sub_hyphen_limits' );
 		}
-
-		// Test for invalid characters
 		if ( !preg_match('/^[a-z0-9-]+$/i', $sub ) ) {
-			/** This filter is documented in wp-includes/formatting.php */
 			return apply_filters( 'is_email', false, $email, 'sub_invalid_chars' );
 		}
 	}
-
-	// Congratulations your email made it!
-	/** This filter is documented in wp-includes/formatting.php */
 	return apply_filters( 'is_email', $email, $email, null );
 }
 
 function wp_iso_descrambler( $string ) {
-	/* this may only work with iso-8859-1, I'm afraid */
 	if (!preg_match('#\=\?(.+)\?Q\?(.+)\?\=#i', $string, $matches)) {
 		return $string;
 	} else {
@@ -2436,7 +2391,7 @@ function sanitize_option( $option, $value ) {
 			} else {
 				$value = sanitize_email( $value );
 				if ( ! is_email( $value ) ) {
-					$error = __( 'The email address entered did not appear to be a valid email address. Please enter a valid email address.' );
+					$error = 'The email address entered did not appear to be a valid email address. Please enter a valid email address.';
 				}
 			}
 			break;
@@ -2527,7 +2482,7 @@ function sanitize_option( $option, $value ) {
 			break;
 
 		case 'gmt_offset':
-			$value = preg_replace('/[^0-9:.-]/', '', $value); // strips slashes
+			$value = preg_replace('/[^0-9:.-]/', '', $value);
 			break;
 
 		case 'siteurl':
@@ -2538,7 +2493,7 @@ function sanitize_option( $option, $value ) {
 				if ( preg_match( '#http(s?)://(.+)#i', $value ) ) {
 					$value = esc_url_raw( $value );
 				} else {
-					$error = __( 'The WordPress address you entered did not appear to be a valid URL. Please enter a valid URL.' );
+					$error = 'The WordPress address you entered did not appear to be a valid URL. Please enter a valid URL.';
 				}
 			}
 			break;
@@ -2551,7 +2506,7 @@ function sanitize_option( $option, $value ) {
 				if ( preg_match( '#http(s?)://(.+)#i', $value ) ) {
 					$value = esc_url_raw( $value );
 				} else {
-					$error = __( 'The Site address you entered did not appear to be a valid URL. Please enter a valid URL.' );
+					$error = 'The Site address you entered did not appear to be a valid URL. Please enter a valid URL.';
 				}
 			}
 			break;
@@ -2606,7 +2561,7 @@ function sanitize_option( $option, $value ) {
 		case 'timezone_string':
 			$allowed_zones = timezone_identifiers_list();
 			if ( ! in_array( $value, $allowed_zones ) && ! empty( $value ) ) {
-				$error = __( 'The timezone you have entered is not valid. Please select a valid timezone.' );
+				$error = 'The timezone you have entered is not valid. Please select a valid timezone.';
 			}
 			break;
 
@@ -2744,12 +2699,9 @@ function wp_sprintf_l( $pattern, $args ) {
 		return '';
 
 	$l = apply_filters( 'wp_sprintf_l', array(
-		/* translators: used to join items in a list with more than 2 items */
-		'between'          => sprintf( __('%s, %s'), '', '' ),
-		/* translators: used to join last two items in a list with more than 2 times */
-		'between_last_two' => sprintf( __('%s, and %s'), '', '' ),
-		/* translators: used to join items in a list with only 2 items */
-		'between_only_two' => sprintf( __('%s and %s'), '', '' ),
+		'between'          => sprintf( '%s, %s', '', '' ),
+		'between_last_two' => sprintf( '%s, and %s', '', '' ),
+		'between_only_two' => sprintf( '%s and %s', '', '' ),
 	) );
 
 	$args = (array) $args;

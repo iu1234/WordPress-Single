@@ -1,9 +1,4 @@
 <?php
-/**
- * Main WordPress API
- *
- * @package WordPress
- */
 
 require( ABSPATH . WPINC . '/option.php' );
 
@@ -739,7 +734,7 @@ function get_temp_dir() {
 
 function wp_upload_dir( $time = null, $create_dir = true, $refresh_cache = false ) {
 	static $cache = array(), $tested_paths = array();
-	$key = sprintf( '%d-%s', get_current_blog_id(), (string) $time );
+	$key = sprintf( '%d-%s', 0, (string) $time );
 	if ( $refresh_cache || empty( $cache[ $key ] ) ) {
 		$cache[ $key ] = _wp_upload_dir( $time );
 	}
@@ -1524,8 +1519,6 @@ function wp_maybe_load_widgets() {
 
 function wp_widgets_add_menu() {
 	global $submenu;
-	if ( ! current_theme_supports( 'widgets' ) )
-		return;
 	$submenu['themes.php'][7] = array( 'Widgets', 'edit_theme_options', 'widgets.php' );
 	ksort( $submenu['themes.php'], SORT_NUMERIC );
 }
@@ -1746,7 +1739,7 @@ function wp_timezone_choice( $selected_zone ) {
 	$structure = array();
 
 	if ( empty( $selected_zone ) ) {
-		$structure[] = '<option selected="selected" value="">' . __( 'Select a city' ) . '</option>';
+		$structure[] = '<option selected="selected" value="">Select a city</option>';
 	}
 
 	foreach ( $zonen as $key => $zone ) {

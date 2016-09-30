@@ -1,11 +1,4 @@
 <?php
-/**
- * These functions are needed to load WordPress.
- *
- * @internal This file must be parsable by PHP4.
- *
- * @package WordPress
- */
 
 function wp_get_server_protocol() {
 	$protocol = $_SERVER['SERVER_PROTOCOL'];
@@ -16,19 +9,12 @@ function wp_get_server_protocol() {
 }
 
 function wp_unregister_GLOBALS() {
-	if ( !ini_get( 'register_globals' ) )
-		return;
-
-	if ( isset( $_REQUEST['GLOBALS'] ) )
-		die( 'GLOBALS overwrite attempt detected' );
-
+	if ( !ini_get( 'register_globals' ) ) return;
+	if ( isset( $_REQUEST['GLOBALS'] ) ) die( 'GLOBALS overwrite attempt detected' );
 	$no_unset = array( 'GLOBALS', '_GET', '_POST', '_COOKIE', '_REQUEST', '_SERVER', '_ENV', '_FILES', 'table_prefix' );
-
 	$input = array_merge( $_GET, $_POST, $_COOKIE, $_SERVER, $_ENV, $_FILES, isset( $_SESSION ) && is_array( $_SESSION ) ? $_SESSION : array() );
 	foreach ( $input as $k => $v )
-		if ( !in_array( $k, $no_unset ) && isset( $GLOBALS[$k] ) ) {
-			unset( $GLOBALS[$k] );
-		}
+		if ( !in_array( $k, $no_unset ) && isset( $GLOBALS[$k] ) ) { unset( $GLOBALS[$k] ); }
 }
 
 function wp_fix_server_vars() {
@@ -39,58 +25,43 @@ function wp_fix_server_vars() {
 	);
 	$_SERVER = array_merge( $default_server_values, $_SERVER );
 	if ( empty( $_SERVER['REQUEST_URI'] ) || ( PHP_SAPI != 'cgi-fcgi' && preg_match( '/^Microsoft-IIS\//', $_SERVER['SERVER_SOFTWARE'] ) ) ) {
-
 		if ( isset( $_SERVER['HTTP_X_ORIGINAL_URL'] ) ) {
 			$_SERVER['REQUEST_URI'] = $_SERVER['HTTP_X_ORIGINAL_URL'];
 		}
-
 		elseif ( isset( $_SERVER['HTTP_X_REWRITE_URL'] ) ) {
 			$_SERVER['REQUEST_URI'] = $_SERVER['HTTP_X_REWRITE_URL'];
 		} else {
-
 			if ( !isset( $_SERVER['PATH_INFO'] ) && isset( $_SERVER['ORIG_PATH_INFO'] ) )
 				$_SERVER['PATH_INFO'] = $_SERVER['ORIG_PATH_INFO'];
-
 			if ( isset( $_SERVER['PATH_INFO'] ) ) {
 				if ( $_SERVER['PATH_INFO'] == $_SERVER['SCRIPT_NAME'] )
 					$_SERVER['REQUEST_URI'] = $_SERVER['PATH_INFO'];
 				else
 					$_SERVER['REQUEST_URI'] = $_SERVER['SCRIPT_NAME'] . $_SERVER['PATH_INFO'];
 			}
-
 			if ( ! empty( $_SERVER['QUERY_STRING'] ) ) {
 				$_SERVER['REQUEST_URI'] .= '?' . $_SERVER['QUERY_STRING'];
 			}
 		}
 	}
-
 	if ( isset( $_SERVER['SCRIPT_FILENAME'] ) && ( strpos( $_SERVER['SCRIPT_FILENAME'], 'php.cgi' ) == strlen( $_SERVER['SCRIPT_FILENAME'] ) - 7 ) )
 		$_SERVER['SCRIPT_FILENAME'] = $_SERVER['PATH_TRANSLATED'];
-
 	if ( strpos( $_SERVER['SCRIPT_NAME'], 'php.cgi' ) !== false )
 		unset( $_SERVER['PATH_INFO'] );
-
 	$PHP_SELF = $_SERVER['PHP_SELF'];
 	if ( empty( $PHP_SELF ) )
 		$_SERVER['PHP_SELF'] = $PHP_SELF = preg_replace( '/(\?.*)?$/', '', $_SERVER["REQUEST_URI"] );
 }
 
 function wp_maintenance() {
-	if ( ! file_exists( ABSPATH . '.maintenance' ) || wp_installing() )
-		return;
-
+	if ( ! file_exists( ABSPATH . '.maintenance' ) || wp_installing() ) return;
 	global $upgrading;
-
 	include( ABSPATH . '.maintenance' );
-	// If the $upgrading timestamp is older than 10 minutes, don't die.
-	if ( ( time() - $upgrading ) >= 600 )
-		return;
-
+	if ( ( time() - $upgrading ) >= 600 ) return;
 	if ( file_exists( WP_CONTENT_DIR . '/maintenance.php' ) ) {
 		require_once( WP_CONTENT_DIR . '/maintenance.php' );
 		die();
 	}
-
 	$protocol = wp_get_server_protocol();
 	header( "$protocol 503 Service Unavailable", true, 503 );
 	header( 'Content-Type: text/html; charset=utf-8' );
@@ -101,7 +72,6 @@ function wp_maintenance() {
 	<head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 		<title>Maintenance</title>
-
 	</head>
 	<body>
 		<h1>Briefly unavailable for scheduled maintenance. Check back in a minute.</h1>
@@ -130,8 +100,7 @@ function timer_stop( $display = 0, $precision = 3 ) {
 function require_wp_db() {
 	global $wpdb;
 	require_once( ABSPATH . WPINC . '/wp-db.php' );
-	if ( isset( $wpdb ) )
-		return;
+	if ( isset( $wpdb ) ) return;
 	$wpdb = new wpdb( DB_USER, DB_PASSWORD, DB_NAME, DB_HOST );
 }
 
@@ -199,9 +168,4 @@ function is_blog_admin() {
 	elseif ( defined( 'WP_BLOG_ADMIN' ) )
 		return WP_BLOG_ADMIN;
 	return false;
-}
-
-function get_current_blog_id() {
-	global $blog_id;
-	return absint($blog_id);
 }

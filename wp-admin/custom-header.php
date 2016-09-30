@@ -1,10 +1,4 @@
 <?php
-/**
- * The custom header image script.
- *
- * @package WordPress
- * @subpackage Administration
- */
 
 class Custom_Image_Header {
 
@@ -19,9 +13,7 @@ class Custom_Image_Header {
 	public function __construct($admin_header_callback, $admin_image_div_callback = '') {
 		$this->admin_header_callback = $admin_header_callback;
 		$this->admin_image_div_callback = $admin_image_div_callback;
-
 		add_action( 'admin_menu', array( $this, 'init' ) );
-
 		add_action( 'customize_save_after',         array( $this, 'customize_set_last_used' ) );
 		add_action( 'wp_ajax_custom-header-crop',   array( $this, 'ajax_header_crop'        ) );
 		add_action( 'wp_ajax_custom-header-add',    array( $this, 'ajax_header_add'         ) );
@@ -49,27 +41,27 @@ class Custom_Image_Header {
 			'id'      => 'overview',
 			'title'   => 'Overview',
 			'content' =>
-				'<p>' . __( 'This screen is used to customize the header section of your theme.') . '</p>' .
-				'<p>' . __( 'You can choose from the theme&#8217;s default header images, or use one of your own. You can also customize how your Site Title and Tagline are displayed.') . '<p>'
+				'<p>This screen is used to customize the header section of your theme.</p>' .
+				'<p>You can choose from the theme&#8217;s default header images, or use one of your own. You can also customize how your Site Title and Tagline are displayed.<p>'
 		) );
 
 		get_current_screen()->add_help_tab( array(
 			'id'      => 'set-header-image',
 			'title'   => 'Header Image',
 			'content' =>
-				'<p>' . __( 'You can set a custom image header for your site. Simply upload the image and crop it, and the new header will go live immediately. Alternatively, you can use an image that has already been uploaded to your Media Library by clicking the &#8220;Choose Image&#8221; button.' ) . '</p>' .
-				'<p>' . __( 'Some themes come with additional header images bundled. If you see multiple images displayed, select the one you&#8217;d like and click the &#8220;Save Changes&#8221; button.' ) . '</p>' .
-				'<p>' . __( 'If your theme has more than one default header image, or you have uploaded more than one custom header image, you have the option of having WordPress display a randomly different image on each page of your site. Click the &#8220;Random&#8221; radio button next to the Uploaded Images or Default Images section to enable this feature.') . '</p>' .
-				'<p>' . __( 'If you don&#8217;t want a header image to be displayed on your site at all, click the &#8220;Remove Header Image&#8221; button at the bottom of the Header Image section of this page. If you want to re-enable the header image later, you just have to select one of the other image options and click &#8220;Save Changes&#8221;.') . '</p>'
+				'<p>You can set a custom image header for your site. Simply upload the image and crop it, and the new header will go live immediately. Alternatively, you can use an image that has already been uploaded to your Media Library by clicking the &#8220;Choose Image&#8221; button.</p>' .
+				'<p>Some themes come with additional header images bundled. If you see multiple images displayed, select the one you&#8217;d like and click the &#8220;Save Changes&#8221; button.</p>' .
+				'<p>If your theme has more than one default header image, or you have uploaded more than one custom header image, you have the option of having WordPress display a randomly different image on each page of your site. Click the &#8220;Random&#8221; radio button next to the Uploaded Images or Default Images section to enable this feature.</p>' .
+				'<p>If you don&#8217;t want a header image to be displayed on your site at all, click the &#8220;Remove Header Image&#8221; button at the bottom of the Header Image section of this page. If you want to re-enable the header image later, you just have to select one of the other image options and click &#8220;Save Changes&#8221;.</p>'
 		) );
 
 		get_current_screen()->add_help_tab( array(
 			'id'      => 'set-header-text',
 			'title'   => 'Header Text',
 			'content' =>
-				'<p>' . sprintf( __( 'For most themes, the header text is your Site Title and Tagline, as defined in the <a href="%1$s">General Settings</a> section.' ), admin_url( 'options-general.php' ) ) . '<p>' .
-				'<p>' . __( 'In the Header Text section of this page, you can choose whether to display this text or hide it. You can also choose a color for the text by clicking the Select Color button and either typing in a legitimate HTML hex value, e.g. &#8220;#ff0000&#8221; for red, or by choosing a color using the color picker.' ) . '</p>' .
-				'<p>' . __( 'Don&#8217;t forget to click &#8220;Save Changes&#8221; when you&#8217;re done!') . '</p>'
+				'<p>' . sprintf( 'For most themes, the header text is your Site Title and Tagline, as defined in the <a href="%1$s">General Settings</a> section.', admin_url( 'options-general.php' ) ) . '<p>' .
+				'<p>In the Header Text section of this page, you can choose whether to display this text or hide it. You can also choose a color for the text by clicking the Select Color button and either typing in a legitimate HTML hex value, e.g. &#8220;#ff0000&#8221; for red, or by choosing a color using the color picker.</p>' .
+				'<p>Don&#8217;t forget to click &#8220;Save Changes&#8221; when you&#8217;re done!</p>'
 		) );
 	}
 
@@ -433,9 +425,9 @@ class Custom_Image_Header {
 	if ( current_theme_supports( 'custom-header', 'flex-height' ) || current_theme_supports( 'custom-header', 'flex-width' ) ) {
 		if ( current_theme_supports( 'custom-header', 'width' ) )
 			printf(
-				__( 'Suggested width is %s.' ) . ' ',
+				'Suggested width is %s. ',
 				sprintf(
-					'<strong>' . __( '%d pixels' ) . '</strong>',
+					'<strong>%d pixels</strong>',
 					get_theme_support( 'custom-header', 'width' )
 				)
 			);
@@ -465,7 +457,7 @@ class Custom_Image_Header {
 		), admin_url('themes.php') ) );
 	?>
 	<p>
-		<label for="choose-from-library-link"><?php _e( 'Or choose an image from your media library:' ); ?></label><br />
+		<label for="choose-from-library-link">Or choose an image from your media library:</label><br />
 		<button id="choose-from-library-link" class="button"
 			data-update-link="<?php echo esc_attr( $modal_update_href ); ?>"
 			data-choose="<?php esc_attr_e( 'Choose a Custom Header' ); ?>"

@@ -1,11 +1,4 @@
 <?php
-/**
- * User API: WP_User_Query class
- *
- * @package WordPress
- * @subpackage Users
- * @since 4.4.0
- */
 
 class WP_User_Query {
 
@@ -21,7 +14,6 @@ class WP_User_Query {
 
 	private $compat_fields = array( 'results', 'total_users' );
 
-	// SQL clauses
 	public $query_fields;
 	public $query_from;
 	public $query_where;
@@ -103,16 +95,10 @@ class WP_User_Query {
 			$include = false;
 		}
 
-		$blog_id = 0;
-		if ( isset( $qv['blog_id'] ) ) {
-			$blog_id = absint( $qv['blog_id'] );
-		}
-
 		if ( isset( $qv['who'] ) && 'authors' == $qv['who'] && $blog_id ) {
-			$qv['meta_key'] = $wpdb->get_blog_prefix( $blog_id ) . 'user_level';
+			$qv['meta_key'] = 'user_level';
 			$qv['meta_value'] = 0;
 			$qv['meta_compare'] = '!=';
-			$qv['blog_id'] = $blog_id = 0; // Prevent extra meta query
 		}
 
 		if ( $qv['has_published_posts'] && $blog_id ) {
@@ -126,7 +112,7 @@ class WP_User_Query {
 				$post_type = $wpdb->prepare( '%s', $post_type );
 			}
 
-			$posts_table = $wpdb->get_blog_prefix( $blog_id ) . 'posts';
+			$posts_table = 'posts';
 			$this->query_where .= " AND $wpdb->users.ID IN ( SELECT DISTINCT $posts_table.post_author FROM $posts_table WHERE $posts_table.post_status = 'publish' AND $posts_table.post_type IN ( " . join( ", ", $post_types ) . " ) )";
 		}
 
@@ -160,7 +146,7 @@ class WP_User_Query {
 			if ( ! empty( $roles ) ) {
 				foreach ( $roles as $role ) {
 					$roles_clauses[] = array(
-						'key'     => $wpdb->get_blog_prefix( $blog_id ) . 'capabilities',
+						'key'     => 'capabilities',
 						'value'   => '"' . $role . '"',
 						'compare' => 'LIKE',
 					);
@@ -173,7 +159,7 @@ class WP_User_Query {
 			if ( ! empty( $role__in ) ) {
 				foreach ( $role__in as $role ) {
 					$role__in_clauses[] = array(
-						'key'     => $wpdb->get_blog_prefix( $blog_id ) . 'capabilities',
+						'key'     => 'capabilities',
 						'value'   => '"' . $role . '"',
 						'compare' => 'LIKE',
 					);
@@ -186,7 +172,7 @@ class WP_User_Query {
 			if ( ! empty( $role__not_in ) ) {
 				foreach ( $role__not_in as $role ) {
 					$role__not_in_clauses[] = array(
-						'key'     => $wpdb->get_blog_prefix( $blog_id ) . 'capabilities',
+						'key'     => 'capabilities',
 						'value'   => '"' . $role . '"',
 						'compare' => 'NOT LIKE',
 					);
@@ -195,21 +181,18 @@ class WP_User_Query {
 				$role_queries[] = $role__not_in_clauses;
 			}
 
-			// If there are no specific roles named, make sure the user is a member of the site.
 			if ( empty( $role_queries ) ) {
 				$role_queries[] = array(
-					'key' => $wpdb->get_blog_prefix( $blog_id ) . 'capabilities',
+					'key' => 'capabilities',
 					'compare' => 'EXISTS',
 				);
 			}
 
-			// Specify that role queries should be joined with AND.
 			$role_queries['relation'] = 'AND';
 
 			if ( empty( $this->meta_query->queries ) ) {
 				$this->meta_query->queries = $role_queries;
 			} else {
-				// Append the cap query to the original queries and reparse the query.
 				$this->meta_query->queries = array(
 					'relation' => 'AND',
 					array( $this->meta_query->queries, $role_queries ),
@@ -322,7 +305,6 @@ class WP_User_Query {
 		}
 
 		if ( ! empty( $include ) ) {
-			// Sanitized earlier.
 			$ids = implode( ',', $include );
 			$this->query_where .= " AND $wpdb->users.ID IN ($ids)";
 		} elseif ( ! empty( $qv['exclude'] ) ) {
@@ -330,7 +312,6 @@ class WP_User_Query {
 			$this->query_where .= " AND $wpdb->users.ID NOT IN ($ids)";
 		}
 
-		// Date queries are allowed for the user_registered field.
 		if ( ! empty( $qv['date_query'] ) && is_array( $qv['date_query'] ) ) {
 			$date_query = new WP_Date_Query( $qv['date_query'], 'user_registered' );
 			$this->query_where .= $date_query->get_sql();

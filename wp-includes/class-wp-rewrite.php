@@ -1,11 +1,4 @@
 <?php
-/**
- * Rewrite API: WP_Rewrite class
- *
- * @package WordPress
- * @subpackage Rewrite
- * @since 1.5.0
- */
 
 class WP_Rewrite {
 
@@ -57,19 +50,7 @@ class WP_Rewrite {
 
 	var $rewritecode = array( '%year%',	'%monthnum%', '%day%', '%hour%', '%minute%', '%second%', '%postname%', '%post_id%',	'%author%',	'%pagename%', '%search%' );
 
-	var $rewritereplace = array(
-		'([0-9]{4})',
-		'([0-9]{1,2})',
-		'([0-9]{1,2})',
-		'([0-9]{1,2})',
-		'([0-9]{1,2})',
-		'([0-9]{1,2})',
-		'([^/]+)',
-		'([0-9]+)',
-		'([^/]+)',
-		'([^/]+?)',
-		'(.+)'
-	);
+	var $rewritereplace = array( '([0-9]{4})', '([0-9]{1,2})', '([0-9]{1,2})', '([0-9]{1,2})', '([0-9]{1,2})', '([0-9]{1,2})', '([^/]+)', '([0-9]+)', '([^/]+)', '([^/]+?)', '(.+)' );
 
 	var $queryreplace = array( 'year=',	'monthnum=', 'day=', 'hour=', 'minute=', 'second=',	'name=', 'p=', 'author_name=', 'pagename=',	's=' );
 
@@ -82,8 +63,7 @@ class WP_Rewrite {
 		$this->permalink_structure = get_option('permalink_structure');
 		$this->front = substr($this->permalink_structure, 0, strpos($this->permalink_structure, '%'));
 		$this->root = '';
-		if ( $this->using_index_permalinks() )
-			$this->root = $this->index . '/';
+		if ( $this->using_index_permalinks() ) $this->root = $this->index . '/';
 		unset($this->author_structure);
 		unset($this->date_structure);
 		unset($this->page_structure);
@@ -100,9 +80,7 @@ class WP_Rewrite {
 	}
 
 	public function using_index_permalinks() {
-		if ( empty( $this->permalink_structure ) ) {
-			return false;
-		}
+		if ( empty( $this->permalink_structure ) ) { return false; }
 		return preg_match( '#^/*' . $this->index . '#', $this->permalink_structure );
 	}
 

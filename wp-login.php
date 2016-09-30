@@ -1,12 +1,4 @@
 <?php
-/**
- * WordPress User Page
- *
- * Handles authentication, registering, resetting passwords, forgot password,
- * and other user handling.
- *
- * @package WordPress
- */
 
 require( __DIR__ . '/wp-load.php' );
 
@@ -271,9 +263,9 @@ case 'retrievepassword' :
 
 	if ( isset( $_GET['error'] ) ) {
 		if ( 'invalidkey' == $_GET['error'] ) {
-			$errors->add( 'invalidkey', __( 'Your password reset link appears to be invalid. Please request a new link below.' ) );
+			$errors->add( 'invalidkey', 'Your password reset link appears to be invalid. Please request a new link below.' );
 		} elseif ( 'expiredkey' == $_GET['error'] ) {
-			$errors->add( 'expiredkey', __( 'Your password reset link has expired. Please request a new link below.' ) );
+			$errors->add( 'expiredkey', 'Your password reset link has expired. Please request a new link below.' );
 		}
 	}
 
@@ -352,7 +344,7 @@ case 'rp' :
 	if ( ( ! $errors->get_error_code() ) && isset( $_POST['pass1'] ) && !empty( $_POST['pass1'] ) ) {
 		reset_password($user, $_POST['pass1']);
 		setcookie( $rp_cookie, ' ', time() - YEAR_IN_SECONDS, $rp_path, COOKIE_DOMAIN, is_ssl(), true );
-		login_header( __( 'Password Reset' ), '<p class="message reset-pass">Your password has been reset. <a href="' . esc_url( wp_login_url() ) . '">Log in</a></p>' );
+		login_header( 'Password Reset', '<p class="message reset-pass">Your password has been reset. <a href="' . esc_url( wp_login_url() ) . '">Log in</a></p>' );
 		login_footer();
 		exit;
 	}
@@ -467,7 +459,6 @@ default :
 		if ( $user ) {
 			if ( get_user_option('use_ssl', $user->ID) ) {
 				$secure_cookie = true;
-				force_ssl_admin(true);
 			}
 		}
 	}

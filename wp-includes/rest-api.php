@@ -1,11 +1,4 @@
 <?php
-/**
- * REST API functions.
- *
- * @package WordPress
- * @subpackage REST_API
- * @since 4.4.0
- */
 
 function register_rest_route( $namespace, $route, $args = array(), $override = false ) {
 	global $wp_rest_server;
@@ -83,7 +76,7 @@ function get_rest_url( $blog_id = null, $path = '/', $scheme = 'rest' ) {
 		$path = '/';
 	}
 
-	if ( is_multisite() && get_blog_option( $blog_id, 'permalink_structure' ) || get_option( 'permalink_structure' ) ) {
+	if ( get_blog_option( $blog_id, 'permalink_structure' ) || get_option( 'permalink_structure' ) ) {
 		$url = get_home_url( $blog_id, rest_get_url_prefix(), $scheme );
 		$url .= '/' . ltrim( $path, '/' );
 	} else {
@@ -92,13 +85,6 @@ function get_rest_url( $blog_id = null, $path = '/', $scheme = 'rest' ) {
 		$path = '/' . ltrim( $path, '/' );
 
 		$url = add_query_arg( 'rest_route', $path, $url );
-	}
-
-	if ( is_ssl() ) {
-		// If the current host is the same as the REST URL host, force the REST URL scheme to HTTPS.
-		if ( $_SERVER['SERVER_NAME'] === parse_url( get_home_url( $blog_id ), PHP_URL_HOST ) ) {
-			$url = set_url_scheme( $url, 'https' );
-		}
 	}
 
 	return apply_filters( 'rest_url', $url, $path, $blog_id, $scheme );

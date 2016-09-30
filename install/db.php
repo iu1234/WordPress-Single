@@ -1,13 +1,4 @@
 <?php
-/**
- * WordPress DB Class
- *
- * Original code from {@link http://php.justinvincent.com Justin Vincent (justin@visunet.ie)}
- *
- * @package WordPress
- * @subpackage Database
- * @since 0.71
- */
 
 define( 'EZSQL_VERSION', 'WP1.25' );
 define( 'OBJECT', 'OBJECT' );
@@ -210,8 +201,6 @@ class wpdb {
 
 		$old_blog_id  = $this->blogid;
 		$this->blogid = $blog_id;
-
-		$this->prefix = $this->get_blog_prefix();
 
 		foreach ( $this->tables( 'blog' ) as $table => $prefixed_table )
 			$this->$table = $prefixed_table;
