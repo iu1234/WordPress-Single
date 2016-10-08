@@ -1,10 +1,4 @@
 <?php
-/**
- * Misc WordPress Administration API.
- *
- * @package WordPress
- * @subpackage Administration
- */
 
 function got_mod_rewrite() {
 	$got_rewrite = apache_mod_loaded('mod_rewrite', true);
@@ -334,21 +328,17 @@ function admin_color_scheme_picker( $user_id ) {
 				<table class="color-palette">
 					<tr>
 					<?php
-
 					foreach ( $color_info->colors as $html_color ) {
 						?>
 						<td style="background-color: <?php echo esc_attr( $html_color ); ?>">&nbsp;</td>
 						<?php
 					}
-
 					?>
 					</tr>
 				</table>
 			</div>
 			<?php
-
 		endforeach;
-
 	?>
 	</fieldset>
 	<?php
@@ -356,20 +346,15 @@ function admin_color_scheme_picker( $user_id ) {
 
 function wp_color_scheme_settings() {
 	global $_wp_admin_css_colors;
-
 	$color_scheme = get_user_option( 'admin_color' );
-
-	// It's possible to have a color scheme set that is no longer registered.
 	if ( empty( $_wp_admin_css_colors[ $color_scheme ] ) ) {
 		$color_scheme = 'fresh';
 	}
-
 	if ( ! empty( $_wp_admin_css_colors[ $color_scheme ]->icon_colors ) ) {
 		$icon_colors = $_wp_admin_css_colors[ $color_scheme ]->icon_colors;
 	} elseif ( ! empty( $_wp_admin_css_colors['fresh']->icon_colors ) ) {
 		$icon_colors = $_wp_admin_css_colors['fresh']->icon_colors;
 	} else {
-		// Fall back to the default set of icon colors if the default scheme is missing.
 		$icon_colors = array( 'base' => '#82878c', 'focus' => '#00a0d2', 'current' => '#fff' );
 	}
 
@@ -413,32 +398,25 @@ function wp_refresh_post_lock( $response, $data, $screen_id ) {
 	if ( array_key_exists( 'wp-refresh-post-lock', $data ) ) {
 		$received = $data['wp-refresh-post-lock'];
 		$send = array();
-
 		if ( ! $post_id = absint( $received['post_id'] ) )
 			return $response;
-
 		if ( ! current_user_can('edit_post', $post_id) )
 			return $response;
-
 		if ( ( $user_id = wp_check_post_lock( $post_id ) ) && ( $user = get_user_by( 'id', $user_id ) ) ) {
 			$error = array(
 				'text' => sprintf( '%s has taken over and is currently editing.', $user->display_name )
 			);
-
 			if ( $avatar = get_avatar( $user->ID, 64 ) ) {
 				if ( preg_match( "|src='([^']+)'|", $avatar, $matches ) )
 					$error['avatar_src'] = $matches[1];
 			}
-
 			$send['lock_error'] = $error;
 		} else {
 			if ( $new_lock = wp_set_post_lock( $post_id ) )
 				$send['new_lock'] = implode( ':', $new_lock );
 		}
-
 		$response['wp-refresh-post-lock'] = $send;
 	}
-
 	return $response;
 }
 
@@ -446,15 +424,12 @@ function wp_refresh_post_nonces( $response, $data, $screen_id ) {
 	if ( array_key_exists( 'wp-refresh-post-nonces', $data ) ) {
 		$received = $data['wp-refresh-post-nonces'];
 		$response['wp-refresh-post-nonces'] = array( 'check' => 1 );
-
 		if ( ! $post_id = absint( $received['post_id'] ) ) {
 			return $response;
 		}
-
 		if ( ! current_user_can( 'edit_post', $post_id ) ) {
 			return $response;
 		}
-
 		$response['wp-refresh-post-nonces'] = array(
 			'replace' => array(
 				'getpermalinknonce' => wp_create_nonce('getpermalink'),
@@ -466,17 +441,14 @@ function wp_refresh_post_nonces( $response, $data, $screen_id ) {
 			'heartbeatNonce' => wp_create_nonce( 'heartbeat-nonce' ),
 		);
 	}
-
 	return $response;
 }
 
 function wp_heartbeat_set_suspension( $settings ) {
 	global $pagenow;
-
 	if ( 'post.php' === $pagenow || 'post-new.php' === $pagenow ) {
 		$settings['suspension'] = 'disable';
 	}
-
 	return $settings;
 }
 
@@ -493,13 +465,11 @@ function heartbeat_autosave( $response, $data ) {
 			$response['wp_autosave'] = array( 'success' => true, 'message' => sprintf( 'Draft saved at %s.', date_i18n( $draft_saved_date_format ) ) );
 		}
 	}
-
 	return $response;
 }
 
 function post_form_autocomplete_off() {
 	global $is_safari, $is_chrome;
-
 	if ( $is_safari || $is_chrome ) {
 		echo ' autocomplete="off"';
 	}
@@ -511,8 +481,6 @@ function wp_admin_canonical_url() {
 	if ( empty( $removable_query_args ) ) {
 		return;
 	}
-
-	// Ensure we're using an absolute URL.
 	$current_url  = set_url_scheme( 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] );
 	$filtered_url = remove_query_arg( $removable_query_args, $current_url );
 	?>

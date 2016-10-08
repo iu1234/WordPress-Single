@@ -1,15 +1,4 @@
 <?php
-/**
- * Filesystem API: Top-level functionality
- *
- * Functions for reading, writing, modifying, and deleting files on the file system.
- * Includes functionality for theme-specific files as well as operations for uploading,
- * archiving, and rendering output when necessary.
- *
- * @package WordPress
- * @subpackage Filesystem
- * @since 2.3.0
- */
 
 $wp_file_descriptions = array(
 	'functions.php'         => 'Theme Functions',
@@ -676,7 +665,7 @@ function request_filesystem_credentials( $form_post, $type = '', $error = false,
 	$connection_type = isset( $credentials['connection_type'] ) ? $credentials['connection_type'] : '';
 
 	if ( $error ) {
-		$error_string = __('<strong>ERROR:</strong> There was an error connecting to the server, Please verify the settings are correct.');
+		$error_string = '<strong>ERROR:</strong> There was an error connecting to the server, Please verify the settings are correct.';
 		if ( is_wp_error($error) )
 			$error_string = esc_html( $error->get_error_message() );
 		echo '<div id="message" class="error"><p>' . $error_string . '</p></div>';
@@ -685,7 +674,7 @@ function request_filesystem_credentials( $form_post, $type = '', $error = false,
 	$types = array();
 	if ( extension_loaded('ftp') || extension_loaded('sockets') || function_exists('fsockopen') )
 		$types[ 'ftp' ] = 'FTP';
-	if ( extension_loaded('ftp') ) //Only this supports FTPS
+	if ( extension_loaded('ftp') )
 		$types[ 'ftps' ] = 'FTPS (SSL)';
 	if ( extension_loaded('ssh2') && function_exists('stream_get_contents') )
 		$types[ 'ssh' ] = 'SSH2';
@@ -749,7 +738,7 @@ echo "<$heading_tag id='request-filesystem-credentials-title'>" . 'Connection In
 	<label for="password">
 		<span class="field-title"><?php echo $label_pass; ?></span>
 		<input name="password" type="password" id="password" value="<?php if ( defined('FTP_PASS') ) echo '*****'; ?>"<?php disabled( defined('FTP_PASS') ); ?> />
-		<em><?php if ( ! defined('FTP_PASS') ) _e( 'This password will not be stored on the server.' ); ?></em>
+		<em><?php if ( ! defined('FTP_PASS') ) echo 'This password will not be stored on the server.'; ?></em>
 	</label>
 </div>
 <?php if ( isset($types['ssh']) ) : ?>
@@ -767,7 +756,7 @@ echo "<$heading_tag id='request-filesystem-credentials-title'>" . 'Connection In
 <span id="auth-keys-desc">Enter the location on the server where the public and private keys are located. If a passphrase is needed, enter that in the password field above.</span>
 <?php endif; ?>
 <fieldset>
-<legend><?php _e( 'Connection Type' ); ?></legend>
+<legend>Connection Type</legend>
 <?php
 	$disabled = disabled( (defined('FTP_SSL') && FTP_SSL) || (defined('FTP_SSH') && FTP_SSH), true, false );
 	foreach ( $types as $name => $text ) : ?>
@@ -784,7 +773,7 @@ foreach ( (array) $extra_fields as $field ) {
 }
 ?>
 	<p class="request-filesystem-credentials-action-buttons">
-		<button class="button cancel-button" data-js-action="close" type="button"><?php _e( 'Cancel' ); ?></button>
+		<button class="button cancel-button" data-js-action="close" type="button">Cancel</button>
 		<?php submit_button( 'Proceed', 'button', 'upgrade', false ); ?>
 	</p>
 </div>

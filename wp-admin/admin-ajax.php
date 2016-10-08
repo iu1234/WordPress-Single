@@ -1,37 +1,19 @@
 <?php
-/**
- * WordPress AJAX Process Execution.
- *
- * @package WordPress
- * @subpackage Administration
- *
- * @link https://codex.wordpress.org/AJAX_in_Plugins
- */
 
-/**
- * Executing AJAX process.
- *
- * @since 2.1.0
- */
 define( 'DOING_AJAX', true );
 if ( ! defined( 'WP_ADMIN' ) ) {
 	define( 'WP_ADMIN', true );
 }
 
-/** Load WordPress Bootstrap */
 require_once( dirname( dirname( __FILE__ ) ) . '/wp-load.php' );
 
-/** Allow for cross-domain requests (from the front end). */
 send_origin_headers();
 
-// Require an action parameter
 if ( empty( $_REQUEST['action'] ) )
 	die( '0' );
 
-/** Load WordPress Administration APIs */
 require_once( ABSPATH . 'wp-admin/includes/admin.php' );
 
-/** Load Ajax Handlers for WordPress Core */
 require_once( ABSPATH . 'wp-admin/includes/ajax-actions.php' );
 
 @header( 'Content-Type: text/html; charset=' . get_option( 'blog_charset' ) );
@@ -40,7 +22,6 @@ require_once( ABSPATH . 'wp-admin/includes/ajax-actions.php' );
 send_nosniff_header();
 nocache_headers();
 
-/** This action is documented in wp-admin/admin.php */
 do_action( 'admin_init' );
 
 $core_actions_get = array(
@@ -65,10 +46,8 @@ $core_actions_post = array(
 	'press-this-add-category', 'crop-image', 'generate-password', 'save-wporg-username',
 );
 
-// Deprecated
 $core_actions_post[] = 'wp-fullscreen-save-post';
 
-// Register core Ajax calls.
 if ( ! empty( $_GET['action'] ) && in_array( $_GET['action'], $core_actions_get ) )
 	add_action( 'wp_ajax_' . $_GET['action'], 'wp_ajax_' . str_replace( '-', '_', $_GET['action'] ), 1 );
 
@@ -78,25 +57,8 @@ if ( ! empty( $_POST['action'] ) && in_array( $_POST['action'], $core_actions_po
 add_action( 'wp_ajax_nopriv_heartbeat', 'wp_ajax_nopriv_heartbeat', 1 );
 
 if ( is_user_logged_in() ) {
-	/**
-	 * Fires authenticated AJAX actions for logged-in users.
-	 *
-	 * The dynamic portion of the hook name, `$_REQUEST['action']`,
-	 * refers to the name of the AJAX action callback being fired.
-	 *
-	 * @since 2.1.0
-	 */
 	do_action( 'wp_ajax_' . $_REQUEST['action'] );
 } else {
-	/**
-	 * Fires non-authenticated AJAX actions for logged-out users.
-	 *
-	 * The dynamic portion of the hook name, `$_REQUEST['action']`,
-	 * refers to the name of the AJAX action callback being fired.
-	 *
-	 * @since 2.8.0
-	 */
 	do_action( 'wp_ajax_nopriv_' . $_REQUEST['action'] );
 }
-// Default status
 die( '0' );

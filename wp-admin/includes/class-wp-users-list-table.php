@@ -234,14 +234,6 @@ class WP_Users_List_Table extends WP_List_Table {
 		return $c;
 	}
 
-	/**
-	 * Get a list of sortable columns for the list table.
-	 *
-	 * @since 3.1.0
-	 * @access protected
-	 *
-	 * @return array Array of sortable columns.
-	 */
 	protected function get_sortable_columns() {
 		$c = array(
 			'username' => 'login',
@@ -252,21 +244,11 @@ class WP_Users_List_Table extends WP_List_Table {
 		return $c;
 	}
 
-	/**
-	 * Generate the list table rows.
-	 *
-	 * @since 3.1.0
-	 * @access public
-	 */
 	public function display_rows() {
-		// Query the post counts for this page
 		if ( ! $this->is_site_users )
 			$post_counts = count_many_users_posts( array_keys( $this->items ) );
 
 		foreach ( $this->items as $userid => $user_object ) {
-			if ( is_multisite() && empty( $user_object->allcaps ) )
-				continue;
-
 			echo "\n\t" . $this->single_row( $user_object, '', '', isset( $post_counts ) ? $post_counts[ $userid ] : 0 );
 		}
 	}
@@ -303,7 +285,7 @@ class WP_Users_List_Table extends WP_List_Table {
 
 			$role_classes = esc_attr( implode( ' ', array_keys( $user_roles ) ) );
 
-			$checkbox = '<label class="screen-reader-text" for="user_' . $user_object->ID . '">' . sprintf( __( 'Select %s' ), $user_object->user_login ) . '</label>'
+			$checkbox = '<label class="screen-reader-text" for="user_' . $user_object->ID . '">' . sprintf( 'Select %s', $user_object->user_login ) . '</label>'
 						. "<input type='checkbox' name='users[]' id='user_{$user_object->ID}' class='{$role_classes}' value='{$user_object->ID}' />";
 
 		} else {
@@ -391,7 +373,7 @@ class WP_Users_List_Table extends WP_List_Table {
 		}
 
 		if ( empty( $role_list ) ) {
-			$role_list['none'] = _x( 'None', 'no user roles' );
+			$role_list['none'] = 'None';
 		}
 
 		return apply_filters( 'get_role_list', $role_list, $user_object );

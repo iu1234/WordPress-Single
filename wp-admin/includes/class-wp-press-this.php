@@ -1,11 +1,4 @@
 <?php
-/**
- * Press This class and display functionality
- *
- * @package WordPress
- * @subpackage Press_This
- * @since 4.2.0
- */
 
 class WP_Press_This {
 
@@ -30,24 +23,19 @@ class WP_Press_This {
 
 		if ( preg_match_all( '/<img [^>]+>/', $content, $matches ) && current_user_can( 'upload_files' ) ) {
 			foreach ( (array) $matches[0] as $image ) {
-				// This is inserted from our JS so HTML attributes should always be in double quotes.
 				if ( ! preg_match( '/src="([^"]+)"/', $image, $url_matches ) ) {
 					continue;
 				}
 
 				$image_src = $url_matches[1];
 
-				// Don't try to sideload a file without a file extension, leads to WP upload error.
 				if ( ! preg_match( '/[^\?]+\.(?:jpe?g|jpe|gif|png)(?:\?|$)/i', $image_src ) ) {
 					continue;
 				}
 
-				// Sideload image, which gives us a new image src.
 				$new_src = media_sideload_image( $image_src, $post_id, null, 'src' );
 
 				if ( ! is_wp_error( $new_src ) ) {
-					// Replace the POSTED content <img> with correct uploaded ones.
-					// Need to do it in two steps so we don't replace links to the original image if any.
 					$new_image = str_replace( $image_src, $new_src, $image );
 					$content = str_replace( $image, $new_image, $content );
 				}
@@ -60,13 +48,13 @@ class WP_Press_This {
 
 	public function save_post() {
 		if ( empty( $_POST['post_ID'] ) || ! $post_id = (int) $_POST['post_ID'] ) {
-			wp_send_json_error( array( 'errorMessage' => __( 'Missing post ID.' ) ) );
+			wp_send_json_error( array( 'errorMessage' => 'Missing post ID.' ) );
 		}
 
 		if ( empty( $_POST['_wpnonce'] ) || ! wp_verify_nonce( $_POST['_wpnonce'], 'update-post_' . $post_id ) ||
 			! current_user_can( 'edit_post', $post_id ) ) {
 
-			wp_send_json_error( array( 'errorMessage' => __( 'Invalid post.' ) ) );
+			wp_send_json_error( array( 'errorMessage' => 'Invalid post.' ) );
 		}
 
 		$post_data = array(
@@ -149,10 +137,9 @@ class WP_Press_This {
 				continue;
 			}
 
-			// @todo Find a more performant way to check existence, maybe get_term() with a separate parent check.
 			if ( term_exists( $cat_name, $taxonomy->name, $parent ) ) {
 				if ( count( $names ) === 1 ) {
-					wp_send_json_error( array( 'errorMessage' => __( 'This category already exists.' ) ) );
+					wp_send_json_error( array( 'errorMessage' => 'This category already exists.' ) );
 				} else {
 					continue;
 				}
@@ -170,14 +157,14 @@ class WP_Press_This {
 		}
 
 		if ( empty( $added ) ) {
-			wp_send_json_error( array( 'errorMessage' => __( 'This category cannot be added. Please change the name and try again.' ) ) );
+			wp_send_json_error( array( 'errorMessage' => 'This category cannot be added. Please change the name and try again.' ) );
 		}
 
 		foreach ( $added as $new_cat_id ) {
 			$new_cat = get_category( $new_cat_id );
 
 			if ( is_wp_error( $new_cat ) ) {
-				wp_send_json_error( array( 'errorMessage' => __( 'Error while adding the category. Please try again later.' ) ) );
+				wp_send_json_error( array( 'errorMessage' => 'Error while adding the category. Please try again later.' ) );
 			}
 
 			$data[] = array(
@@ -189,25 +176,15 @@ class WP_Press_This {
 		wp_send_json_success( $data );
 	}
 
-	/**
-	 * Downloads the source's HTML via server-side call for the given URL.
-	 *
-	 * @since 4.2.0
-	 * @access public
-	 *
-	 * @param string $url URL to scan.
-	 * @return string Source's HTML sanitized markup
-	 */
 	public function fetch_source_html( $url ) {
 		global $wp_version;
 
 		if ( empty( $url ) ) {
-			return new WP_Error( 'invalid-url', __( 'A valid URL was not provided.' ) );
+			return new WP_Error( 'invalid-url', 'A valid URL was not provided.' );
 		}
 
 		$remote_url = wp_safe_remote_get( $url, array(
 			'timeout' => 30,
-			// Use an explicit user-agent for Press This
 			'user-agent' => 'Press This (WordPress/' . $wp_version . '); ' . get_bloginfo( 'url' )
 		) );
 
@@ -242,15 +219,6 @@ class WP_Press_This {
 		return $source_content;
 	}
 
-	/**
-	 * Utility method to limit an array to 50 values.
-	 *
-	 * @ignore
-	 * @since 4.2.0
-	 *
-	 * @param array $value Array to limit.
-	 * @return array Original array if fewer than 50 values, limited array, empty array otherwise.
-	 */
 	private function _limit_array( $value ) {
 		if ( is_array( $value ) ) {
 			if ( count( $value ) > 50 ) {
@@ -263,17 +231,6 @@ class WP_Press_This {
 		return array();
 	}
 
-	/**
-	 * Utility method to limit the length of a given string to 5,000 characters.
-	 *
-	 * @ignore
-	 * @since 4.2.0
-	 *
-	 * @param string $value String to limit.
-	 * @return bool|int|string If boolean or integer, that value. If a string, the original value
-	 *                         if fewer than 5,000 characters, a truncated version, otherwise an
-	 *                         empty string.
-	 */
 	private function _limit_string( $value ) {
 		$return = '';
 
@@ -293,36 +250,23 @@ class WP_Press_This {
 		return $return;
 	}
 
-	/**
-	 * Utility method to limit a given URL to 2,048 characters.
-	 *
-	 * @ignore
-	 * @since 4.2.0
-	 *
-	 * @param string $url URL to check for length and validity.
-	 * @return string Escaped URL if of valid length (< 2048) and makeup. Empty string otherwise.
-	 */
 	private function _limit_url( $url ) {
 		if ( ! is_string( $url ) ) {
 			return '';
 		}
 
-		// HTTP 1.1 allows 8000 chars but the "de-facto" standard supported in all current browsers is 2048.
 		if ( strlen( $url ) > 2048 ) {
-			return ''; // Return empty rather than a truncated/invalid URL
+			return '';
 		}
 
-		// Does not look like a URL.
 		if ( ! preg_match( '/^([!#$&-;=?-\[\]_a-z~]|%[0-9a-fA-F]{2})+$/', $url ) ) {
 			return '';
 		}
 
-		// If the URL is root-relative, prepend the protocol and domain name
 		if ( $url && $this->domain && preg_match( '%^/[^/]+%', $url ) ) {
 			$url = $this->domain . $url;
 		}
 
-		// Not absolute or protocol-relative URL.
 		if ( ! preg_match( '%^(?:https?:)?//[^/]+%', $url ) ) {
 			return '';
 		}
@@ -330,18 +274,6 @@ class WP_Press_This {
 		return esc_url_raw( $url, array( 'http', 'https' ) );
 	}
 
-	/**
-	 * Utility method to limit image source URLs.
-	 *
-	 * Excluded URLs include share-this type buttons, loaders, spinners, spacers, WordPress interface images,
-	 * tiny buttons or thumbs, mathtag.com or quantserve.com images, or the WordPress.com stats gif.
-	 *
-	 * @ignore
-	 * @since 4.2.0
-	 *
-	 * @param string $src Image source URL.
-	 * @return string If not matched an excluded URL type, the original URL, empty string otherwise.
-	 */
 	private function _limit_img( $src ) {
 		$src = $this->_limit_url( $src );
 
@@ -377,18 +309,6 @@ class WP_Press_This {
 		return $src;
 	}
 
-	/**
-	 * Limit embed source URLs to specific providers.
-	 *
-	 * Not all core oEmbed providers are supported. Supported providers include YouTube, Vimeo,
-	 * Vine, Daily Motion, SoundCloud, and Twitter.
-	 *
-	 * @ignore
-	 * @since 4.2.0
-	 *
-	 * @param string $src Embed source URL.
-	 * @return string If not from a supported provider, an empty string. Otherwise, a reformattd embed URL.
-	 */
 	private function _limit_embed( $src ) {
 		$src = $this->_limit_url( $src );
 
@@ -396,10 +316,8 @@ class WP_Press_This {
 			return '';
 
 		if ( preg_match( '!//(m|www)\.youtube\.com/(embed|v)/([^?]+)\?.+$!i', $src, $src_matches ) ) {
-			// Embedded Youtube videos (www or mobile)
 			$src = 'https://www.youtube.com/watch?v=' . $src_matches[3];
 		} else if ( preg_match( '!//player\.vimeo\.com/video/([\d]+)([?/].*)?$!i', $src, $src_matches ) ) {
-			// Embedded Vimeo iframe videos
 			$src = 'https://vimeo.com/' . (int) $src_matches[1];
 		} else if ( preg_match( '!//vimeo\.com/moogaloop\.swf\?clip_id=([\d]+)$!i', $src, $src_matches ) ) {
 			// Embedded Vimeo Flash videos
@@ -422,17 +340,6 @@ class WP_Press_This {
 		return $src;
 	}
 
-	/**
-	 * Process a meta data entry from the source.
-	 *
-	 * @ignore
-	 * @since 4.2.0
-	 *
-	 * @param string $meta_name  Meta key name.
-	 * @param mixed  $meta_value Meta value.
-	 * @param array  $data       Associative array of source data.
-	 * @return array Processed data array.
-	 */
 	private function _process_meta_entry( $meta_name, $meta_value, $data ) {
 		if ( preg_match( '/:?(title|description|keywords|site_name)$/', $meta_name ) ) {
 			$data['_meta'][ $meta_name ] = $meta_value;
@@ -475,16 +382,6 @@ class WP_Press_This {
 		return $data;
 	}
 
-	/**
-	 * Fetches and parses _meta, _images, and _links data from the source.
-	 *
-	 * @since 4.2.0
-	 * @access public
-	 *
-	 * @param string $url  URL to scan.
-	 * @param array  $data Optional. Existing data array if you have one. Default empty array.
-	 * @return array New data array.
-	 */
 	public function source_data_fetch_fallback( $url, $data = array() ) {
 		if ( empty( $url ) ) {
 			return array();
@@ -585,14 +482,6 @@ class WP_Press_This {
 		return $data;
 	}
 
-	/**
-	 * Handles backward-compat with the legacy version of Press This by supporting its query string params.
-	 *
-	 * @since 4.2.0
-	 * @access public
-	 *
-	 * @return array
-	 */
 	public function merge_or_fetch_data() {
 		// Get data from $_POST and $_GET, as appropriate ($_POST > $_GET), to remain backward compatible.
 		$data = array();
@@ -622,18 +511,7 @@ class WP_Press_This {
 			}
 		}
 
-		/**
-		 * Filter whether to enable in-source media discovery in Press This.
-		 *
-		 * @since 4.2.0
-		 *
-		 * @param bool $enable Whether to enable media discovery.
-		 */
 		if ( apply_filters( 'enable_press_this_media_discovery', true ) ) {
-			/*
-			 * If no title, _images, _embed, and _meta was passed via $_POST, fetch data from source as fallback,
-			 * making PT fully backward compatible with the older bookmarklet.
-			 */
 			if ( empty( $_POST ) && ! empty( $data['u'] ) ) {
 				$data = $this->source_data_fetch_fallback( $data['u'], $data );
 			} else {
@@ -697,13 +575,6 @@ class WP_Press_This {
 			}
 		}
 
-		/**
-		 * Filter the Press This data array.
-		 *
-		 * @since 4.2.0
-		 *
-		 * @param array $data Press This Data array.
-		 */
 		return apply_filters( 'press_this_data', $data );
 	}
 
@@ -716,13 +587,10 @@ class WP_Press_This {
 
 		$open_sans_font_url = '';
 
-		if ( 'off' !== _x( 'on', 'Open Sans font: on or off' ) ) {
+		if ( 'off' !== 'on' ) {
 			$subsets = 'latin,latin-ext';
 
-			/* translators: To add an additional Open Sans character subset specific to your language,
-			 * translate this to 'greek', 'cyrillic' or 'vietnamese'. Do not translate into your own language.
-			 */
-			$subset = _x( 'no-subset', 'Open Sans font: add new subset (greek, cyrillic, vietnamese)' );
+			$subset ='no-subset';
 
 			if ( 'cyrillic' == $subset ) {
 				$subsets .= ',cyrillic,cyrillic-ext';
@@ -743,14 +611,6 @@ class WP_Press_This {
 		return $styles . $press_this . $open_sans_font_url;
 	}
 
-	/**
-	 * Outputs the post format selection HTML.
-	 *
-	 * @since 4.2.0
-	 * @access public
-	 *
-	 * @param WP_Post $post Post object.
-	 */
 	public function post_formats_html( $post ) {
 		if ( current_theme_supports( 'post-formats' ) && post_type_supports( $post->post_type, 'post-formats' ) ) {
 			$post_formats = get_theme_support( 'post-formats' );
@@ -762,14 +622,13 @@ class WP_Press_This {
 					$post_format = '0';
 				}
 
-				// Add in the current one if it isn't there yet, in case the current theme doesn't support it.
 				if ( $post_format && ! in_array( $post_format, $post_formats[0] ) ) {
 					$post_formats[0][] = $post_format;
 				}
 
 				?>
 				<div id="post-formats-select">
-				<fieldset><legend class="screen-reader-text"><?php _e( 'Post Formats' ); ?></legend>
+				<fieldset><legend class="screen-reader-text">Post Formats</legend>
 					<input type="radio" name="post_format" class="post-format" id="post-format-0" value="0" <?php checked( $post_format, '0' ); ?> />
 					<label for="post-format-0" class="post-format-icon post-format-standard"><?php echo get_post_format_string( 'standard' ); ?></label>
 					<?php
@@ -791,21 +650,13 @@ class WP_Press_This {
 		}
 	}
 
-	/**
-	 * Outputs the categories HTML.
-	 *
-	 * @since 4.2.0
-	 * @access public
-	 *
-	 * @param WP_Post $post Post object.
-	 */
 	public function categories_html( $post ) {
 		$taxonomy = get_taxonomy( 'category' );
 
 		if ( current_user_can( $taxonomy->cap->edit_terms ) ) {
 			?>
 			<button type="button" class="add-cat-toggle button-link" aria-expanded="false">
-				<span class="dashicons dashicons-plus"></span><span class="screen-reader-text"><?php _e( 'Toggle add category' ); ?></span>
+				<span class="dashicons dashicons-plus"></span><span class="screen-reader-text">Toggle add category</span>
 			</button>
 			<div class="add-category is-hidden">
 				<label class="screen-reader-text" for="new-category"><?php echo $taxonomy->labels->add_new_item; ?></label>
@@ -830,9 +681,9 @@ class WP_Press_This {
 		}
 		?>
 		<div class="categories-search-wrapper">
-			<input id="categories-search" type="search" class="categories-search" placeholder="<?php esc_attr_e( 'Search categories by name' ) ?>">
+			<input id="categories-search" type="search" class="categories-search" placeholder="Search categories by name">
 			<label for="categories-search">
-				<span class="dashicons dashicons-search"></span><span class="screen-reader-text"><?php _e( 'Search categories' ); ?></span>
+				<span class="dashicons dashicons-search"></span><span class="screen-reader-text">Search categories</span>
 			</label>
 		</div>
 		<div aria-label="<?php esc_attr_e( 'Categories' ); ?>">
@@ -843,14 +694,6 @@ class WP_Press_This {
 		<?php
 	}
 
-	/**
-	 * Outputs the tags HTML.
-	 *
-	 * @since 4.2.0
-	 * @access public
-	 *
-	 * @param WP_Post $post Post object.
-	 */
 	public function tags_html( $post ) {
 		$taxonomy              = get_taxonomy( 'post_tag' );
 		$user_can_assign_terms = current_user_can( $taxonomy->cap->assign_terms );
@@ -869,10 +712,10 @@ class WP_Press_This {
 			if ( $user_can_assign_terms ) {
 				?>
 				<div class="ajaxtag hide-if-no-js">
-					<label class="screen-reader-text" for="new-tag-post_tag"><?php _e( 'Tags' ); ?></label>
+					<label class="screen-reader-text" for="new-tag-post_tag">Tags</label>
 					<p>
 						<input type="text" id="new-tag-post_tag" name="newtag[post_tag]" class="newtag form-input-tip" size="16" autocomplete="off" value="" aria-describedby="new-tag-desc" />
-						<button type="button" class="tagadd"><?php _e( 'Add' ); ?></button>
+						<button type="button" class="tagadd">Add</button>
 					</p>
 				</div>
 				<p class="howto" id="new-tag-desc">
@@ -894,19 +737,9 @@ class WP_Press_This {
 		}
 	}
 
-	/**
-	 * Get a list of embeds with no duplicates.
-	 *
-	 * @since 4.2.0
-	 * @access public
-	 *
-	 * @param array $data The site's data.
-	 * @return array Embeds selected to be available.
-	 */
 	public function get_embeds( $data ) {
 		$selected_embeds = array();
 
-		// Make sure to add the Pressed page if it's a valid oembed itself
 		if ( ! empty ( $data['u'] ) && $this->_limit_embed( $data['u'] ) ) {
 			$data['_embeds'][] = $data['u'];
 		}
@@ -927,15 +760,6 @@ class WP_Press_This {
 		return $selected_embeds;
 	}
 
-	/**
-	 * Get a list of images with no duplicates.
-	 *
-	 * @since 4.2.0
-	 * @access public
-	 *
-	 * @param array $data The site's data.
-	 * @return array
-	 */
 	public function get_images( $data ) {
 		$selected_images = array();
 
@@ -961,15 +785,6 @@ class WP_Press_This {
 		return $selected_images;
 	}
 
-	/**
-	 * Gets the source page's canonical link, based on passed location and meta data.
-	 *
-	 * @since 4.2.0
-	 * @access public
-	 *
- 	 * @param array $data The site's data.
-	 * @return string Discovered canonical URL, or empty
-	 */
 	public function get_canonical_link( $data ) {
 		$link = '';
 
@@ -992,15 +807,6 @@ class WP_Press_This {
 		return $link;
 	}
 
-	/**
-	 * Gets the source page's site name, based on passed meta data.
-	 *
-	 * @since 4.2.0
-	 * @access public
-	 *
-	 * @param array $data The site's data.
-	 * @return string Discovered site name, or empty
-	 */
 	public function get_source_site_name( $data ) {
 		$name = '';
 
@@ -1015,15 +821,6 @@ class WP_Press_This {
 		return $name;
 	}
 
-	/**
-	 * Gets the source page's title, based on passed title and meta data.
-	 *
-	 * @since 4.2.0
-	 * @access public
-	 *
-	 * @param array $data The site's data.
-	 * @return string Discovered page title, or empty
-	 */
 	public function get_suggested_title( $data ) {
 		$title = '';
 
@@ -1042,17 +839,6 @@ class WP_Press_This {
 		return $title;
 	}
 
-	/**
-	 * Gets the source page's suggested content, based on passed data (description, selection, etc).
-	 *
-	 * Features a blockquoted excerpt, as well as content attribution, if any.
-	 *
-	 * @since 4.2.0
-	 * @access public
-	 *
-	 * @param array $data The site's data.
-	 * @return string Discovered content, or empty
-	 */
 	public function get_suggested_content( $data ) {
 		$content = $text = '';
 
@@ -1067,7 +853,6 @@ class WP_Press_This {
 				$text = $data['_meta']['description'];
 			}
 
-			// If there is an ellipsis at the end, the description is very likely auto-generated. Better to ignore it.
 			if ( $text && substr( $text, -3 ) === '...' ) {
 				$text = '';
 			}
@@ -1088,19 +873,6 @@ class WP_Press_This {
 				' <em><a href="%1$s">%2$s</a></em></p>';
 		}
 
-		/**
-		 * Filter the default HTML tags used in the suggested content for the editor.
-		 *
-		 * The HTML strings use printf format. After filtering the content is added at the specified places with `sprintf()`.
-		 *
-		 * @since 4.2.0
-		 *
-		 * @param array $default_html Associative array with three possible keys:
-		 *                                - 'quote' where %1$s is replaced with the site description or the selected content.
-		 *                                - 'link' where %1$s is link href, %2$s is link text, usually the source page title.
-		 *                                - 'embed' which contains an [embed] shortcode when the source page offers embeddable content.
-		 * @param array $data         Associative array containing the data from the source page.
-		 */
 		$default_html = apply_filters( 'press_this_suggested_html', $default_html, $data );
 
 		if ( ! empty( $default_html['embed'] ) ) {
@@ -1129,30 +901,17 @@ class WP_Press_This {
 		return $content;
 	}
 
-	/**
-	 * Serves the app's base HTML, which in turns calls the load script.
-	 *
-	 * @since 4.2.0
-	 * @access public
-	 *
-	 * @global WP_Locale $wp_locale
-	 * @global string    $wp_version
-	 * @global bool      $is_IE
-	 */
 	public function html() {
 		global $wp_locale, $wp_version;
 
-		// Get data, new (POST) and old (GET).
 		$data = $this->merge_or_fetch_data();
 
 		$post_title = $this->get_suggested_title( $data );
 
 		$post_content = $this->get_suggested_content( $data );
 
-		// Get site settings array/data.
 		$site_settings = $this->site_settings();
 
-		// Pass the images and embeds
 		$images = $this->get_images( $data );
 		$embeds = $this->get_embeds( $data );
 
@@ -1170,7 +929,6 @@ class WP_Press_This {
 			$site_data['_embeds'] = $embeds;
 		}
 
-		// Add press-this-editor.css and remove theme's editor-style.css, if any.
 		remove_editor_styles();
 
 		add_filter( 'mce_css', array( $this, 'add_editor_style' ) );
@@ -1206,10 +964,7 @@ class WP_Press_This {
 	</script>
 
 	<?php
-		/*
-		 * $post->ID is needed for the embed shortcode so we can show oEmbed previews in the editor.
-		 * Maybe find a way without it.
-		 */
+
 		$post = get_default_post_to_edit( 'post', true );
 		$post_ID = (int) $post->ID;
 
@@ -1230,25 +985,18 @@ class WP_Press_This {
 			}
 		}
 
-		/** This action is documented in wp-admin/admin-header.php */
 		do_action( 'admin_enqueue_scripts', 'press-this.php' );
 
-		/** This action is documented in wp-admin/admin-header.php */
 		do_action( 'admin_print_styles-press-this.php' );
 
-		/** This action is documented in wp-admin/admin-header.php */
 		do_action( 'admin_print_styles' );
 
-		/** This action is documented in wp-admin/admin-header.php */
 		do_action( 'admin_print_scripts-press-this.php' );
 
-		/** This action is documented in wp-admin/admin-header.php */
 		do_action( 'admin_print_scripts' );
 
-		/** This action is documented in wp-admin/admin-header.php */
 		do_action( 'admin_head-press-this.php' );
 
-		/** This action is documented in wp-admin/admin-header.php */
 		do_action( 'admin_head' );
 	?>
 </head>
@@ -1274,17 +1022,17 @@ class WP_Press_This {
 		</h1>
 		<button type="button" class="options button-link closed">
 			<span class="dashicons dashicons-tag on-closed"></span>
-			<span class="screen-reader-text on-closed"><?php _e( 'Show post options' ); ?></span>
-			<span aria-hidden="true" class="on-open"><?php _e( 'Done' ); ?></span>
-			<span class="screen-reader-text on-open"><?php _e( 'Hide post options' ); ?></span>
+			<span class="screen-reader-text on-closed">Show post options</span>
+			<span aria-hidden="true" class="on-open">Done</span>
+			<span class="screen-reader-text on-open">Hide post options</span>
 		</button>
 	</div>
 
 	<div id="scanbar" class="scan">
 		<form method="GET">
 			<label for="url-scan" class="screen-reader-text">Scan site for content</label>
-			<input type="url" name="u" id="url-scan" class="scan-url" value="" placeholder="<?php esc_attr_e( 'Enter a URL to scan' ) ?>" />
-			<input type="submit" name="url-scan-submit" id="url-scan-submit" class="scan-submit" value="<?php esc_attr_e( 'Scan' ) ?>" />
+			<input type="url" name="u" id="url-scan" class="scan-url" value="" placeholder="Enter a URL to scan" />
+			<input type="submit" name="url-scan-submit" id="url-scan-submit" class="scan-submit" value="Scan" />
 		</form>
 	</div>
 
@@ -1363,7 +1111,7 @@ class WP_Press_This {
 				<?php if ( $supports_formats ) : ?>
 					<button type="button" class="button-link post-option">
 						<span class="dashicons dashicons-admin-post"></span>
-						<span class="post-option-title"><?php _ex( 'Format', 'post format' ); ?></span>
+						<span class="post-option-title">Format</span>
 						<span class="post-option-contents" id="post-option-post-format"><?php echo esc_html( get_post_format_string( $post_format ) ); ?></span>
 						<span class="dashicons post-option-forward"></span>
 					</button>
@@ -1371,13 +1119,13 @@ class WP_Press_This {
 
 				<button type="button" class="button-link post-option">
 					<span class="dashicons dashicons-category"></span>
-					<span class="post-option-title"><?php _e( 'Categories' ); ?></span>
+					<span class="post-option-title">Categories</span>
 					<span class="dashicons post-option-forward"></span>
 				</button>
 
 				<button type="button" class="button-link post-option">
 					<span class="dashicons dashicons-tag"></span>
-					<span class="post-option-title"><?php _e( 'Tags' ); ?></span>
+					<span class="post-option-title">Tags</span>
 					<span class="dashicons post-option-forward"></span>
 				</button>
 			</div>
@@ -1386,8 +1134,8 @@ class WP_Press_This {
 				<div class="setting-modal is-off-screen is-hidden">
 					<button type="button" class="button-link modal-close">
 						<span class="dashicons post-option-back"></span>
-						<span class="setting-title" aria-hidden="true"><?php _ex( 'Format', 'post format' ); ?></span>
-						<span class="screen-reader-text"><?php _e( 'Back to post options' ) ?></span>
+						<span class="setting-title" aria-hidden="true">Format</span>
+						<span class="screen-reader-text">Back to post options</span>
 					</button>
 					<?php $this->post_formats_html( $post ); ?>
 				</div>
@@ -1396,8 +1144,8 @@ class WP_Press_This {
 			<div class="setting-modal is-off-screen is-hidden">
 				<button type="button" class="button-link modal-close">
 					<span class="dashicons post-option-back"></span>
-					<span class="setting-title" aria-hidden="true"><?php _e( 'Categories' ); ?></span>
-					<span class="screen-reader-text"><?php _e( 'Back to post options' ) ?></span>
+					<span class="setting-title" aria-hidden="true">Categories</span>
+					<span class="screen-reader-text">Back to post options</span>
 				</button>
 				<?php $this->categories_html( $post ); ?>
 			</div>
@@ -1405,19 +1153,18 @@ class WP_Press_This {
 			<div class="setting-modal tags is-off-screen is-hidden">
 				<button type="button" class="button-link modal-close">
 					<span class="dashicons post-option-back"></span>
-					<span class="setting-title" aria-hidden="true"><?php _e( 'Tags' ); ?></span>
-					<span class="screen-reader-text"><?php _e( 'Back to post options' ) ?></span>
+					<span class="setting-title" aria-hidden="true">Tags</span>
+					<span class="screen-reader-text">Back to post options</span>
 				</button>
 				<?php $this->tags_html( $post ); ?>
 			</div>
-		</div><!-- .options-panel -->
-	</div><!-- .wrapper -->
-
+		</div>
+	</div>
 	<div class="press-this-actions">
 		<div class="pressthis-media-buttons">
 			<button type="button" class="insert-media button-link" data-editor="pressthis">
 				<span class="dashicons dashicons-admin-media"></span>
-				<span class="screen-reader-text"><?php _e( 'Add Media' ); ?></span>
+				<span class="screen-reader-text">Add Media</span>
 			</button>
 		</div>
 		<div class="post-actions">
@@ -1425,17 +1172,17 @@ class WP_Press_This {
 			<div class="split-button">
 				<div class="split-button-head">
 					<button type="button" class="publish-button split-button-primary" aria-live="polite">
-						<span class="publish"><?php echo ( current_user_can( 'publish_posts' ) ) ? __( 'Publish' ) : __( 'Submit for Review' ); ?></span>
-						<span class="saving-draft"><?php _e( 'Saving&hellip;' ); ?></span>
+						<span class="publish"><?php echo ( current_user_can( 'publish_posts' ) ) ? 'Publish' : 'Submit for Review'; ?></span>
+						<span class="saving-draft">Saving&hellip;</span>
 					</button><button type="button" class="split-button-toggle" aria-haspopup="true" aria-expanded="false">
 						<i class="dashicons dashicons-arrow-down-alt2"></i>
-						<span class="screen-reader-text"><?php _e('More actions'); ?></span>
+						<span class="screen-reader-text">More actions</span>
 					</button>
 				</div>
 				<ul class="split-button-body">
-					<li><button type="button" class="button-link draft-button split-button-option"><?php _e( 'Save Draft' ); ?></button></li>
-					<li><button type="button" class="button-link standard-editor-button split-button-option"><?php _e( 'Standard Editor' ); ?></button></li>
-					<li><button type="button" class="button-link preview-button split-button-option"><?php _e( 'Preview' ); ?></button></li>
+					<li><button type="button" class="button-link draft-button split-button-option">Save Draft</button></li>
+					<li><button type="button" class="button-link standard-editor-button split-button-option">Standard Editor</button></li>
+					<li><button type="button" class="button-link preview-button split-button-option">Preview</button></li>
 				</ul>
 			</div>
 		</div>
@@ -1443,13 +1190,9 @@ class WP_Press_This {
 	</form>
 
 	<?php
-	/** This action is documented in wp-admin/admin-footer.php */
+
 	do_action( 'admin_footer' );
-
-	/** This action is documented in wp-admin/admin-footer.php */
 	do_action( 'admin_print_footer_scripts' );
-
-	/** This action is documented in wp-admin/admin-footer.php */
 	do_action( 'admin_footer-press-this.php' );
 	?>
 </body>
@@ -1459,8 +1202,4 @@ class WP_Press_This {
 	}
 }
 
-/**
- *
- * @global WP_Press_This $wp_press_this
- */
 $GLOBALS['wp_press_this'] = new WP_Press_This;

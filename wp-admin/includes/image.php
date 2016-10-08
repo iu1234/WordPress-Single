@@ -1,10 +1,4 @@
 <?php
-/**
- * File contains all the administration image manipulation functions.
- *
- * @package WordPress
- * @subpackage Administration
- */
 
 function wp_crop_image( $src, $src_x, $src_y, $src_w, $src_h, $dst_w, $dst_h, $src_abs = false, $dst_file = false ) {
 	$src_file = $src;
@@ -192,14 +186,8 @@ function wp_read_image_metadata( $file ) {
 
 		if ( ! empty( $info['APP13'] ) ) {
 			$iptc = iptcparse( $info['APP13'] );
-
-			// Headline, "A brief synopsis of the caption."
 			if ( ! empty( $iptc['2#105'][0] ) ) {
 				$meta['title'] = trim( $iptc['2#105'][0] );
-			/*
-			 * Title, "Many use the Title field to store the filename of the image,
-			 * though the field may be used in many ways."
-			 */
 			} elseif ( ! empty( $iptc['2#005'][0] ) ) {
 				$meta['title'] = trim( $iptc['2#005'][0] );
 			}
@@ -212,7 +200,6 @@ function wp_read_image_metadata( $file ) {
 				reset_mbstring_encoding();
 
 				if ( empty( $meta['title'] ) && $caption_length < 80 ) {
-					// Assume the title is stored in 2:120 if it's short.
 					$meta['title'] = $caption;
 				}
 

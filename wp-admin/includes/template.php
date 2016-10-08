@@ -1,12 +1,4 @@
 <?php
-/**
- * Template WordPress Administration API.
- *
- * A Big Mess. Also some neat functions that are nicely written.
- *
- * @package WordPress
- * @subpackage Administration
- */
 
 require_once( ABSPATH . 'wp-admin/includes/class-walker-category-checklist.php' );
 
@@ -87,7 +79,6 @@ function wp_terms_checklist( $post_id = 0, $args = array() ) {
 	$output = '';
 
 	if ( $r['checked_ontop'] ) {
-		// Post process $categories rather than adding an exclude to the get_terms() query to keep the query the same across all posts (for any query cache)
 		$checked_categories = array();
 		$keys = array_keys( $categories );
 
@@ -98,10 +89,9 @@ function wp_terms_checklist( $post_id = 0, $args = array() ) {
 			}
 		}
 
-		// Put checked cats on top
 		$output .= call_user_func_array( array( $walker, 'walk' ), array( $checked_categories, 0, $args ) );
 	}
-	// Then the rest of them
+
 	$output .= call_user_func_array( array( $walker, 'walk' ), array( $categories, 0, $args ) );
 
 	if ( $r['echo'] ) {
@@ -136,7 +126,6 @@ function wp_popular_terms_checklist( $taxonomy, $default = 0, $number = 10, $ech
 			<label class="selectit">
 				<input id="in-<?php echo $id; ?>" type="checkbox" <?php echo $checked; ?> value="<?php echo (int) $term->term_id; ?>" <?php disabled( ! current_user_can( $tax->cap->assign_terms ) ); ?> />
 				<?php
-				/** This filter is documented in wp-includes/category-template.php */
 				echo esc_html( apply_filters( 'the_category', $term->name ) );
 				?>
 			</label>
@@ -154,7 +143,6 @@ function wp_link_category_checklist( $link_id = 0 ) {
 
 	if ( $link_id ) {
 		$checked_categories = wp_get_link_cats( $link_id );
-		// No selected categories, strange
 		if ( ! count( $checked_categories ) ) {
 			$checked_categories[] = $default;
 		}
@@ -169,8 +157,6 @@ function wp_link_category_checklist( $link_id = 0 ) {
 
 	foreach ( $categories as $category ) {
 		$cat_id = $category->term_id;
-
-		/** This filter is documented in wp-includes/category-template.php */
 		$name = esc_html( apply_filters( 'the_category', $category->name ) );
 		$checked = in_array( $cat_id, $checked_categories ) ? ' checked="checked"' : '';
 		echo '<li id="link-category-', $cat_id, '"><label for="in-link-category-', $cat_id, '" class="selectit"><input value="', $cat_id, '" type="checkbox" name="link_category[]" id="in-link-category-', $cat_id, '"', $checked, '/> ', $name, "</label></li>";
@@ -183,8 +169,6 @@ function get_inline_data($post) {
 		return;
 
 	$title = esc_textarea( trim( $post->post_title ) );
-
-	/** This filter is documented in wp-admin/edit-tag-form.php */
 	echo '
 <div class="hidden" id="inline_' . $post->ID . '">
 	<div class="post_title">' . $title . '</div>' .
@@ -354,14 +338,14 @@ function list_meta( $meta ) {
 <table id="list-table" style="display: none;">
 	<thead>
 	<tr>
-		<th class="left">' . _x( 'Name', 'meta name' ) . '</th>
+		<th class="left">Name</th>
 		<th>Value</th>
 	</tr>
 	</thead>
 	<tbody id="the-list" data-wp-lists="list:meta">
 	<tr><td></td></tr>
 	</tbody>
-</table>'; //TBODY needed for list-manipulation JS
+</table>';
 		return;
 	}
 	$count = 0;
@@ -369,8 +353,8 @@ function list_meta( $meta ) {
 <table id="list-table">
 	<thead>
 	<tr>
-		<th class="left"><?php _ex( 'Name', 'meta name' ) ?></th>
-		<th><?php _e( 'Value' ) ?></th>
+		<th class="left">Name</th>
+		<th>Value</th>
 	</tr>
 	</thead>
 	<tbody id='the-list' data-wp-lists='list:meta'>
@@ -397,10 +381,8 @@ function _list_meta_row( $entry, &$count ) {
 
 	if ( is_serialized( $entry['meta_value'] ) ) {
 		if ( is_serialized_string( $entry['meta_value'] ) ) {
-			// This is a serialized string, so we should display it.
 			$entry['meta_value'] = maybe_unserialize( $entry['meta_value'] );
 		} else {
-			// This is a serialized array/object so we should NOT display it.
 			--$count;
 			return '';
 		}
@@ -413,7 +395,7 @@ function _list_meta_row( $entry, &$count ) {
 	$delete_nonce = wp_create_nonce( 'delete-meta_' . $entry['meta_id'] );
 
 	$r .= "\n\t<tr id='meta-{$entry['meta_id']}'>";
-	$r .= "\n\t\t<td class='left'><label class='screen-reader-text' for='meta-{$entry['meta_id']}-key'>" . __( 'Key' ) . "</label><input name='meta[{$entry['meta_id']}][key]' id='meta-{$entry['meta_id']}-key' type='text' size='20' value='{$entry['meta_key']}' />";
+	$r .= "\n\t\t<td class='left'><label class='screen-reader-text' for='meta-{$entry['meta_id']}-key'>Key</label><input name='meta[{$entry['meta_id']}][key]' id='meta-{$entry['meta_id']}-key' type='text' size='20' value='{$entry['meta_key']}' />";
 
 	$r .= "\n\t\t<div class='submit'>";
 	$r .= get_submit_button( 'Delete', 'deletemeta small', "deletemeta[{$entry['meta_id']}]", false, array( 'data-wp-lists' => "delete:the-list:meta-{$entry['meta_id']}::_ajax_nonce=$delete_nonce" ) );
@@ -465,7 +447,7 @@ function meta_form( $post = null ) {
 <td id="newmetaleft" class="left">
 <?php if ( $keys ) { ?>
 <select id="metakeyselect" name="metakeyselect">
-<option value="#NONE#"><?php _e( '&mdash; Select &mdash;' ); ?></option>
+<option value="#NONE#">&mdash; Select &mdash;</option>
 <?php
 
 	foreach ( $keys as $key ) {
@@ -477,8 +459,8 @@ function meta_form( $post = null ) {
 </select>
 <input class="hide-if-js" type="text" id="metakeyinput" name="metakeyinput" value="" />
 <a href="#postcustomstuff" class="hide-if-no-js" onclick="jQuery('#metakeyinput, #metakeyselect, #enternew, #cancelnew').toggle();return false;">
-<span id="enternew"><?php _e('Enter new'); ?></span>
-<span id="cancelnew" class="hidden"><?php _e('Cancel'); ?></span></a>
+<span id="enternew">Enter new</span>
+<span id="cancelnew" class="hidden">Cancel</span></a>
 <?php } else { ?>
 <input type="text" id="metakeyinput" name="metakeyinput" value="" />
 <?php } ?>
@@ -567,8 +549,8 @@ function touch_time( $edit = 1, $for_post = 1, $tab_index = 0, $multi = 0 ) {
 ?>
 
 <p>
-<a href="#edit_timestamp" class="save-timestamp hide-if-no-js button"><?php _e('OK'); ?></a>
-<a href="#edit_timestamp" class="cancel-timestamp hide-if-no-js button-cancel"><?php _e('Cancel'); ?></a>
+<a href="#edit_timestamp" class="save-timestamp hide-if-no-js button">OK</a>
+<a href="#edit_timestamp" class="cancel-timestamp hide-if-no-js button-cancel">Cancel</a>
 </p>
 <?php
 }
@@ -589,7 +571,6 @@ function parent_dropdown( $default = 0, $parent = 0, $level = 0, $post = null ) 
 
 	if ( $items ) {
 		foreach ( $items as $item ) {
-			// A page cannot be its own parent.
 			if ( $post && $post->ID && $item->ID == $post->ID )
 				continue;
 

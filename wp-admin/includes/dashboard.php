@@ -663,12 +663,11 @@ function wp_dashboard_quota() {
 				'<a href="%1$s">%2$s <span class="screen-reader-text">(%3$s)</span></a>',
 				esc_url( admin_url( 'upload.php' ) ),
 				$text,
-				__( 'Manage Uploads' )
+				'Manage Uploads'
 			); ?>
 		</li><li class="storage-count <?php echo $used_class; ?>">
 			<?php $text = sprintf(
-				/* translators: 1: number of megabytes, 2: percentage */
-				__( '%1$s MB (%2$s%%) Space Used' ),
+				'%1$s MB (%2$s%%) Space Used',
 				number_format_i18n( $used, 2 ),
 				$percentused
 			);
@@ -676,7 +675,7 @@ function wp_dashboard_quota() {
 				'<a href="%1$s" class="musublink">%2$s <span class="screen-reader-text">(%3$s)</span></a>',
 				esc_url( admin_url( 'upload.php' ) ),
 				$text,
-				__( 'Manage Uploads' )
+				'Manage Uploads'
 			); ?>
 		</li>
 	</ul>

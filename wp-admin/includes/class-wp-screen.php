@@ -706,18 +706,17 @@ final class WP_Screen {
 
 		global $mode;
 
-		// This needs a submit button
 		add_filter( 'screen_options_show_submit', '__return_true' );
 ?>
 		<fieldset class="metabox-prefs view-mode">
-		<legend><?php _e( 'View Mode' ); ?></legend>
+		<legend>View Mode</legend>
 				<label for="list-view-mode">
 					<input id="list-view-mode" type="radio" name="mode" value="list" <?php checked( 'list', $mode ); ?> />
-					<?php _e( 'List View' ); ?>
+					List View
 				</label>
 				<label for="excerpt-view-mode">
 					<input id="excerpt-view-mode" type="radio" name="mode" value="excerpt" <?php checked( 'excerpt', $mode ); ?> />
-					<?php _e( 'Excerpt View' ); ?>
+					Excerpt View
 				</label>
 		</fieldset>
 <?php

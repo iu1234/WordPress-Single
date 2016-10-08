@@ -1,10 +1,4 @@
 <?php
-/**
- * WordPress Plugin Administration API
- *
- * @package WordPress
- * @subpackage Administration
- */
 
 function get_plugin_data( $plugin_file, $markup = true, $translate = true ) {
 
@@ -42,10 +36,8 @@ function get_plugin_data( $plugin_file, $markup = true, $translate = true ) {
 
 function _get_plugin_data_markup_translate( $plugin_file, $plugin_data, $markup = true, $translate = true ) {
 
-	// Sanitize the plugin filename to a WP_PLUGIN_DIR relative path
 	$plugin_file = plugin_basename( $plugin_file );
 
-	// Translate fields
 	if ( $translate ) {
 		if ( $textdomain = $plugin_data['TextDomain'] ) {
 			if ( ! is_textdomain_loaded( $textdomain ) ) {
@@ -64,7 +56,6 @@ function _get_plugin_data_markup_translate( $plugin_file, $plugin_data, $markup 
 		}
 	}
 
-	// Sanitize fields
 	$allowed_tags = $allowed_tags_in_links = array(
 		'abbr'    => array( 'title' => true ),
 		'acronym' => array( 'title' => true ),
@@ -148,7 +139,6 @@ function get_plugins($plugin_folder = '') {
 	if ( !empty($plugin_folder) )
 		$plugin_root .= $plugin_folder;
 
-	// Files in wp-content/plugins directory
 	$plugins_dir = @ opendir( $plugin_root);
 	$plugin_files = array();
 	if ( $plugins_dir ) {
@@ -181,7 +171,7 @@ function get_plugins($plugin_folder = '') {
 		if ( !is_readable( "$plugin_root/$plugin_file" ) )
 			continue;
 
-		$plugin_data = get_plugin_data( "$plugin_root/$plugin_file", false, false ); //Do not apply markup/translate as it'll be cached.
+		$plugin_data = get_plugin_data( "$plugin_root/$plugin_file", false, false );
 
 		if ( empty ( $plugin_data['Name'] ) )
 			continue;
@@ -193,47 +183,6 @@ function get_plugins($plugin_folder = '') {
 
 	$cache_plugins[ $plugin_folder ] = $wp_plugins;
 	wp_cache_set('plugins', $cache_plugins, 'plugins');
-
-	return $wp_plugins;
-}
-
-function get_mu_plugins() {
-	$wp_plugins = array();
-	// Files in wp-content/mu-plugins directory
-	$plugin_files = array();
-
-	if ( ! is_dir( WPMU_PLUGIN_DIR ) )
-		return $wp_plugins;
-	if ( $plugins_dir = @ opendir( WPMU_PLUGIN_DIR ) ) {
-		while ( ( $file = readdir( $plugins_dir ) ) !== false ) {
-			if ( substr( $file, -4 ) == '.php' )
-				$plugin_files[] = $file;
-		}
-	} else {
-		return $wp_plugins;
-	}
-
-	@closedir( $plugins_dir );
-
-	if ( empty($plugin_files) )
-		return $wp_plugins;
-
-	foreach ( $plugin_files as $plugin_file ) {
-		if ( !is_readable( WPMU_PLUGIN_DIR . "/$plugin_file" ) )
-			continue;
-
-		$plugin_data = get_plugin_data( WPMU_PLUGIN_DIR . "/$plugin_file", false, false ); //Do not apply markup/translate as it'll be cached.
-
-		if ( empty ( $plugin_data['Name'] ) )
-			$plugin_data['Name'] = $plugin_file;
-
-		$wp_plugins[ $plugin_file ] = $plugin_data;
-	}
-
-	if ( isset( $wp_plugins['index.php'] ) && filesize( WPMU_PLUGIN_DIR . '/index.php') <= 30 ) // silence is golden
-		unset( $wp_plugins['index.php'] );
-
-	uasort( $wp_plugins, '_sort_uname_callback' );
 
 	return $wp_plugins;
 }
@@ -285,13 +234,7 @@ function is_plugin_active( $plugin ) {
 function activate_plugin( $plugin, $redirect = '', $network_wide = false, $silent = false ) {
 	$plugin = plugin_basename( trim( $plugin ) );
 
-	if ( is_multisite() && ( $network_wide || is_network_only_plugin($plugin) ) ) {
-		$network_wide = true;
-		$current = get_site_option( 'active_sitewide_plugins', array() );
-		$_GET['networkwide'] = 1;
-	} else {
-		$current = get_option( 'active_plugins', array() );
-	}
+	$current = get_option( 'active_plugins', array() );
 
 	$valid = validate_plugin($plugin);
 	if ( is_wp_error($valid) )
@@ -299,12 +242,12 @@ function activate_plugin( $plugin, $redirect = '', $network_wide = false, $silen
 
 	if ( ( $network_wide && ! isset( $current[ $plugin ] ) ) || ( ! $network_wide && ! in_array( $plugin, $current ) ) ) {
 		if ( !empty($redirect) )
-			wp_redirect(add_query_arg('_error_nonce', wp_create_nonce('plugin-activation-error_' . $plugin), $redirect)); // we'll override this later if the plugin can be included without fatal error
+			wp_redirect(add_query_arg('_error_nonce', wp_create_nonce('plugin-activation-error_' . $plugin), $redirect));
 		ob_start();
 		wp_register_plugin_realpath( WP_PLUGIN_DIR . '/' . $plugin );
 		$_wp_plugin_file = $plugin;
 		include_once( WP_PLUGIN_DIR . '/' . $plugin );
-		$plugin = $_wp_plugin_file; // Avoid stomping of the $plugin variable in a plugin.
+		$plugin = $_wp_plugin_file;
 
 		if ( ! $silent ) {
 			do_action( 'activate_plugin', $plugin, $network_wide );
@@ -494,43 +437,33 @@ function delete_plugins( $plugins, $deprecated = '' ) {
 		}
 	}
 
-	// Remove deleted plugins from the plugin updates list.
 	if ( $current = get_site_transient('update_plugins') ) {
-		// Don't remove the plugins that weren't deleted.
 		$deleted = array_diff( $plugins, $errors );
-
 		foreach ( $deleted as $plugin_file ) {
 			unset( $current->response[ $plugin_file ] );
 		}
-
 		set_site_transient( 'update_plugins', $current );
 	}
 
 	if ( ! empty($errors) )
-		return new WP_Error('could_not_remove_plugin', sprintf(__('Could not fully remove the plugin(s) %s.'), implode(', ', $errors)) );
+		return new WP_Error('could_not_remove_plugin', sprintf( 'Could not fully remove the plugin(s) %s.', implode(', ', $errors)) );
 
 	return true;
 }
 
 function validate_active_plugins() {
 	$plugins = get_option( 'active_plugins', array() );
-	// Validate vartype: array.
 	if ( ! is_array( $plugins ) ) {
 		update_option( 'active_plugins', array() );
 		$plugins = array();
 	}
-
 	if ( is_multisite() && current_user_can( 'manage_network_plugins' ) ) {
 		$network_plugins = (array) get_site_option( 'active_sitewide_plugins', array() );
 		$plugins = array_merge( $plugins, array_keys( $network_plugins ) );
 	}
-
 	if ( empty( $plugins ) )
 		return array();
-
 	$invalid = array();
-
-	// Invalid plugins get deactivated.
 	foreach ( $plugins as $plugin ) {
 		$result = validate_plugin( $plugin );
 		if ( is_wp_error( $result ) ) {
@@ -543,19 +476,18 @@ function validate_active_plugins() {
 
 function validate_plugin($plugin) {
 	if ( validate_file($plugin) )
-		return new WP_Error('plugin_invalid', __('Invalid plugin path.'));
+		return new WP_Error('plugin_invalid', 'Invalid plugin path.');
 	if ( ! file_exists(WP_PLUGIN_DIR . '/' . $plugin) )
-		return new WP_Error('plugin_not_found', __('Plugin file does not exist.'));
+		return new WP_Error('plugin_not_found', 'Plugin file does not exist.');
 
 	$installed_plugins = get_plugins();
 	if ( ! isset($installed_plugins[$plugin]) )
-		return new WP_Error('no_plugin_header', __('The plugin does not have a valid header.'));
+		return new WP_Error('no_plugin_header', 'The plugin does not have a valid header.');
 	return 0;
 }
 
 function is_uninstallable_plugin($plugin) {
 	$file = plugin_basename($plugin);
-
 	$uninstallable_plugins = (array) get_option('uninstall_plugins');
 	if ( isset( $uninstallable_plugins[$file] ) || file_exists( WP_PLUGIN_DIR . '/' . dirname($file) . '/uninstall.php' ) )
 		return true;
@@ -1003,16 +935,6 @@ function user_can_access_admin_page() {
 function register_setting( $option_group, $option_name, $sanitize_callback = '' ) {
 	global $new_whitelist_options;
 
-	if ( 'misc' == $option_group ) {
-		_deprecated_argument( __FUNCTION__, '3.0', sprintf( 'The "%s" options group has been removed. Use another settings group.', 'misc' ) );
-		$option_group = 'general';
-	}
-
-	if ( 'privacy' == $option_group ) {
-		_deprecated_argument( __FUNCTION__, '3.5', sprintf( 'The "%s" options group has been removed. Use another settings group.', 'privacy' ) );
-		$option_group = 'reading';
-	}
-
 	$new_whitelist_options[ $option_group ][] = $option_name;
 	if ( $sanitize_callback != '' )
 		add_filter( "sanitize_option_{$option_name}", $sanitize_callback );
@@ -1020,16 +942,6 @@ function register_setting( $option_group, $option_name, $sanitize_callback = '' 
 
 function unregister_setting( $option_group, $option_name, $sanitize_callback = '' ) {
 	global $new_whitelist_options;
-
-	if ( 'misc' == $option_group ) {
-		_deprecated_argument( __FUNCTION__, '3.0', sprintf( __( 'The "%s" options group has been removed. Use another settings group.' ), 'misc' ) );
-		$option_group = 'general';
-	}
-
-	if ( 'privacy' == $option_group ) {
-		_deprecated_argument( __FUNCTION__, '3.5', sprintf( __( 'The "%s" options group has been removed. Use another settings group.' ), 'privacy' ) );
-		$option_group = 'reading';
-	}
 
 	$pos = array_search( $option_name, (array) $new_whitelist_options[ $option_group ] );
 	if ( $pos !== false )

@@ -1,24 +1,5 @@
 <?php
 
-// -- Post related Meta Boxes
-
-/**
- * Displays post submit form fields.
- *
- * @since 2.7.0
- *
- * @global string $action
- *
- * @param WP_Post  $post Current post object.
- * @param array    $args {
- *     Array of arguments for building the post submit meta box.
- *
- *     @type string   $id       Meta box ID.
- *     @type string   $title    Meta box title.
- *     @type callable $callback Meta box display callback.
- *     @type array    $args     Extra meta box arguments.
- * }
- */
 function post_submit_meta_box( $post, $args = array() ) {
 	global $action;
 
@@ -40,7 +21,7 @@ function post_submit_meta_box( $post, $args = array() ) {
 <input <?php if ( 'private' == $post->post_status ) { ?>style="display:none"<?php } ?> type="submit" name="save" id="save-post" value="<?php esc_attr_e('Save Draft'); ?>" class="button" />
 <span class="spinner"></span>
 <?php } elseif ( 'pending' == $post->post_status && $can_publish ) { ?>
-<input type="submit" name="save" id="save-post" value="<?php esc_attr_e('Save as Pending'); ?>" class="button" />
+<input type="submit" name="save" id="save-post" value="Save as Pending" class="button" />
 <span class="spinner"></span>
 <?php } ?>
 </div>
@@ -122,16 +103,16 @@ switch ( $post->post_status ) {
 if ( 'private' == $post->post_status ) {
 	$post->post_password = '';
 	$visibility = 'private';
-	$visibility_trans = __('Private');
+	$visibility_trans = 'Private';
 } elseif ( !empty( $post->post_password ) ) {
 	$visibility = 'password';
-	$visibility_trans = __('Password protected');
+	$visibility_trans = 'Password protected';
 } elseif ( $post_type == 'post' && is_sticky( $post->ID ) ) {
 	$visibility = 'public';
-	$visibility_trans = __('Public, Sticky');
+	$visibility_trans = 'Public, Sticky';
 } else {
 	$visibility = 'public';
-	$visibility_trans = __('Public');
+	$visibility_trans = 'Public';
 }
 
 echo esc_html( $visibility_trans ); ?></span>
@@ -149,42 +130,41 @@ echo esc_html( $visibility_trans ); ?></span>
 <span id="sticky-span"><input id="sticky" name="sticky" type="checkbox" value="sticky" <?php checked( is_sticky( $post->ID ) ); ?> /> <label for="sticky" class="selectit"><?php _e( 'Stick this post to the front page' ); ?></label><br /></span>
 <?php endif; ?>
 <input type="radio" name="visibility" id="visibility-radio-password" value="password" <?php checked( $visibility, 'password' ); ?> /> <label for="visibility-radio-password" class="selectit"><?php _e('Password protected'); ?></label><br />
-<span id="password-span"><label for="post_password"><?php _e('Password:'); ?></label> <input type="text" name="post_password" id="post_password" value="<?php echo esc_attr($post->post_password); ?>"  maxlength="20" /><br /></span>
+<span id="password-span"><label for="post_password">Password:</label> <input type="text" name="post_password" id="post_password" value="<?php echo esc_attr($post->post_password); ?>"  maxlength="20" /><br /></span>
 <input type="radio" name="visibility" id="visibility-radio-private" value="private" <?php checked( $visibility, 'private' ); ?> /> <label for="visibility-radio-private" class="selectit"><?php _e('Private'); ?></label><br />
 
 <p>
- <a href="#visibility" class="save-post-visibility hide-if-no-js button"><?php _e('OK'); ?></a>
- <a href="#visibility" class="cancel-post-visibility hide-if-no-js button-cancel"><?php _e('Cancel'); ?></a>
+ <a href="#visibility" class="save-post-visibility hide-if-no-js button">OK</a>
+ <a href="#visibility" class="cancel-post-visibility hide-if-no-js button-cancel">Cancel</a>
 </p>
 </div>
 <?php } ?>
 
-</div><!-- .misc-pub-section -->
+</div>
 
 <?php
-/* translators: Publish box date format, see http://php.net/date */
-$datef = __( 'M j, Y @ H:i' );
+$datef = 'M j, Y @ H:i';
 if ( 0 != $post->ID ) {
-	if ( 'future' == $post->post_status ) { // scheduled for publishing at a future date
-		$stamp = __('Scheduled for: <b>%1$s</b>');
-	} elseif ( 'publish' == $post->post_status || 'private' == $post->post_status ) { // already published
-		$stamp = __('Published on: <b>%1$s</b>');
-	} elseif ( '0000-00-00 00:00:00' == $post->post_date_gmt ) { // draft, 1 or more saves, no date specified
-		$stamp = __('Publish <b>immediately</b>');
-	} elseif ( time() < strtotime( $post->post_date_gmt . ' +0000' ) ) { // draft, 1 or more saves, future date specified
-		$stamp = __('Schedule for: <b>%1$s</b>');
-	} else { // draft, 1 or more saves, date specified
-		$stamp = __('Publish on: <b>%1$s</b>');
+	if ( 'future' == $post->post_status ) {
+		$stamp = 'Scheduled for: <b>%1$s</b>';
+	} elseif ( 'publish' == $post->post_status || 'private' == $post->post_status ) {
+		$stamp = 'Published on: <b>%1$s</b>';
+	} elseif ( '0000-00-00 00:00:00' == $post->post_date_gmt ) {
+		$stamp = 'Publish <b>immediately</b>';
+	} elseif ( time() < strtotime( $post->post_date_gmt . ' +0000' ) ) {
+		$stamp = 'Schedule for: <b>%1$s</b>';
+	} else {
+		$stamp = 'Publish on: <b>%1$s</b>';
 	}
 	$date = date_i18n( $datef, strtotime( $post->post_date ) );
-} else { // draft (no saves, and thus no date specified)
-	$stamp = __('Publish <b>immediately</b>');
+} else {
+	$stamp = 'Publish <b>immediately</b>';
 	$date = date_i18n( $datef, strtotime( current_time('mysql') ) );
 }
 
 if ( ! empty( $args['args']['revisions_count'] ) ) : ?>
 <div class="misc-pub-section misc-pub-revisions">
-	<?php printf( __( 'Revisions: %s' ), '<b>' . number_format_i18n( $args['args']['revisions_count'] ) . '</b>' ); ?>
+	<?php printf( 'Revisions: %s', '<b>' . number_format_i18n( $args['args']['revisions_count'] ) . '</b>' ); ?>
 	<a class="hide-if-no-js" href="<?php echo esc_url( get_edit_post_link( $args['args']['revision_id'] ) ); ?>"><span aria-hidden="true"><?php _ex( 'Browse', 'revisions' ); ?></span> <span class="screen-reader-text"><?php _e( 'Browse revisions' ); ?></span></a>
 </div>
 <?php endif;
@@ -202,14 +182,6 @@ if ( $can_publish ) : // Contributors don't get to choose the date of publish ?>
 <?php endif; ?>
 
 <?php
-/**
- * Fires after the post time/date setting in the Publish meta box.
- *
- * @since 2.9.0
- * @since 4.4.0 Added the `$post` parameter.
- *
- * @param WP_Post $post WP_Post object for the current post.
- */
 do_action( 'post_submitbox_misc_actions', $post );
 ?>
 </div>
@@ -218,20 +190,15 @@ do_action( 'post_submitbox_misc_actions', $post );
 
 <div id="major-publishing-actions">
 <?php
-/**
- * Fires at the beginning of the publishing actions section of the Publish meta box.
- *
- * @since 2.7.0
- */
 do_action( 'post_submitbox_start' );
 ?>
 <div id="delete-action">
 <?php
 if ( current_user_can( "delete_post", $post->ID ) ) {
 	if ( !EMPTY_TRASH_DAYS )
-		$delete_text = __('Delete Permanently');
+		$delete_text = 'Delete Permanently';
 	else
-		$delete_text = __('Move to Trash');
+		$delete_text = 'Move to Trash';
 	?>
 <a class="submitdelete deletion" href="<?php echo get_delete_post_link($post->ID); ?>"><?php echo $delete_text; ?></a><?php
 } ?>
@@ -243,20 +210,20 @@ if ( current_user_can( "delete_post", $post->ID ) ) {
 if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0 == $post->ID ) {
 	if ( $can_publish ) :
 		if ( !empty($post->post_date_gmt) && time() < strtotime( $post->post_date_gmt . ' +0000' ) ) : ?>
-		<input name="original_publish" type="hidden" id="original_publish" value="<?php esc_attr_e('Schedule') ?>" />
-		<?php submit_button( __( 'Schedule' ), 'primary button-large', 'publish', false ); ?>
+		<input name="original_publish" type="hidden" id="original_publish" value="Schedule" />
+		<?php submit_button( 'Schedule', 'primary button-large', 'publish', false ); ?>
 <?php	else : ?>
-		<input name="original_publish" type="hidden" id="original_publish" value="<?php esc_attr_e('Publish') ?>" />
-		<?php submit_button( __( 'Publish' ), 'primary button-large', 'publish', false ); ?>
+		<input name="original_publish" type="hidden" id="original_publish" value="Publish" />
+		<?php submit_button( 'Publish', 'primary button-large', 'publish', false ); ?>
 <?php	endif;
 	else : ?>
-		<input name="original_publish" type="hidden" id="original_publish" value="<?php esc_attr_e('Submit for Review') ?>" />
-		<?php submit_button( __( 'Submit for Review' ), 'primary button-large', 'publish', false ); ?>
+		<input name="original_publish" type="hidden" id="original_publish" value="Submit for Review" />
+		<?php submit_button( 'Submit for Review', 'primary button-large', 'publish', false ); ?>
 <?php
 	endif;
 } else { ?>
-		<input name="original_publish" type="hidden" id="original_publish" value="<?php esc_attr_e('Update') ?>" />
-		<input name="save" type="submit" class="button button-primary button-large" id="publish" value="<?php esc_attr_e( 'Update' ) ?>" />
+		<input name="original_publish" type="hidden" id="original_publish" value="Update" />
+		<input name="save" type="submit" class="button button-primary button-large" id="publish" value="Update" />
 <?php
 } ?>
 </div>
@@ -296,22 +263,21 @@ function attachment_submit_meta_box( $post ) {
 	<?php
 	if ( current_user_can( 'delete_post', $post->ID ) )
 		if ( EMPTY_TRASH_DAYS && MEDIA_TRASH ) {
-			echo "<a class='submitdelete deletion' href='" . get_delete_post_link( $post->ID ) . "'>" . _x( 'Trash', 'verb' ) . "</a>";
+			echo "<a class='submitdelete deletion' href='" . get_delete_post_link( $post->ID ) . "'>Trash</a>";
 		} else {
 			$delete_ays = ! MEDIA_TRASH ? " onclick='return showNotice.warn();'" : '';
-			echo  "<a class='submitdelete deletion'$delete_ays href='" . get_delete_post_link( $post->ID, null, true ) . "'>" . __( 'Delete Permanently' ) . "</a>";
+			echo  "<a class='submitdelete deletion'$delete_ays href='" . get_delete_post_link( $post->ID, null, true ) . "'>Delete Permanently</a>";
 		}
 	?>
 	</div>
 
 	<div id="publishing-action">
 		<span class="spinner"></span>
-		<input name="original_publish" type="hidden" id="original_publish" value="<?php esc_attr_e('Update') ?>" />
-		<input name="save" type="submit" class="button-primary button-large" id="publish" value="<?php esc_attr_e( 'Update' ) ?>" />
+		<input name="original_publish" type="hidden" id="original_publish" value="Update" />
+		<input name="save" type="submit" class="button-primary button-large" id="publish" value="Update" />
 	</div>
 	<div class="clear"></div>
-</div><!-- #major-publishing-actions -->
-
+</div>
 </div>
 
 <?php
@@ -416,10 +382,7 @@ function post_categories_meta_box( $post, $box ) {
 	<?php if ( current_user_can( $taxonomy->cap->edit_terms ) ) : ?>
 			<div id="<?php echo $tax_name; ?>-adder" class="wp-hidden-children">
 				<a id="<?php echo $tax_name; ?>-add-toggle" href="#<?php echo $tax_name; ?>-add" class="hide-if-no-js taxonomy-add-new">
-					<?php
-						/* translators: %s: add new taxonomy label */
-						printf( __( '+ %s' ), $taxonomy->labels->add_new_item );
-					?>
+					<?php printf( '+ %s', $taxonomy->labels->add_new_item ); ?>
 				</a>
 				<p id="<?php echo $tax_name; ?>-add" class="category-add wp-hidden-child">
 					<label class="screen-reader-text" for="new<?php echo $tax_name; ?>"><?php echo $taxonomy->labels->add_new_item; ?></label>
@@ -456,8 +419,8 @@ function post_excerpt_meta_box($post) {
 <label class="screen-reader-text" for="excerpt">Excerpt</label><textarea rows="1" cols="40" name="excerpt" id="excerpt"><?php echo $post->post_excerpt; // textarea_escaped ?></textarea>
 <p><?php
 	printf(
-		__( 'Excerpts are optional hand-crafted summaries of your content that can be used in your theme. <a href="%s">Learn more about manual excerpts</a>.' ),
-		__( 'https://codex.wordpress.org/Excerpt' )
+		'Excerpts are optional hand-crafted summaries of your content that can be used in your theme. <a href="%s">Learn more about manual excerpts</a>.',
+		'https://codex.wordpress.org/Excerpt'
 	);
 ?></p>
 <?php
@@ -483,8 +446,8 @@ function post_trackback_meta_box($post) {
 <p id="trackback-url-desc" class="howto">Separate multiple URLs with spaces</p>
 <p><?php
 	printf(
-		__( 'Trackbacks are a way to notify legacy blog systems that you&#8217;ve linked to them. If you link other WordPress sites, they&#8217;ll be notified automatically using <a href="%s">pingbacks</a>, no other action necessary.' ),
-		__( 'https://codex.wordpress.org/Introduction_to_Blogging#Managing_Comments' )
+		'Trackbacks are a way to notify legacy blog systems that you&#8217;ve linked to them. If you link other WordPress sites, they&#8217;ll be notified automatically using <a href="%s">pingbacks</a>, no other action necessary.',
+		'https://codex.wordpress.org/Introduction_to_Blogging#Managing_Comments'
 	);
 ?></p>
 <?php
@@ -507,8 +470,8 @@ meta_form( $post ); ?>
 </div>
 <p><?php
 	printf(
-		__( 'Custom fields can be used to add extra metadata to a post that you can <a href="%s">use in your theme</a>.' ),
-		__( 'https://codex.wordpress.org/Using_Custom_Fields' )
+		'Custom fields can be used to add extra metadata to a post that you can <a href="%s">use in your theme</a>.',
+		'https://codex.wordpress.org/Using_Custom_Fields'
 	);
 ?></p>
 <?php
@@ -547,7 +510,7 @@ function post_comment_meta_box( $post ) {
 	$wp_list_table->display( true );
 
 	if ( 1 > $total ) {
-		echo '<p id="no-comments">' . __('No comments yet.') . '</p>';
+		echo '<p id="no-comments">No comments yet.</p>';
 	} else {
 		$hidden = get_hidden_meta_boxes( get_current_screen() );
 		if ( ! in_array('commentsdiv', $hidden) ) {
@@ -628,10 +591,10 @@ $default_title = apply_filters( 'default_page_template_title',  'Default Templat
 </select>
 <?php
 	} ?>
-<p><strong><?php _e('Order') ?></strong></p>
-<p><label class="screen-reader-text" for="menu_order"><?php _e('Order') ?></label><input name="menu_order" type="text" size="4" id="menu_order" value="<?php echo esc_attr($post->menu_order) ?>" /></p>
+<p><strong>Order</strong></p>
+<p><label class="screen-reader-text" for="menu_order">Order</label><input name="menu_order" type="text" size="4" id="menu_order" value="<?php echo esc_attr($post->menu_order) ?>" /></p>
 <?php if ( 'page' == $post->post_type && get_current_screen()->get_help_tabs() ) { ?>
-<p><?php _e( 'Need help? Use the Help tab in the upper right of your screen.' ); ?></p>
+<p>Need help? Use the Help tab in the upper right of your screen.</p>
 <?php
 	}
 }
@@ -649,7 +612,7 @@ function link_submit_meta_box($link) {
 <div id="minor-publishing-actions">
 <div id="preview-action">
 <?php if ( !empty($link->link_id) ) { ?>
-	<a class="preview button" href="<?php echo $link->link_url; ?>" target="_blank"><?php _e('Visit Link'); ?></a>
+	<a class="preview button" href="<?php echo $link->link_url; ?>" target="_blank">Visit Link</a>
 <?php } ?>
 </div>
 <div class="clear"></div>
@@ -676,9 +639,9 @@ if ( !empty($_GET['action']) && 'edit' == $_GET['action'] && current_user_can('m
 
 <div id="publishing-action">
 <?php if ( !empty($link->link_id) ) { ?>
-	<input name="save" type="submit" class="button-large button-primary" id="publish" value="<?php esc_attr_e( 'Update Link' ) ?>" />
+	<input name="save" type="submit" class="button-large button-primary" id="publish" value="Update Link" />
 <?php } else { ?>
-	<input name="save" type="submit" class="button-large button-primary" id="publish" value="<?php esc_attr_e( 'Add Link' ) ?>" />
+	<input name="save" type="submit" class="button-large button-primary" id="publish" value="Add Link" />
 <?php } ?>
 </div>
 <div class="clear"></div>
@@ -717,10 +680,10 @@ function link_categories_meta_box($link) {
 	</div>
 
 	<div id="category-adder" class="wp-hidden-children">
-		<a id="category-add-toggle" href="#category-add" class="taxonomy-add-new"><?php _e( '+ Add New Category' ); ?></a>
+		<a id="category-add-toggle" href="#category-add" class="taxonomy-add-new">+ Add New Category</a>
 		<p id="link-category-add" class="wp-hidden-child">
-			<label class="screen-reader-text" for="newcat"><?php _e( '+ Add New Category' ); ?></label>
-			<input type="text" name="newcat" id="newcat" class="form-required form-input-tip" value="<?php esc_attr_e( 'New category name' ); ?>" aria-required="true" />
+			<label class="screen-reader-text" for="newcat">+ Add New Category</label>
+			<input type="text" name="newcat" id="newcat" class="form-required form-input-tip" value="New category name" aria-required="true" />
 			<input type="button" id="link-category-add-submit" data-wp-lists="add:categorychecklist:link-category-add" class="button" value="<?php esc_attr_e( 'Add' ); ?>" />
 			<?php wp_nonce_field( 'add-link-category', '_ajax_nonce', false ); ?>
 			<span id="category-ajax-response"></span>
@@ -731,7 +694,7 @@ function link_categories_meta_box($link) {
 }
 
 function link_target_meta_box($link) { ?>
-<fieldset><legend class="screen-reader-text"><span><?php _e('Target') ?></span></legend>
+<fieldset><legend class="screen-reader-text"><span>Target</span></legend>
 <p><label for="link_target_blank" class="selectit">
 <input id="link_target_blank" type="radio" name="link_target" value="_blank" <?php echo ( isset( $link->link_target ) && ($link->link_target == '_blank') ? 'checked="checked"' : ''); ?> />
 <?php _e('<code>_blank</code> &mdash; new window or tab.'); ?></label></p>
@@ -746,11 +709,8 @@ function link_target_meta_box($link) { ?>
 <?php
 }
 
-function xfn_check( $class, $value = '', $deprecated = '' ) {
+function xfn_check( $class, $value = '' ) {
 	global $link;
-
-	if ( !empty( $deprecated ) )
-		_deprecated_argument( __FUNCTION__, '0.0' ); // Never implemented
 
 	$link_rel = isset( $link->link_rel ) ? $link->link_rel : ''; // In PHP 5.3: $link_rel = $link->link_rel ?: '';
 	$rels = preg_split('/\s+/', $link_rel);
@@ -771,20 +731,20 @@ function link_xfn_meta_box($link) {
 ?>
 <table class="links-table">
 	<tr>
-		<th scope="row"><label for="link_rel"><?php _e('rel:') ?></label></th>
+		<th scope="row"><label for="link_rel">rel:</label></th>
 		<td><input type="text" name="link_rel" id="link_rel" value="<?php echo ( isset( $link->link_rel ) ? esc_attr($link->link_rel) : ''); ?>" /></td>
 	</tr>
 	<tr>
-		<th scope="row"><?php _e('identity') ?></th>
-		<td><fieldset><legend class="screen-reader-text"><span><?php _e('identity') ?></span></legend>
+		<th scope="row">identity</th>
+		<td><fieldset><legend class="screen-reader-text"><span>identity</span></legend>
 			<label for="me">
 			<input type="checkbox" name="identity" value="me" id="me" <?php xfn_check('identity', 'me'); ?> />
-			<?php _e('another web address of mine') ?></label>
+			another web address of mine</label>
 		</fieldset></td>
 	</tr>
 	<tr>
-		<th scope="row"><?php /* translators: xfn: http://gmpg.org/xfn/ */ _e('friendship') ?></th>
-		<td><fieldset><legend class="screen-reader-text"><span><?php /* translators: xfn: http://gmpg.org/xfn/ */ _e('friendship') ?></span></legend>
+		<th scope="row">friendship</th>
+		<td><fieldset><legend class="screen-reader-text"><span>friendship</span></legend>
 			<label for="contact">
 			<input class="valinp" type="radio" name="friendship" value="contact" id="contact" <?php xfn_check('friendship', 'contact'); ?> />&nbsp;<?php /* translators: xfn: http://gmpg.org/xfn/ */ _e('contact') ?>
 			</label>
@@ -800,15 +760,15 @@ function link_xfn_meta_box($link) {
 		</fieldset></td>
 	</tr>
 	<tr>
-		<th scope="row"> <?php /* translators: xfn: http://gmpg.org/xfn/ */ _e('physical') ?> </th>
-		<td><fieldset><legend class="screen-reader-text"><span><?php /* translators: xfn: http://gmpg.org/xfn/ */ _e('physical') ?></span></legend>
+		<th scope="row"> physical </th>
+		<td><fieldset><legend class="screen-reader-text"><span>physical</span></legend>
 			<label for="met">
 			<input class="valinp" type="checkbox" name="physical" value="met" id="met" <?php xfn_check('physical', 'met'); ?> />&nbsp;<?php /* translators: xfn: http://gmpg.org/xfn/ */ _e('met') ?>
 			</label>
 		</fieldset></td>
 	</tr>
 	<tr>
-		<th scope="row"> <?php /* translators: xfn: http://gmpg.org/xfn/ */ _e('professional') ?> </th>
+		<th scope="row"> professional </th>
 		<td><fieldset><legend class="screen-reader-text"><span><?php /* translators: xfn: http://gmpg.org/xfn/ */ _e('professional') ?></span></legend>
 			<label for="co-worker">
 			<input class="valinp" type="checkbox" name="professional" value="co-worker" id="co-worker" <?php xfn_check('professional', 'co-worker'); ?> />&nbsp;<?php /* translators: xfn: http://gmpg.org/xfn/ */ _e('co-worker') ?>
@@ -819,7 +779,7 @@ function link_xfn_meta_box($link) {
 		</fieldset></td>
 	</tr>
 	<tr>
-		<th scope="row"><?php /* translators: xfn: http://gmpg.org/xfn/ */ _e('geographical') ?></th>
+		<th scope="row">geographical</th>
 		<td><fieldset><legend class="screen-reader-text"><span> <?php /* translators: xfn: http://gmpg.org/xfn/ */ _e('geographical') ?> </span></legend>
 			<label for="co-resident">
 			<input class="valinp" type="radio" name="geographical" value="co-resident" id="co-resident" <?php xfn_check('geographical', 'co-resident'); ?> />&nbsp;<?php /* translators: xfn: http://gmpg.org/xfn/ */ _e('co-resident') ?>
@@ -856,8 +816,8 @@ function link_xfn_meta_box($link) {
 		</fieldset></td>
 	</tr>
 	<tr>
-		<th scope="row"><?php /* translators: xfn: http://gmpg.org/xfn/ */ _e('romantic') ?></th>
-		<td><fieldset><legend class="screen-reader-text"><span> <?php /* translators: xfn: http://gmpg.org/xfn/ */ _e('romantic') ?> </span></legend>
+		<th scope="row">romantic</th>
+		<td><fieldset><legend class="screen-reader-text"><span> romantic </span></legend>
 			<label for="muse">
 			<input class="valinp" type="checkbox" name="romantic" value="muse" id="muse" <?php xfn_check('romantic', 'muse'); ?> />&nbsp;<?php /* translators: xfn: http://gmpg.org/xfn/ */ _e('muse') ?>
 			</label>
@@ -874,7 +834,7 @@ function link_xfn_meta_box($link) {
 	</tr>
 
 </table>
-<p><?php _e('If the link is to a person, you can specify your relationship with them using the above form. If you would like to learn more about the idea check out <a href="http://gmpg.org/xfn/">XFN</a>.'); ?></p>
+<p>If the link is to a person, you can specify your relationship with them using the above form. If you would like to learn more about the idea check out <a href="http://gmpg.org/xfn/">XFN</a>.</p>
 <?php
 }
 
@@ -882,19 +842,15 @@ function link_advanced_meta_box($link) {
 ?>
 <table class="links-table" cellpadding="0">
 	<tr>
-		<th scope="row"><label for="link_image"><?php _e('Image Address') ?></label></th>
+		<th scope="row"><label for="link_image">Image Address</label></th>
 		<td><input type="text" name="link_image" class="code" id="link_image" maxlength="255" value="<?php echo ( isset( $link->link_image ) ? esc_attr($link->link_image) : ''); ?>" /></td>
 	</tr>
 	<tr>
-		<th scope="row"><label for="rss_uri"><?php _e('RSS Address') ?></label></th>
-		<td><input name="link_rss" class="code" type="text" id="rss_uri" maxlength="255" value="<?php echo ( isset( $link->link_rss ) ? esc_attr($link->link_rss) : ''); ?>" /></td>
+		<th scope="row"><label for="link_notes">Notes</label></th>
+		<td><textarea name="link_notes" id="link_notes" rows="10"><?php echo ( isset( $link->link_notes ) ? $link->link_notes : ''); ?></textarea></td>
 	</tr>
 	<tr>
-		<th scope="row"><label for="link_notes"><?php _e('Notes') ?></label></th>
-		<td><textarea name="link_notes" id="link_notes" rows="10"><?php echo ( isset( $link->link_notes ) ? $link->link_notes : ''); // textarea_escaped ?></textarea></td>
-	</tr>
-	<tr>
-		<th scope="row"><label for="link_rating"><?php _e('Rating') ?></label></th>
+		<th scope="row"><label for="link_rating">Rating</label></th>
 		<td><select name="link_rating" id="link_rating" size="1">
 		<?php
 			for ( $r = 0; $r <= 10; $r++ ) {

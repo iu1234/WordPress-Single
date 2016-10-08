@@ -1,10 +1,4 @@
 <?php
-/**
- * WordPress Post Administration API.
- *
- * @package WordPress
- * @subpackage Administration
- */
 
 function _wp_translate_postdata( $update = false, $post_data = null ) {
 
@@ -887,16 +881,6 @@ function wp_edit_posts_query( $q = false ) {
 	return $avail_post_stati;
 }
 
-/**
- * Get all available post MIME types for a given post type.
- *
- * @since 2.5.0
- *
- * @global wpdb $wpdb WordPress database abstraction object.
- *
- * @param string $type
- * @return mixed
- */
 function get_available_post_mime_types($type = 'attachment') {
 	global $wpdb;
 
@@ -904,15 +888,6 @@ function get_available_post_mime_types($type = 'attachment') {
 	return $types;
 }
 
-/**
- * Get the query variables for the current attachments request.
- *
- * @since 4.2.0
- *
- * @param array|false $q Optional. Array of query variables to use to build the query or false
- *                       to use $_GET superglobal. Default false.
- * @return array The parsed query vars.
- */
 function wp_edit_attachments_query_vars( $q = false ) {
 	if ( false === $q ) {
 		$q = $_GET;
@@ -934,13 +909,6 @@ function wp_edit_attachments_query_vars( $q = false ) {
 		$media_per_page = 20;
 	}
 
-	/**
-	 * Filter the number of items to list per page when listing media items.
-	 *
-	 * @since 2.9.0
-	 *
-	 * @param int $media_per_page Number of media to list. Default 20.
-	 */
 	$q['posts_per_page'] = apply_filters( 'upload_per_page', $media_per_page );
 
 	$post_mime_types = get_post_mime_types();
@@ -999,14 +967,11 @@ function get_sample_permalink($id, $title = null, $name = null) {
 	$original_date = $post->post_date;
 	$original_name = $post->post_name;
 
-	// Hack: get_permalink() would return ugly permalink for drafts, so we will fake that our post is published.
 	if ( in_array( $post->post_status, array( 'draft', 'pending', 'future' ) ) ) {
 		$post->post_status = 'publish';
 		$post->post_name = sanitize_title($post->post_name ? $post->post_name : $post->post_title, $post->ID);
 	}
 
-	// If the user wants to set a new name -- override the current one
-	// Note: if empty name is supplied -- use the title instead, see #6072
 	if ( !is_null($name) )
 		$post->post_name = sanitize_title($name ? $name : $title, $post->ID);
 
@@ -1016,10 +981,8 @@ function get_sample_permalink($id, $title = null, $name = null) {
 
 	$permalink = get_permalink($post, true);
 
-	// Replace custom post_type Token with generic pagename token for ease of use.
 	$permalink = str_replace("%$post->post_type%", '%pagename%', $permalink);
 
-	// Handle page hierarchy
 	if ( $ptype->hierarchical ) {
 		$uri = get_page_uri($post);
 		if ( $uri ) {
@@ -1028,31 +991,18 @@ function get_sample_permalink($id, $title = null, $name = null) {
 			$uri = untrailingslashit($uri);
 		}
 
-		/** This filter is documented in wp-admin/edit-tag-form.php */
 		$uri = apply_filters( 'editable_slug', $uri, $post );
 		if ( !empty($uri) )
 			$uri .= '/';
 		$permalink = str_replace('%pagename%', "{$uri}%pagename%", $permalink);
 	}
 
-	/** This filter is documented in wp-admin/edit-tag-form.php */
 	$permalink = array( $permalink, apply_filters( 'editable_slug', $post->post_name, $post ) );
 	$post->post_status = $original_status;
 	$post->post_date = $original_date;
 	$post->post_name = $original_name;
 	unset($post->filter);
 
-	/**
-	 * Filter the sample permalink.
-	 *
-	 * @since 4.4.0
-	 *
-	 * @param string  $permalink Sample permalink.
-	 * @param int     $post_id   Post ID.
-	 * @param string  $title     Post title.
-	 * @param string  $name      Post name (slug).
-	 * @param WP_Post $post      Post object.
-	 */
 	return apply_filters( 'get_sample_permalink', $permalink, $post->ID, $title, $name, $post );
 }
 
@@ -1074,13 +1024,11 @@ function get_sample_permalink_html( $id, $new_title = null, $new_slug = null ) {
 			if ( 'publish' === $post->post_status || 'attachment' === $post->post_type ) {
 				$view_link = get_permalink( $post );
 			} else {
-				// Allow non-published (private, future) to be viewed at a pretty permalink.
 				$view_link = str_replace( array( '%pagename%', '%postname%' ), $post->post_name, $permalink );
 			}
 		}
 	}
 
-	// Permalinks without a post/page name placeholder don't have anything to edit
 	if ( false === strpos( $permalink, '%postname%' ) && false === strpos( $permalink, '%pagename%' ) ) {
 		$return = "<strong>Permalink:</strong>\n";
 
@@ -1091,9 +1039,8 @@ function get_sample_permalink_html( $id, $new_title = null, $new_slug = null ) {
 			$return .= '<span id="sample-permalink">' . $permalink . "</span>\n";
 		}
 
-		// Encourage a pretty permalink setting
 		if ( '' == get_option( 'permalink_structure' ) && current_user_can( 'manage_options' ) && !( 'page' == get_option('show_on_front') && $id == get_option('page_on_front') ) ) {
-			$return .= '<span id="change-permalinks"><a href="options-permalink.php" class="button button-small" target="_blank">' . __('Change Permalinks') . "</a></span>\n";
+			$return .= '<span id="change-permalinks"><a href="options-permalink.php" class="button button-small" target="_blank">' . "Change Permalinks</a></span>\n";
 		}
 	} else {
 		if ( function_exists( 'mb_strlen' ) ) {
@@ -1115,8 +1062,8 @@ function get_sample_permalink_html( $id, $new_title = null, $new_slug = null ) {
 
 		$return = "<strong>Permalink:</strong>\n";
 		$return .= '<span id="sample-permalink"><a href="' . esc_url( $view_link ) . '"' . $preview_target . '>' . $display_link . "</a></span>\n";
-		$return .= '&lrm;'; // Fix bi-directional text display defect in RTL languages.
-		$return .= '<span id="edit-slug-buttons"><button type="button" class="edit-slug button button-small hide-if-no-js" aria-label="' . __( 'Edit permalink' ) . '">' . __( 'Edit' ) . "</button></span>\n";
+		$return .= '&lrm;';
+		$return .= '<span id="edit-slug-buttons"><button type="button" class="edit-slug button button-small hide-if-no-js" aria-label="Edit permalink">' . "Edit</button></span>\n";
 		$return .= '<span id="editable-post-name-full">' . esc_html( $post_name ) . "</span>\n";
 	}
 
@@ -1135,7 +1082,7 @@ function _wp_post_thumbnail_html( $thumbnail_id = null, $post = null ) {
 
 	$content = sprintf( $set_thumbnail_link,
 		esc_url( $upload_iframe_src ),
-		'', // Empty when there's no featured image set, `aria-describedby` attribute otherwise.
+		'',
 		esc_html( $post_type_object->labels->set_featured_image )
 	);
 
@@ -1152,7 +1099,7 @@ function _wp_post_thumbnail_html( $thumbnail_id = null, $post = null ) {
 				' aria-describedby="set-post-thumbnail-desc"',
 				$thumbnail_html
 			);
-			$content .= '<p class="hide-if-no-js howto" id="set-post-thumbnail-desc">' . __( 'Click the image to edit or update' ) . '</p>';
+			$content .= '<p class="hide-if-no-js howto" id="set-post-thumbnail-desc">Click the image to edit or update</p>';
 			$content .= '<p class="hide-if-no-js"><a href="#" id="remove-post-thumbnail" onclick="WPRemoveThumbnail(\'' . $ajax_nonce . '\');return false;">' . esc_html( $post_type_object->labels->remove_featured_image ) . '</a></p>';
 		}
 	}
@@ -1211,14 +1158,11 @@ function _admin_notice_post_locked() {
 
 	if ( $locked && ( $sendback = wp_get_referer() ) &&
 		false === strpos( $sendback, 'post.php' ) && false === strpos( $sendback, 'post-new.php' ) ) {
-
-		$sendback_text = __('Go back');
+		$sendback_text = 'Go back';
 	} else {
 		$sendback = admin_url( 'edit.php' );
-
 		if ( 'post' != $post->post_type )
 			$sendback = add_query_arg( 'post_type', $post->post_type, $sendback );
-
 		$sendback_text = get_post_type_object( $post->post_type )->labels->all_items;
 	}
 
@@ -1265,8 +1209,6 @@ function _admin_notice_post_locked() {
 		<a class="button<?php echo $tab_last; ?>" href="<?php echo esc_url( $preview_link ); ?>"><?php _e('Preview'); ?></a>
 		<?php
 		}
-
-		// Allow plugins to prevent some users overriding the post lock
 		if ( $override ) {
 			?>
 			<a class="button button-primary wp-tab-last" href="<?php echo esc_url( add_query_arg( 'get-post-lock', '1', wp_nonce_url( get_edit_post_link( $post->ID, 'url' ), 'lock-post_' . $post->ID ) ) ); ?>"><?php _e('Take over'); ?></a>
@@ -1313,8 +1255,6 @@ function wp_create_post_autosave( $post_data ) {
 		return $post_data;
 
 	$post_author = get_current_user_id();
-
-	// Store one autosave per author. If there is already an autosave, overwrite it.
 	if ( $old_autosave = wp_get_post_autosave( $post_id, $post_author ) ) {
 		$new_autosave = _wp_post_revision_data( $post_data, true );
 		$new_autosave['ID'] = $old_autosave->ID;

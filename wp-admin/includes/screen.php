@@ -1,10 +1,4 @@
 <?php
-/**
- * WordPress Administration Screen API.
- *
- * @package WordPress
- * @subpackage Administration
- */
 
 function get_column_headers( $screen ) {
 	if ( is_string( $screen ) )

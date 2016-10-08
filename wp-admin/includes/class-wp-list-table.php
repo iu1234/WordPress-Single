@@ -1,11 +1,4 @@
 <?php
-/**
- * Administration API: WP_List_Table class
- *
- * @package WordPress
- * @subpackage List_Table
- * @since 3.1.0
- */
 
 class WP_List_Table {
 
@@ -59,8 +52,8 @@ class WP_List_Table {
 
 		if ( empty( $this->modes ) ) {
 			$this->modes = array(
-				'list'    => __( 'List View' ),
-				'excerpt' => __( 'Excerpt View' )
+				'list'    => 'List View',
+				'excerpt' => 'Excerpt View'
 			);
 		}
 	}
@@ -204,7 +197,7 @@ class WP_List_Table {
 
 		echo '<label for="bulk-action-selector-' . esc_attr( $which ) . '" class="screen-reader-text">' . __( 'Select bulk action' ) . '</label>';
 		echo '<select name="action' . $two . '" id="bulk-action-selector-' . esc_attr( $which ) . "\">\n";
-		echo '<option value="-1">' . __( 'Bulk Actions' ) . "</option>\n";
+		echo '<option value="-1">' . "Bulk Actions</option>\n";
 
 		foreach ( $this->_actions as $name => $title ) {
 			$class = 'edit' === $name ? ' class="hide-if-no-js"' : '';
@@ -296,8 +289,7 @@ class WP_List_Table {
 			printf( "<option %s value='%s'>%s</option>\n",
 				selected( $m, $year . $month, false ),
 				esc_attr( $arc_row->year . $month ),
-				/* translators: 1: month name, 2: 4-digit year */
-				sprintf( __( '%1$s %2$d' ), $wp_locale->get_month( $month ), $year )
+				sprintf( '%1$s %2$d', $wp_locale->get_month( $month ), $year )
 			);
 		}
 ?>
@@ -336,12 +328,8 @@ class WP_List_Table {
 		$approved_phrase = sprintf( _n( '%s approved comment', '%s approved comments', $approved_comments ), $approved_comments_number );
 		$pending_phrase = sprintf( _n( '%s pending comment', '%s pending comments', $pending_comments ), $pending_comments_number );
 
-		// No comments at all.
 		if ( ! $approved_comments && ! $pending_comments ) {
-			printf( '<span aria-hidden="true">—</span><span class="screen-reader-text">%s</span>',
-				__( 'No comments' )
-			);
-		// Approved comments have different display depending on some conditions.
+			printf( '<span aria-hidden="true">—</span><span class="screen-reader-text">%s</span>', 'No comments' );
 		} elseif ( $approved_comments ) {
 			printf( '<a href="%s" class="post-com-count post-com-count-approved"><span class="comment-count-approved" aria-hidden="true">%s</span><span class="screen-reader-text">%s</span></a>',
 				esc_url( add_query_arg( array( 'p' => $post_id, 'comment_status' => 'approved' ), admin_url( 'edit-comments.php' ) ) ),
@@ -351,7 +339,7 @@ class WP_List_Table {
 		} else {
 			printf( '<span class="post-com-count post-com-count-no-comments"><span class="comment-count comment-count-no-comments" aria-hidden="true">%s</span><span class="screen-reader-text">%s</span></span>',
 				$approved_comments_number,
-				$pending_comments ? __( 'No approved comments' ) : __( 'No comments' )
+				$pending_comments ? 'No approved comments' : 'No comments'
 			);
 		}
 
@@ -364,7 +352,7 @@ class WP_List_Table {
 		} else {
 			printf( '<span class="post-com-count post-com-count-pending post-com-count-no-pending"><span class="comment-count comment-count-no-pending" aria-hidden="true">%s</span><span class="screen-reader-text">%s</span></span>',
 				$pending_comments_number,
-				$approved_comments ? __( 'No pending comments' ) : __( 'No comments' )
+				$approved_comments ? 'No pending comments' : 'No comments'
 			);
 		}
 	}
@@ -437,7 +425,7 @@ class WP_List_Table {
 		} else {
 			$page_links[] = sprintf( "<a class='first-page' href='%s'><span class='screen-reader-text'>%s</span><span aria-hidden='true'>%s</span></a>",
 				esc_url( remove_query_arg( 'paged', $current_url ) ),
-				__( 'First page' ),
+				'First page',
 				'&laquo;'
 			);
 		}
@@ -447,7 +435,7 @@ class WP_List_Table {
 		} else {
 			$page_links[] = sprintf( "<a class='prev-page' href='%s'><span class='screen-reader-text'>%s</span><span aria-hidden='true'>%s</span></a>",
 				esc_url( add_query_arg( 'paged', max( 1, $current-1 ), $current_url ) ),
-				__( 'Previous page' ),
+				'Previous page',
 				'&lsaquo;'
 			);
 		}
@@ -470,7 +458,7 @@ class WP_List_Table {
 		} else {
 			$page_links[] = sprintf( "<a class='next-page' href='%s'><span class='screen-reader-text'>%s</span><span aria-hidden='true'>%s</span></a>",
 				esc_url( add_query_arg( 'paged', min( $total_pages, $current+1 ), $current_url ) ),
-				__( 'Next page' ),
+				'Next page',
 				'&rsaquo;'
 			);
 		}
@@ -480,7 +468,7 @@ class WP_List_Table {
 		} else {
 			$page_links[] = sprintf( "<a class='last-page' href='%s'><span class='screen-reader-text'>%s</span><span aria-hidden='true'>%s</span></a>",
 				esc_url( add_query_arg( 'paged', $total_pages, $current_url ) ),
-				__( 'Last page' ),
+				'Last page',
 				'&raquo;'
 			);
 		}
@@ -537,8 +525,6 @@ class WP_List_Table {
 		$columns = get_column_headers( $this->screen );
 		$default = $this->get_default_primary_column_name();
 
-		// If the primary column doesn't exist fall back to the
-		// first non-checkbox column.
 		if ( ! isset( $columns[ $default ] ) ) {
 			$default = WP_List_Table::get_default_primary_column_name();
 		}
@@ -555,13 +541,10 @@ class WP_List_Table {
 	protected function get_column_info() {
 		// $_column_headers is already set / cached
 		if ( isset( $this->_column_headers ) && is_array( $this->_column_headers ) ) {
-			// Back-compat for list tables that have been manually setting $_column_headers for horse reasons.
-			// In 4.3, we added a fourth argument for primary column.
 			$column_headers = array( array(), array(), array(), $this->get_primary_column_name() );
 			foreach ( $this->_column_headers as $key => $value ) {
 				$column_headers[ $key ] = $value;
 			}
-
 			return $column_headers;
 		}
 
@@ -794,7 +777,7 @@ class WP_List_Table {
 	}
 
 	protected function handle_row_actions( $item, $column_name, $primary ) {
-		return $column_name === $primary ? '<button type="button" class="toggle-row"><span class="screen-reader-text">' . __( 'Show more details' ) . '</span></button>' : '';
+		return $column_name === $primary ? '<button type="button" class="toggle-row"><span class="screen-reader-text">Show more details</span></button>' : '';
  	}
 
 	public function ajax_response() {

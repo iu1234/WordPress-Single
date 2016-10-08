@@ -1,10 +1,4 @@
 <?php
-/**
- * WordPress user administration API.
- *
- * @package WordPress
- * @subpackage Administration
- */
 
 function add_user() {
 	return edit_user();
@@ -34,15 +28,12 @@ function edit_user( $user_id = 0 ) {
 	if ( isset( $_POST['role'] ) && current_user_can( 'edit_users' ) ) {
 		$new_role = sanitize_text_field( $_POST['role'] );
 		$potential_role = isset($wp_roles->role_objects[$new_role]) ? $wp_roles->role_objects[$new_role] : false;
-		// Don't let anyone with 'edit_users' (admins) edit their own role to something without it.
-		// Multisite super admins can freely edit their blog roles -- they possess all caps.
 		if ( ( is_multisite() && current_user_can( 'manage_sites' ) ) || $user_id != get_current_user_id() || ($potential_role && $potential_role->has_cap( 'edit_users' ) ) )
 			$user->role = $new_role;
 
-		// If the new role isn't editable by the logged-in user die with error
 		$editable_roles = get_editable_roles();
 		if ( ! empty( $new_role ) && empty( $editable_roles[$new_role] ) )
-			wp_die(__('You can&#8217;t give users that role.'));
+			wp_die('You can&#8217;t give users that role.');
 	}
 
 	if ( isset( $_POST['email'] ))
@@ -87,13 +78,11 @@ function edit_user( $user_id = 0 ) {
 
 	$errors = new WP_Error();
 
-	/* checking that username has been typed */
 	if ( $user->user_login == '' )
-		$errors->add( 'user_login', __( '<strong>ERROR</strong>: Please enter a username.' ) );
+		$errors->add( 'user_login', '<strong>ERROR</strong>: Please enter a username.' );
 
-	/* checking that nickname has been typed */
 	if ( $update && empty( $user->nickname ) ) {
-		$errors->add( 'nickname', __( '<strong>ERROR</strong>: Please enter a nickname.' ) );
+		$errors->add( 'nickname', '<strong>ERROR</strong>: Please enter a nickname.' );
 	}
 
 	do_action_ref_array( 'check_passwords', array( $user->user_login, &$pass1, &$pass2 ) );
@@ -102,7 +91,6 @@ function edit_user( $user_id = 0 ) {
 		$errors->add( 'pass', '<strong>ERROR</strong>: Please enter a password.', array( 'form-field' => 'pass1' ) );
 	}
 
-	// Check for "\" in password.
 	if ( false !== strpos( wp_unslash( $pass1 ), "\\" ) ) {
 		$errors->add( 'pass', '<strong>ERROR</strong>: Passwords may not contain the character "\\".', array( 'form-field' => 'pass1' ) );
 	}
@@ -115,25 +103,23 @@ function edit_user( $user_id = 0 ) {
 		$user->user_pass = $pass1;
 
 	if ( !$update && isset( $_POST['user_login'] ) && !validate_username( $_POST['user_login'] ) )
-		$errors->add( 'user_login', __( '<strong>ERROR</strong>: This username is invalid because it uses illegal characters. Please enter a valid username.' ));
+		$errors->add( 'user_login', '<strong>ERROR</strong>: This username is invalid because it uses illegal characters. Please enter a valid username.');
 
 	if ( !$update && username_exists( $user->user_login ) )
-		$errors->add( 'user_login', __( '<strong>ERROR</strong>: This username is already registered. Please choose another one.' ));
+		$errors->add( 'user_login', '<strong>ERROR</strong>: This username is already registered. Please choose another one.');
 
-	/** This filter is documented in wp-includes/user.php */
 	$illegal_logins = (array) apply_filters( 'illegal_user_logins', array() );
 
 	if ( in_array( strtolower( $user->user_login ), array_map( 'strtolower', $illegal_logins ) ) ) {
-		$errors->add( 'invalid_username', __( '<strong>ERROR</strong>: Sorry, that username is not allowed.' ) );
+		$errors->add( 'invalid_username', '<strong>ERROR</strong>: Sorry, that username is not allowed.' );
 	}
 
-	/* checking email address */
 	if ( empty( $user->user_email ) ) {
-		$errors->add( 'empty_email', __( '<strong>ERROR</strong>: Please enter an email address.' ), array( 'form-field' => 'email' ) );
+		$errors->add( 'empty_email', '<strong>ERROR</strong>: Please enter an email address.', array( 'form-field' => 'email' ) );
 	} elseif ( !is_email( $user->user_email ) ) {
-		$errors->add( 'invalid_email', __( '<strong>ERROR</strong>: The email address isn&#8217;t correct.' ), array( 'form-field' => 'email' ) );
+		$errors->add( 'invalid_email', '<strong>ERROR</strong>: The email address isn&#8217;t correct.', array( 'form-field' => 'email' ) );
 	} elseif ( ( $owner_id = email_exists($user->user_email) ) && ( !$update || ( $owner_id != $user->ID ) ) ) {
-		$errors->add( 'email_exists', __('<strong>ERROR</strong>: This email is already registered, please choose another one.'), array( 'form-field' => 'email' ) );
+		$errors->add( 'email_exists', '<strong>ERROR</strong>: This email is already registered, please choose another one.', array( 'form-field' => 'email' ) );
 	}
 
 	do_action_ref_array( 'user_profile_update_errors', array( &$errors, $update, &$user ) );
@@ -319,12 +305,12 @@ function use_ssl_preference($user) {
 function admin_created_user_email( $text ) {
 	$roles = get_editable_roles();
 	$role = $roles[ $_REQUEST['role'] ];
-	return sprintf( __( 'Hi,
+	return sprintf( 'Hi,
 You\'ve been invited to join \'%1$s\' at
 %2$s with the role of %3$s.
 If you do not want to join this site please ignore
 this email. This invitation will expire in a few days.
 
 Please click the following link to activate your user account:
-%%s' ), get_bloginfo( 'name' ), home_url(), wp_specialchars_decode( translate_user_role( $role['name'] ) ) );
+%%s', get_bloginfo( 'name' ), home_url(), wp_specialchars_decode( translate_user_role( $role['name'] ) ) );
 }

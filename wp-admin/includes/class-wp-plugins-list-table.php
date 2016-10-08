@@ -1,11 +1,4 @@
 <?php
-/**
- * List Table API: WP_Plugins_List_Table class
- *
- * @package WordPress
- * @subpackage Administration
- * @since 3.1.0
- */
 
 class WP_Plugins_List_Table extends WP_List_Table {
 
@@ -196,22 +189,22 @@ class WP_Plugins_List_Table extends WP_List_Table {
 		if ( ! empty( $_REQUEST['s'] ) ) {
 			$s = esc_html( wp_unslash( $_REQUEST['s'] ) );
 
-			printf( __( 'No plugins found for &#8220;%s&#8221;.' ), $s );
+			printf( 'No plugins found for &#8220;%s&#8221;.', $s );
 			if ( ! is_multisite() && current_user_can( 'install_plugins' ) ) {
 				echo ' <a href="' . esc_url( admin_url( 'plugin-install.php?tab=search&s=' . urlencode( $s ) ) ) . '">' . __( 'Search for plugins in the WordPress Plugin Directory.' ) . '</a>';
 			}
 		} elseif ( ! empty( $plugins['all'] ) )
-			_e( 'No plugins found.' );
+			echo 'No plugins found.';
 		else
-			_e( 'You do not appear to have any plugins available at this time.' );
+			echo 'You do not appear to have any plugins available at this time.';
 	}
 
 	public function get_columns() {
 		global $status;
 		return array(
 			'cb'          => !in_array( $status, array( 'mustuse', 'dropins' ) ) ? '<input type="checkbox" />' : '',
-			'name'        => __( 'Plugin' ),
-			'description' => __( 'Description' ),
+			'name'        => 'Plugin',
+			'description' => 'Description',
 		);
 	}
 
@@ -489,7 +482,6 @@ class WP_Plugins_List_Table extends WP_List_Table {
 						$plugin_meta[] = sprintf( 'By %s', $author );
 					}
 
-					// Details link using API info, if available
 					if ( isset( $plugin_data['slug'] ) && current_user_can( 'install_plugins' ) ) {
 						$plugin_meta[] = sprintf( '<a href="%s" class="thickbox open-plugin-details-modal" aria-label="%s" data-title="%s">%s</a>',
 							esc_url( network_admin_url( 'plugin-install.php?tab=plugin-information&plugin=' . $plugin_data['slug'] .
