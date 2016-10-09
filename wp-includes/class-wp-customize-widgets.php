@@ -1,11 +1,4 @@
 <?php
-/**
- * WordPress Customize Widgets classes
- *
- * @package WordPress
- * @subpackage Customize
- * @since 3.9.0
- */
 
 final class WP_Customize_Widgets {
 

@@ -1,11 +1,4 @@
 <?php
-/**
- * Taxonomy API: WP_Tax_Query class
- *
- * @package WordPress
- * @subpackage Taxonomy
- * @since 4.4.0
- */
 
 class WP_Tax_Query {
 
@@ -151,7 +144,6 @@ class WP_Tax_Query {
 					}
 
 					$sql_chunks['join'] = array_merge( $sql_chunks['join'], $clause_sql['join'] );
-				// This is a subquery, so we recurse.
 				} else {
 					$clause_sql = $this->get_sql_for_query( $clause, $depth + 1 );
 
@@ -168,12 +160,10 @@ class WP_Tax_Query {
 			$relation = 'AND';
 		}
 
-		// Filter duplicate JOIN clauses and combine into a single string.
 		if ( ! empty( $sql_chunks['join'] ) ) {
 			$sql['join'] = implode( ' ', array_unique( $sql_chunks['join'] ) );
 		}
 
-		// Generate a single WHERE clause with proper brackets and indentation.
 		if ( ! empty( $sql_chunks['where'] ) ) {
 			$sql['where'] = '( ' . "\n  " . $indent . implode( ' ' . "\n  " . $indent . $relation . ' ' . "\n  " . $indent, $sql_chunks['where'] ) . "\n" . $indent . ')';
 		}
@@ -208,19 +198,13 @@ class WP_Tax_Query {
 
 			$terms = implode( ',', $terms );
 
-			/*
-			 * Before creating another table join, see if this clause has a
-			 * sibling with an existing join that can be shared.
-			 */
 			$alias = $this->find_compatible_table_alias( $clause, $parent_query );
 			if ( false === $alias ) {
 				$i = count( $this->table_aliases );
 				$alias = $i ? 'tt' . $i : $wpdb->term_relationships;
 
-				// Store the alias as part of a flat array to build future iterators.
 				$this->table_aliases[] = $alias;
 
-				// Store the alias with this clause, so later siblings can use it.
 				$clause['alias'] = $alias;
 
 				$join .= " INNER JOIN $wpdb->term_relationships";

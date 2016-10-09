@@ -1,11 +1,4 @@
 <?php
-/**
- * WordPress Customize Nav Menus classes
- *
- * @package WordPress
- * @subpackage Customize
- * @since 4.3.0
- */
 
 final class WP_Customize_Nav_Menus {
 
@@ -632,22 +625,17 @@ final class WP_Customize_Nav_Menus {
 
 	public function filter_wp_nav_menu_args( $args ) {
 		$can_partial_refresh = (
-			// ...if wp_nav_menu() is directly echoing out the menu (and thus isn't manipulating the string after generated),
 			! empty( $args['echo'] )
 			&&
-			// ...and if the fallback_cb can be serialized to JSON, since it will be included in the placement context data,
 			( empty( $args['fallback_cb'] ) || is_string( $args['fallback_cb'] ) )
 			&&
-			// ...and if the walker can also be serialized to JSON, since it will be included in the placement context data as well,
 			( empty( $args['walker'] ) || is_string( $args['walker'] ) )
-			// ...and if it has a theme location assigned or an assigned menu to display,
 			&& (
 				! empty( $args['theme_location'] )
 				||
 				( ! empty( $args['menu'] ) && ( is_numeric( $args['menu'] ) || is_object( $args['menu'] ) ) )
 			)
 			&&
-			// ...and if the nav menu would be rendered with a wrapper container element (upon which to attach data-* attributes).
 			(
 				! empty( $args['container'] )
 				||
@@ -658,7 +646,6 @@ final class WP_Customize_Nav_Menus {
 
 		$exported_args = $args;
 
-		// Empty out args which may not be JSON-serializable.
 		if ( ! $can_partial_refresh ) {
 			$exported_args['fallback_cb'] = '';
 			$exported_args['walker'] = '';

@@ -49,19 +49,16 @@ final class WP_Term {
 					}
 				}
 
-			// If only one match was found, it's the one we want.
 			} elseif ( 1 === count( $terms ) ) {
 				$_term = reset( $terms );
 
-			// Otherwise, the term must be shared between taxonomies.
 			} else {
-				// If the term is shared only with invalid taxonomies, return the one valid term.
+
 				foreach ( $terms as $t ) {
 					if ( ! taxonomy_exists( $t->taxonomy ) ) {
 						continue;
 					}
 
-					// Only hit if we've already identified a term in a valid taxonomy.
 					if ( $_term ) {
 						return new WP_Error( 'ambiguous_term_id', 'Term ID is shared between multiple taxonomies', $term_id );
 					}
@@ -74,14 +71,12 @@ final class WP_Term {
 				return false;
 			}
 
-			// Don't return terms from invalid taxonomies.
 			if ( ! taxonomy_exists( $_term->taxonomy ) ) {
 				return new WP_Error( 'invalid_taxonomy', 'Invalid taxonomy' );
 			}
 
 			$_term = sanitize_term( $_term, $_term->taxonomy, 'raw' );
 
-			// Don't cache terms that are shared between taxonomies.
 			if ( 1 === count( $terms ) ) {
 				wp_cache_add( $term_id, $_term, 'terms' );
 			}

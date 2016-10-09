@@ -1,78 +1,17 @@
 <?php
-/**
- * HTTP API: WP_Http_Curl class
- *
- * @package WordPress
- * @subpackage HTTP
- * @since 4.4.0
- */
 
-/**
- * Core class used to integrate Curl as an HTTP transport.
- *
- * HTTP request method uses Curl extension to retrieve the url.
- *
- * Requires the Curl extension to be installed.
- *
- * @since 2.7.0
- */
 class WP_Http_Curl {
 
-	/**
-	 * Temporary header storage for during requests.
-	 *
-	 * @since 3.2.0
-	 * @access private
-	 * @var string
-	 */
 	private $headers = '';
 
-	/**
-	 * Temporary body storage for during requests.
-	 *
-	 * @since 3.6.0
-	 * @access private
-	 * @var string
-	 */
 	private $body = '';
 
-	/**
-	 * The maximum amount of data to receive from the remote server.
-	 *
-	 * @since 3.6.0
-	 * @access private
-	 * @var int
-	 */
 	private $max_body_length = false;
 
-	/**
-	 * The file resource used for streaming to file.
-	 *
-	 * @since 3.6.0
-	 * @access private
-	 * @var resource
-	 */
 	private $stream_handle = false;
 
-	/**
-	 * The total bytes written in the current request.
-	 *
-	 * @since 4.1.0
-	 * @access private
-	 * @var int
-	 */
 	private $bytes_written_total = 0;
 
-	/**
-	 * Send a HTTP request to a URI using cURL extension.
-	 *
-	 * @access public
-	 * @since 2.7.0
-	 *
-	 * @param string $url The request URL.
-	 * @param string|array $args Optional. Override the defaults.
-	 * @return array|WP_Error Array containing 'headers', 'body', 'response', 'cookies', 'filename'. A WP_Error instance upon error
-	 */
 	public function request($url, $args = array()) {
 		$defaults = array(
 			'method' => 'GET', 'timeout' => 5,
@@ -91,12 +30,10 @@ class WP_Http_Curl {
 			unset( $r['headers']['user-agent'] );
 		}
 
-		// Construct Cookie: header if any cookies are set.
 		WP_Http::buildCookieHeader( $r );
 
 		$handle = curl_init();
 
-		// cURL offers really easy proxy support.
 		$proxy = new WP_HTTP_Proxy();
 
 		if ( $proxy->is_enabled() && $proxy->send_through_proxy( $url ) ) {
@@ -114,17 +51,11 @@ class WP_Http_Curl {
 		$is_local = isset($r['local']) && $r['local'];
 		$ssl_verify = isset($r['sslverify']) && $r['sslverify'];
 		if ( $is_local ) {
-			/** This filter is documented in wp-includes/class-wp-http-streams.php */
 			$ssl_verify = apply_filters( 'https_local_ssl_verify', $ssl_verify );
 		} elseif ( ! $is_local ) {
-			/** This filter is documented in wp-includes/class-wp-http-streams.php */
 			$ssl_verify = apply_filters( 'https_ssl_verify', $ssl_verify );
 		}
 
-		/*
-		 * CURLOPT_TIMEOUT and CURLOPT_CONNECTTIMEOUT expect integers. Have to use ceil since.
-		 * a value of 0 will allow an unlimited timeout.
-		 */
 		$timeout = (int) ceil( $r['timeout'] );
 		curl_setopt( $handle, CURLOPT_CONNECTTIMEOUT, $timeout );
 		curl_setopt( $handle, CURLOPT_TIMEOUT, $timeout );
@@ -140,10 +71,6 @@ class WP_Http_Curl {
 
 		curl_setopt( $handle, CURLOPT_USERAGENT, $r['user-agent'] );
 
-		/*
-		 * The option doesn't work with safe mode or when open_basedir is set, and there's
-		 * a bug #17490 with redirected POST requests, so handle redirections outside Curl.
-		 */
 		curl_setopt( $handle, CURLOPT_FOLLOWLOCATION, false );
 		if ( defined( 'CURLOPT_PROTOCOLS' ) ) // PHP 5.2.10 / cURL 7.19.4
 			curl_setopt( $handle, CURLOPT_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS );
@@ -179,20 +106,18 @@ class WP_Http_Curl {
 		else
 			$this->max_body_length = false;
 
-		// If streaming to a file open a file handle, and setup our curl streaming handler.
 		if ( $r['stream'] ) {
 			if ( ! WP_DEBUG )
 				$this->stream_handle = @fopen( $r['filename'], 'w+' );
 			else
 				$this->stream_handle = fopen( $r['filename'], 'w+' );
 			if ( ! $this->stream_handle )
-				return new WP_Error( 'http_request_failed', sprintf( __( 'Could not open handle for fopen() to %s' ), $r['filename'] ) );
+				return new WP_Error( 'http_request_failed', sprintf( 'Could not open handle for fopen() to %s', $r['filename'] ) );
 		} else {
 			$this->stream_handle = false;
 		}
 
 		if ( !empty( $r['headers'] ) ) {
-			// cURL expects full header strings in each element.
 			$headers = array();
 			foreach ( $r['headers'] as $name => $value ) {
 				$headers[] = "{$name}: $value";
@@ -205,21 +130,8 @@ class WP_Http_Curl {
 		else
 			curl_setopt( $handle, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1 );
 
-		/**
-		 * Fires before the cURL request is executed.
-		 *
-		 * Cookies are not currently handled by the HTTP API. This action allows
-		 * plugins to handle cookies themselves.
-		 *
-		 * @since 2.8.0
-		 *
-		 * @param resource &$handle The cURL handle returned by curl_init().
-		 * @param array    $r       The HTTP request arguments.
-		 * @param string   $url     The request URL.
-		 */
 		do_action_ref_array( 'http_api_curl', array( &$handle, $r, $url ) );
 
-		// We don't need to return the body, so don't. Just execute request and return.
 		if ( ! $r['blocking'] ) {
 			curl_exec( $handle );
 
@@ -229,7 +141,7 @@ class WP_Http_Curl {
 			}
 			if ( in_array( curl_getinfo( $handle, CURLINFO_HTTP_CODE ), array( 301, 302 ) ) ) {
 				curl_close( $handle );
-				return new WP_Error( 'http_request_failed', __( 'Too many redirects.' ) );
+				return new WP_Error( 'http_request_failed', 'Too many redirects.' );
 			}
 
 			curl_close( $handle );
@@ -247,14 +159,13 @@ class WP_Http_Curl {
 
 		$curl_error = curl_errno( $handle );
 
-		// If an error occurred, or, no response.
 		if ( $curl_error || ( 0 == strlen( $theBody ) && empty( $theHeaders['headers'] ) ) ) {
 			if ( CURLE_WRITE_ERROR /* 23 */ == $curl_error ) {
 				if ( ! $this->max_body_length || $this->max_body_length != $bytes_written_total ) {
 					if ( $r['stream'] ) {
 						curl_close( $handle );
 						fclose( $this->stream_handle );
-						return new WP_Error( 'http_request_failed', __( 'Failed to write request to temporary file.' ) );
+						return new WP_Error( 'http_request_failed', 'Failed to write request to temporary file.' );
 					} else {
 						curl_close( $handle );
 						return new WP_Error( 'http_request_failed', curl_error( $handle ) );
@@ -268,7 +179,7 @@ class WP_Http_Curl {
 			}
 			if ( in_array( curl_getinfo( $handle, CURLINFO_HTTP_CODE ), array( 301, 302 ) ) ) {
 				curl_close( $handle );
-				return new WP_Error( 'http_request_failed', __( 'Too many redirects.' ) );
+				return new WP_Error( 'http_request_failed', 'Too many redirects.' );
 			}
 		}
 
@@ -297,38 +208,11 @@ class WP_Http_Curl {
 		return $response;
 	}
 
-	/**
-	 * Grabs the headers of the cURL request.
-	 *
-	 * Each header is sent individually to this callback, so we append to the `$header` property
-	 * for temporary storage
-	 *
-	 * @since 3.2.0
-	 * @access private
-	 *
-	 * @param resource $handle  cURL handle.
-	 * @param string   $headers cURL request headers.
-	 * @return int Length of the request headers.
-	 */
 	private function stream_headers( $handle, $headers ) {
 		$this->headers .= $headers;
 		return strlen( $headers );
 	}
 
-	/**
-	 * Grabs the body of the cURL request.
-	 *
-	 * The contents of the document are passed in chunks, so we append to the `$body`
-	 * property for temporary storage. Returning a length shorter than the length of
-	 * `$data` passed in will cause cURL to abort the request with `CURLE_WRITE_ERROR`.
-	 *
-	 * @since 3.6.0
-	 * @access private
-	 *
-	 * @param resource $handle  cURL handle.
-	 * @param string   $data    cURL request body.
-	 * @return int Total bytes of data written.
-	 */
 	private function stream_body( $handle, $data ) {
 		$data_length = strlen( $data );
 
@@ -346,19 +230,9 @@ class WP_Http_Curl {
 
 		$this->bytes_written_total += $bytes_written;
 
-		// Upon event of this function returning less than strlen( $data ) curl will error with CURLE_WRITE_ERROR.
 		return $bytes_written;
 	}
 
-	/**
-	 * Determines whether this class can be used for retrieving a URL.
-	 *
-	 * @static
-	 * @since 2.7.0
-	 *
-	 * @param array $args Optional. Array of request arguments. Default empty array.
-	 * @return bool False means this class can not be used, true means it can.
-	 */
 	public static function test( $args = array() ) {
 		if ( ! function_exists( 'curl_init' ) || ! function_exists( 'curl_exec' ) )
 			return false;
@@ -367,19 +241,10 @@ class WP_Http_Curl {
 
 		if ( $is_ssl ) {
 			$curl_version = curl_version();
-			// Check whether this cURL version support SSL requests.
 			if ( ! (CURL_VERSION_SSL & $curl_version['features']) )
 				return false;
 		}
 
-		/**
-		 * Filter whether cURL can be used as a transport for retrieving a URL.
-		 *
-		 * @since 2.7.0
-		 *
-		 * @param bool  $use_class Whether the class can be used. Default true.
-		 * @param array $args      An array of request arguments.
-		 */
 		return apply_filters( 'use_curl_transport', true, $args );
 	}
 }

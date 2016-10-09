@@ -535,29 +535,23 @@ function sanitize_user_field($field, $value, $user_id, $context) {
 
 	if ( 'edit' == $context ) {
 		if ( $prefixed ) {
-
-			/** This filter is documented in wp-includes/post.php */
 			$value = apply_filters( "edit_{$field}", $value, $user_id );
 		} else {
 			$value = apply_filters( "edit_user_{$field}", $value, $user_id );
 		}
 
 		if ( 'description' == $field )
-			$value = esc_html( $value ); // textarea_escaped?
+			$value = esc_html( $value );
 		else
 			$value = esc_attr($value);
 	} elseif ( 'db' == $context ) {
 		if ( $prefixed ) {
-			/** This filter is documented in wp-includes/post.php */
 			$value = apply_filters( "pre_{$field}", $value );
 		} else {
 			$value = apply_filters( "pre_user_{$field}", $value );
 		}
 	} else {
-		// Use display filters by default.
 		if ( $prefixed ) {
-
-			/** This filter is documented in wp-includes/post.php */
 			$value = apply_filters( $field, $value, $user_id, $context );
 		} else {
 			$value = apply_filters( "user_{$field}", $value, $user_id, $context );

@@ -37,7 +37,7 @@ function get_the_title( $post = 0 ) {
 			$protected_title_format = apply_filters( 'protected_title_format', 'Protected: %s', $post );
 			$title = sprintf( $protected_title_format, $title );
 		} elseif ( isset( $post->post_status ) && 'private' == $post->post_status ) {
-			$private_title_format = apply_filters( 'private_title_format', __( 'Private: %s' ), $post );
+			$private_title_format = apply_filters( 'private_title_format', 'Private: %s', $post );
 			$title = sprintf( $private_title_format, $title );
 		}
 	}
@@ -629,7 +629,7 @@ function wp_list_pages( $args = '' ) {
 		'depth' => 0, 'show_date' => '',
 		'date_format' => get_option( 'date_format' ),
 		'child_of' => 0, 'exclude' => '',
-		'title_li' => __( 'Pages' ), 'echo' => 1,
+		'title_li' => 'Pages', 'echo' => 1,
 		'authors' => '', 'sort_column' => 'menu_order, post_title',
 		'link_before' => '', 'link_after' => '', 'walker' => '',
 	);
@@ -781,10 +781,7 @@ function walk_page_dropdown_tree() {
 	return call_user_func_array(array($walker, 'walk'), $args);
 }
 
-function the_attachment_link( $id = 0, $fullsize = false, $deprecated = false, $permalink = false ) {
-	if ( !empty( $deprecated ) )
-		_deprecated_argument( __FUNCTION__, '2.5' );
-
+function the_attachment_link( $id = 0, $fullsize = false, $permalink = false ) {
 	if ( $fullsize )
 		echo wp_get_attachment_link($id, 'full', $permalink);
 	else
@@ -965,9 +962,7 @@ function wp_list_post_revisions( $post_id = 0, $type = 'all' ) {
 
 		$rows .= "\t<li>" . wp_post_revision_title_expanded( $revision ) . "</li>\n";
 	}
-
-	echo "<div class='hide-if-js'><p>" . __( 'JavaScript must be enabled to use this feature.' ) . "</p></div>\n";
-
+	echo "<div class='hide-if-js'><p>JavaScript must be enabled to use this feature.</p></div>\n";
 	echo "<ul class='post-revisions hide-if-no-js'>\n";
 	echo $rows;
 	echo "</ul>";

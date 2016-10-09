@@ -695,7 +695,7 @@ final class WP_Theme implements ArrayAccess {
 				}
 				$allowed_themes[ $blog_id ] = $converted;
 			}
-			// Set the option so we never have to go through this pain again.
+
 			if ( is_admin() && $allowed_themes[ $blog_id ] ) {
 				if ( $current ) {
 					update_option( 'allowedthemes', $allowed_themes[ $blog_id ] );

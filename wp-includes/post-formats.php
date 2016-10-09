@@ -1,46 +1,31 @@
 <?php
-/**
- * Post format functions.
- *
- * @package WordPress
- * @subpackage Post
- */
 
 function get_post_format( $post = null ) {
 	if ( ! $post = get_post( $post ) )
 		return false;
-
 	if ( ! post_type_supports( $post->post_type, 'post-formats' ) )
 		return false;
-
 	$_format = get_the_terms( $post->ID, 'post_format' );
-
 	if ( empty( $_format ) )
 		return false;
-
 	$format = reset( $_format );
-
 	return str_replace('post-format-', '', $format->slug );
 }
 
 function has_post_format( $format = array(), $post = null ) {
 	$prefixed = array();
-
 	if ( $format ) {
 		foreach ( (array) $format as $single ) {
 			$prefixed[] = 'post-format-' . sanitize_key( $single );
 		}
 	}
-
 	return has_term( $prefixed, 'post_format', $post );
 }
 
 function set_post_format( $post, $format ) {
 	$post = get_post( $post );
-
 	if ( empty( $post ) )
 		return new WP_Error( 'invalid_post', 'Invalid post.' );
-
 	if ( ! empty( $format ) ) {
 		$format = sanitize_key( $format );
 		if ( 'standard' === $format || ! in_array( $format, get_post_format_slugs() ) )
@@ -48,7 +33,6 @@ function set_post_format( $post, $format ) {
 		else
 			$format = 'post-format-' . $format;
 	}
-
 	return wp_set_post_terms( $post->ID, $format, 'post_format' );
 }
 

@@ -72,17 +72,14 @@ class WP_Date_Query {
 			}
 		}
 
-		// Validate the dates passed in the query.
 		if ( $this->is_first_order_clause( $queries ) ) {
 			$this->validate_date_values( $queries );
 		}
 
 		foreach ( $queries as $key => $q ) {
 			if ( ! is_array( $q ) || in_array( $key, $this->time_keys, true ) ) {
-				// This is a first-order query. Trust the values and sanitize when building SQL.
 				$cleaned_query[ $key ] = $q;
 			} else {
-				// Any array without a time key is another query, so we recurse.
 				$cleaned_query[] = $this->sanitize_query( $q, $queries );
 			}
 		}
@@ -117,10 +114,8 @@ class WP_Date_Query {
 			$valid = $this->validate_date_values( $date_query['after'] );
 		}
 
-		// Array containing all min-max checks.
 		$min_max_checks = array();
 
-		// Days per year.
 		if ( array_key_exists( 'year', $date_query ) ) {
 			if ( is_array( $date_query['year'] ) ) {
 				$_year = reset( $date_query['year'] );
@@ -130,7 +125,6 @@ class WP_Date_Query {
 
 			$max_days_of_year = date( 'z', mktime( 0, 0, 0, 12, 31, $_year ) ) + 1;
 		} else {
-			// otherwise we use the max of 366 (leap-year)
 			$max_days_of_year = 366;
 		}
 
@@ -139,19 +133,16 @@ class WP_Date_Query {
 			'max' => $max_days_of_year
 		);
 
-		// Days per week.
 		$min_max_checks['dayofweek'] = array(
 			'min' => 1,
 			'max' => 7
 		);
 
-		// Days per week.
 		$min_max_checks['dayofweek_iso'] = array(
 			'min' => 1,
 			'max' => 7
 		);
 
-		// Months per year.
 		$min_max_checks['month'] = array(
 			'min' => 1,
 			'max' => 12
@@ -188,7 +179,6 @@ class WP_Date_Query {
 			'max' => 59
 		);
 
-		// Concatenate and throw a notice for each invalid value.
 		foreach ( $min_max_checks as $key => $check ) {
 			if ( ! array_key_exists( $key, $date_query ) ) {
 				continue;
@@ -526,7 +516,6 @@ class WP_Date_Query {
 				);
 
 			} elseif ( preg_match( '/^(\d{4})\-(\d{2})\-(\d{2})$/', $datetime, $matches ) ) {
-				// Y-m-d
 				$datetime = array(
 					'year'  => intval( $matches[1] ),
 					'month' => intval( $matches[2] ),
@@ -534,7 +523,6 @@ class WP_Date_Query {
 				);
 
 			} elseif ( preg_match( '/^(\d{4})\-(\d{2})\-(\d{2}) (\d{2}):(\d{2})$/', $datetime, $matches ) ) {
-				// Y-m-d H:i
 				$datetime = array(
 					'year'   => intval( $matches[1] ),
 					'month'  => intval( $matches[2] ),
@@ -544,9 +532,7 @@ class WP_Date_Query {
 				);
 			}
 
-			// If no match is found, we don't support default_to_max.
 			if ( ! is_array( $datetime ) ) {
-				// @todo Timezone issues here possibly
 				return gmdate( 'Y-m-d H:i:s', strtotime( $datetime, $now ) );
 			}
 		}

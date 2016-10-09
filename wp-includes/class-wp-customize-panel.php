@@ -1,11 +1,4 @@
 <?php
-/**
- * WordPress Customize Panel classes
- *
- * @package WordPress
- * @subpackage Customize
- * @since 4.0.0
- */
 
 class WP_Customize_Panel {
 

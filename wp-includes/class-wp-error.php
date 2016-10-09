@@ -1,11 +1,4 @@
 <?php
-/**
- * WordPress Error API.
- *
- * Contains the WP_Error class and the is_wp_error() function.
- *
- * @package WordPress
- */
 
 class WP_Error {
 
@@ -40,7 +33,6 @@ class WP_Error {
 	}
 
 	public function get_error_messages($code = '') {
-		// Return all messages if no code specified.
 		if ( empty($code) ) {
 			$all_messages = array();
 			foreach ( (array) $this->errors as $code => $messages )
