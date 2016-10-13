@@ -15,7 +15,7 @@ function create_initial_post_types() {
 		'rewrite' => false,
 		'query_var' => false,
 		'delete_with_user' => true,
-		'supports' => array( 'title', 'editor', 'author', 'thumbnail', 'excerpt', 'trackbacks', 'custom-fields', 'comments', 'revisions', 'post-formats' ),
+		'supports' => array( 'title', 'editor', 'author', 'thumbnail', 'excerpt', 'custom-fields', 'comments', 'post-formats' ),
 	) );
 	register_post_type( 'page', array(
 		'labels' => array(
@@ -32,7 +32,7 @@ function create_initial_post_types() {
 		'rewrite' => false,
 		'query_var' => false,
 		'delete_with_user' => true,
-		'supports' => array( 'title', 'editor', 'author', 'thumbnail', 'page-attributes', 'custom-fields', 'comments', 'revisions' ),
+		'supports' => array( 'title', 'editor', 'author', 'thumbnail', 'page-attributes', 'custom-fields', 'comments' ),
 	) );
 	register_post_type( 'attachment', array(
 		'labels' => array(
@@ -1553,22 +1553,18 @@ function wp_insert_post( $postarr, $wp_error = false ) {
 		}
 	}
 
-	// If a trashed post has the desired slug, change it and let this post have it.
 	if ( 'trash' !== $post_status && $post_name ) {
 		wp_add_trashed_suffix_to_post_name_for_trashed_posts( $post_name, $post_ID );
 	}
 
-	// When trashing an existing post, change its slug to allow non-trashed posts to use it.
 	if ( 'trash' === $post_status && 'trash' !== $previous_status && 'new' !== $previous_status ) {
 		$post_name = wp_add_trashed_suffix_to_post_name_for_post( $post_ID );
 	}
 
 	$post_name = wp_unique_post_slug( $post_name, $post_ID, $post_status, $post_type, $post_parent );
 
-	// Don't unslash.
 	$post_mime_type = isset( $postarr['post_mime_type'] ) ? $postarr['post_mime_type'] : '';
 
-	// Expected_slashed (everything!).
 	$data = compact( 'post_author', 'post_date', 'post_date_gmt', 'post_content', 'post_content_filtered', 'post_title', 'post_excerpt', 'post_status', 'post_type', 'comment_status', 'ping_status', 'post_password', 'post_name', 'to_ping', 'pinged', 'post_modified', 'post_modified_gmt', 'post_parent', 'menu_order', 'post_mime_type', 'guid' );
 
 	$emoji_fields = array( 'post_title', 'post_content', 'post_excerpt' );
@@ -1594,13 +1590,12 @@ function wp_insert_post( $postarr, $wp_error = false ) {
 		do_action( 'pre_post_update', $post_ID, $data );
 		if ( false === $wpdb->update( $wpdb->posts, $data, $where ) ) {
 			if ( $wp_error ) {
-				return new WP_Error('db_update_error', __('Could not update post in the database'), $wpdb->last_error);
+				return new WP_Error('db_update_error', 'Could not update post in the database', $wpdb->last_error);
 			} else {
 				return 0;
 			}
 		}
 	} else {
-		// If there is a suggested ID, use it if not already present.
 		if ( ! empty( $import_id ) ) {
 			$import_id = (int) $import_id;
 			if ( ! $wpdb->get_var( $wpdb->prepare("SELECT ID FROM $wpdb->posts WHERE ID = %d", $import_id) ) ) {
@@ -1609,14 +1604,13 @@ function wp_insert_post( $postarr, $wp_error = false ) {
 		}
 		if ( false === $wpdb->insert( $wpdb->posts, $data ) ) {
 			if ( $wp_error ) {
-				return new WP_Error('db_insert_error', __('Could not insert post into the database'), $wpdb->last_error);
+				return new WP_Error('db_insert_error', 'Could not insert post into the database', $wpdb->last_error);
 			} else {
 				return 0;
 			}
 		}
 		$post_ID = (int) $wpdb->insert_id;
 
-		// Use the newly generated $post_ID.
 		$where = array( 'ID' => $post_ID );
 	}
 
@@ -1634,17 +1628,14 @@ function wp_insert_post( $postarr, $wp_error = false ) {
 		wp_set_post_tags( $post_ID, $postarr['tags_input'] );
 	}
 
-	// New-style support for all custom taxonomies.
 	if ( ! empty( $postarr['tax_input'] ) ) {
 		foreach ( $postarr['tax_input'] as $taxonomy => $tags ) {
 			$taxonomy_obj = get_taxonomy($taxonomy);
 			if ( ! $taxonomy_obj ) {
-				/* translators: %s: taxonomy name */
-				_doing_it_wrong( __FUNCTION__, sprintf( __( 'Invalid taxonomy: %s.' ), $taxonomy ), '4.4.0' );
+				_doing_it_wrong( __FUNCTION__, sprintf( 'Invalid taxonomy: %s.', $taxonomy ), '4.4.0' );
 				continue;
 			}
 
-			// array = hierarchical, string = non-hierarchical.
 			if ( is_array( $tags ) ) {
 				$tags = array_filter($tags);
 			}
@@ -1662,7 +1653,6 @@ function wp_insert_post( $postarr, $wp_error = false ) {
 
 	$current_guid = get_post_field( 'guid', $post_ID );
 
-	// Set GUID.
 	if ( ! $update && '' == $current_guid ) {
 		$wpdb->update( $wpdb->posts, array( 'guid' => get_permalink( $post_ID ) ), $where );
 	}
@@ -1686,7 +1676,7 @@ function wp_insert_post( $postarr, $wp_error = false ) {
 		$page_templates = wp_get_theme()->get_page_templates( $post );
 		if ( 'default' != $postarr['page_template'] && ! isset( $page_templates[ $postarr['page_template'] ] ) ) {
 			if ( $wp_error ) {
-				return new WP_Error('invalid_page_template', __('The page template is invalid.'));
+				return new WP_Error('invalid_page_template', 'The page template is invalid.');
 			}
 			update_post_meta( $post_ID, '_wp_page_template', 'default' );
 		} else {
@@ -1725,38 +1715,32 @@ function wp_insert_post( $postarr, $wp_error = false ) {
 
 function wp_update_post( $postarr = array(), $wp_error = false ) {
 	if ( is_object($postarr) ) {
-		// Non-escaped post was passed.
 		$postarr = get_object_vars($postarr);
 		$postarr = wp_slash($postarr);
 	}
 
-	// First, get all of the original fields.
 	$post = get_post($postarr['ID'], ARRAY_A);
 
 	if ( is_null( $post ) ) {
 		if ( $wp_error )
-			return new WP_Error( 'invalid_post', __( 'Invalid post ID.' ) );
+			return new WP_Error( 'invalid_post', 'Invalid post ID.' );
 		return 0;
 	}
 
-	// Escape data pulled from DB.
 	$post = wp_slash($post);
 
-	// Passed post category list overwrites existing category list if not empty.
 	if ( isset($postarr['post_category']) && is_array($postarr['post_category'])
 			 && 0 != count($postarr['post_category']) )
 		$post_cats = $postarr['post_category'];
 	else
 		$post_cats = $post['post_category'];
 
-	// Drafts shouldn't be assigned a date unless explicitly done so by the user.
 	if ( isset( $post['post_status'] ) && in_array($post['post_status'], array('draft', 'pending', 'auto-draft')) && empty($postarr['edit_date']) &&
 			 ('0000-00-00 00:00:00' == $post['post_date_gmt']) )
 		$clear_date = true;
 	else
 		$clear_date = false;
 
-	// Merge old and new fields with new fields overwriting old ones.
 	$postarr = array_merge($post, $postarr);
 	$postarr['post_category'] = $post_cats;
 	if ( $clear_date ) {
@@ -1787,16 +1771,9 @@ function wp_publish_post( $post ) {
 	$post->post_status = 'publish';
 	wp_transition_post_status( 'publish', $old_status, $post );
 
-	/** This action is documented in wp-includes/post.php */
 	do_action( 'edit_post', $post->ID, $post );
-
-	/** This action is documented in wp-includes/post.php */
 	do_action( "save_post_{$post->post_type}", $post->ID, $post, true );
-
-	/** This action is documented in wp-includes/post.php */
 	do_action( 'save_post', $post->ID, $post, true );
-
-	/** This action is documented in wp-includes/post.php */
 	do_action( 'wp_insert_post', $post->ID, $post, true );
 }
 
@@ -1812,7 +1789,7 @@ function check_and_publish_future_post( $post_id ) {
 	$time = strtotime( $post->post_date_gmt . ' GMT' );
 
 	if ( $time > time() ) {
-		wp_clear_scheduled_hook( 'publish_future_post', array( $post_id ) ); // clear anything else in the system
+		wp_clear_scheduled_hook( 'publish_future_post', array( $post_id ) );
 		wp_schedule_single_event( $time, 'publish_future_post', array( $post_id ) );
 		return;
 	}
@@ -1833,7 +1810,6 @@ function wp_unique_post_slug( $slug, $post_ID, $post_status, $post_type, $post_p
 		$feeds = array();
 
 	if ( 'attachment' == $post_type ) {
-		// Attachment slugs must be unique across all types.
 		$check_sql = "SELECT post_name FROM $wpdb->posts WHERE post_name = %s AND ID != %d LIMIT 1";
 		$post_name_check = $wpdb->get_var( $wpdb->prepare( $check_sql, $slug, $post_ID ) );
 
@@ -1863,11 +1839,9 @@ function wp_unique_post_slug( $slug, $post_ID, $post_status, $post_type, $post_p
 			$slug = $alt_post_name;
 		}
 	} else {
-		// Post slugs must be unique across all posts.
 		$check_sql = "SELECT post_name FROM $wpdb->posts WHERE post_name = %s AND post_type = %s AND ID != %d LIMIT 1";
 		$post_name_check = $wpdb->get_var( $wpdb->prepare( $check_sql, $slug, $post_type, $post_ID ) );
 
-		// Prevent new post slugs that could result in URLs that conflict with date archives.
 		$post = get_post( $post_ID );
 		$conflicts_with_date_archive = false;
 		if ( 'post' === $post_type && ( ! $post || $post->post_name !== $slug ) && preg_match( '/^[0-9]+$/', $slug ) && $slug_num = intval( $slug ) ) {
@@ -2005,7 +1979,7 @@ function get_to_ping( $post_id ) {
 	$to_ping = $wpdb->get_var( $wpdb->prepare( "SELECT to_ping FROM $wpdb->posts WHERE ID = %d", $post_id ));
 	$to_ping = sanitize_trackback_urls( $to_ping );
 	$to_ping = preg_split('/\s/', $to_ping, -1, PREG_SPLIT_NO_EMPTY);
-	return apply_filters( 'get_to_ping', $to_ping );
+	return $to_ping;
 }
 
 function trackback_url_list( $tb_list, $post_id ) {
