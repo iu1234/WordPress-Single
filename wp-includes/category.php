@@ -9,13 +9,9 @@
 function get_categories( $args = '' ) {
 	$defaults = array( 'taxonomy' => 'category' );
 	$args = wp_parse_args( $args, $defaults );
-
 	$taxonomy = $args['taxonomy'];
-
 	$taxonomy = apply_filters( 'get_categories_taxonomy', $taxonomy, $args );
-
 	$categories = get_terms( $taxonomy, $args );
-
 	if ( is_wp_error( $categories ) ) {
 		$categories = array();
 	} else {
@@ -24,18 +20,13 @@ function get_categories( $args = '' ) {
 			_make_cat_compat( $categories[ $k ] );
 		}
 	}
-
 	return $categories;
 }
 
 function get_category( $category, $output = OBJECT, $filter = 'raw' ) {
 	$category = get_term( $category, 'category', $output, $filter );
-
-	if ( is_wp_error( $category ) )
-		return $category;
-
+	if ( is_wp_error( $category ) ) return $category;
 	_make_cat_compat( $category );
-
 	return $category;
 }
 
@@ -51,11 +42,7 @@ function get_category_by_path( $category_path, $full_match = true, $output = OBJ
 		$full_path .= ( $pathdir != '' ? '/' : '' ) . sanitize_title( $pathdir );
 	}
 	$categories = get_terms( 'category', array('get' => 'all', 'slug' => $leaf_path) );
-
-	if ( empty( $categories ) ) {
-		return;
-	}
-
+	if ( empty( $categories ) ) { return; }
 	foreach ( $categories as $category ) {
 		$path = '/' . $leaf_path;
 		$curcategory = $category;
@@ -83,16 +70,13 @@ function get_category_by_path( $category_path, $full_match = true, $output = OBJ
 
 function get_category_by_slug( $slug  ) {
 	$category = get_term_by( 'slug', $slug, 'category' );
-	if ( $category )
-		_make_cat_compat( $category );
-
+	if ( $category ) _make_cat_compat( $category );
 	return $category;
 }
 
 function get_cat_ID( $cat_name ) {
 	$cat = get_term_by( 'name', $cat_name, 'category' );
-	if ( $cat )
-		return $cat->term_id;
+	if ( $cat ) return $cat->term_id;
 	return 0;
 }
 
@@ -104,36 +88,14 @@ function get_cat_name( $cat_id ) {
 	return $category->name;
 }
 
-function cat_is_ancestor_of( $cat1, $cat2 ) {
-	return term_is_ancestor_of( $cat1, $cat2, 'category' );
-}
-
-function sanitize_category( $category, $context = 'display' ) {
-	return sanitize_term( $category, 'category', $context );
-}
-
-function sanitize_category_field( $field, $value, $cat_id, $context ) {
-	return sanitize_term_field( $field, $value, $cat_id, 'category', $context );
-}
-
 function get_tags( $args = '' ) {
 	$tags = get_terms( 'post_tag', $args );
-
 	if ( empty( $tags ) ) {
 		$return = array();
 		return $return;
 	}
-
 	$tags = apply_filters( 'get_tags', $tags, $args );
 	return $tags;
-}
-
-function get_tag( $tag, $output = OBJECT, $filter = 'raw' ) {
-	return get_term( $tag, 'post_tag', $output, $filter );
-}
-
-function clean_category_cache( $id ) {
-	clean_term_cache( $id, 'category' );
 }
 
 function _make_cat_compat( &$category ) {

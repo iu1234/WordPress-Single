@@ -541,10 +541,8 @@ function get_terms( $args = array(), $deprecated = '' ) {
 		'update_term_meta_cache' => true,
 		'meta_query'             => ''
 	);
-
 	$key_intersect  = array_intersect_key( $defaults, (array) $args );
 	$do_legacy_args = $deprecated || empty( $key_intersect );
-
 	$taxonomies = null;
 	if ( $do_legacy_args ) {
 		$taxonomies = (array) $args;
@@ -553,9 +551,7 @@ function get_terms( $args = array(), $deprecated = '' ) {
 		$taxonomies = (array) $args['taxonomy'];
 		unset( $args['taxonomy'] );
 	}
-
 	$empty_array = array();
-
 	if ( $taxonomies ) {
 		foreach ( $taxonomies as $taxonomy ) {
 			if ( ! taxonomy_exists($taxonomy) ) {
@@ -563,7 +559,6 @@ function get_terms( $args = array(), $deprecated = '' ) {
 			}
 		}
 	}
-
 	$args = wp_parse_args( $args, apply_filters( 'get_terms_defaults', $defaults, $taxonomies ) );
 
 	$args['number'] = absint( $args['number'] );
@@ -577,17 +572,13 @@ function get_terms( $args = array(), $deprecated = '' ) {
 			}
 		}
 	}
-
 	if ( ! $has_hierarchical_tax ) {
 		$args['hierarchical'] = false;
 		$args['pad_counts'] = false;
 	}
-
-	// 'parent' overrides 'child_of'.
 	if ( 0 < intval( $args['parent'] ) ) {
 		$args['child_of'] = false;
 	}
-
 	if ( 'all' == $args['get'] ) {
 		$args['childless'] = false;
 		$args['child_of'] = 0;
@@ -595,9 +586,7 @@ function get_terms( $args = array(), $deprecated = '' ) {
 		$args['hierarchical'] = false;
 		$args['pad_counts'] = false;
 	}
-
 	$args = apply_filters( 'get_terms_args', $args, $taxonomies );
-
 	$child_of = $args['child_of'];
 	$parent   = $args['parent'];
 
@@ -608,7 +597,6 @@ function get_terms( $args = array(), $deprecated = '' ) {
 	} else {
 		$_parent = false;
 	}
-
 	if ( $_parent ) {
 		$in_hierarchy = false;
 		foreach ( $taxonomies as $_tax ) {
@@ -622,7 +610,6 @@ function get_terms( $args = array(), $deprecated = '' ) {
 			return $empty_array;
 		}
 	}
-
 	$_orderby = strtolower( $args['orderby'] );
 	if ( 'count' == $_orderby ) {
 		$orderby = 'tt.count';
@@ -644,16 +631,13 @@ function get_terms( $args = array(), $deprecated = '' ) {
 	} else {
 		$orderby = 't.name';
 	}
-
 	$orderby = apply_filters( 'get_terms_orderby', $orderby, $args, $taxonomies );
-
 	$order = strtoupper( $args['order'] );
 	if ( ! empty( $orderby ) ) {
 		$orderby = "ORDER BY $orderby";
 	} else {
 		$order = '';
 	}
-
 	if ( '' !== $order && ! in_array( $order, array( 'ASC', 'DESC' ) ) ) {
 		$order = 'ASC';
 	}
@@ -664,14 +648,12 @@ function get_terms( $args = array(), $deprecated = '' ) {
 	$exclude = $args['exclude'];
 	$exclude_tree = $args['exclude_tree'];
 	$include = $args['include'];
-
 	$inclusions = '';
 	if ( ! empty( $include ) ) {
 		$exclude = '';
 		$exclude_tree = '';
 		$inclusions = implode( ',', wp_parse_id_list( $include ) );
 	}
-
 	if ( ! empty( $inclusions ) ) {
 		$where_conditions[] = 't.term_id IN ( ' . $inclusions . ' )';
 	}
@@ -687,11 +669,9 @@ function get_terms( $args = array(), $deprecated = '' ) {
 		}
 		$exclusions = array_merge( $excluded_children, $exclusions );
 	}
-
 	if ( ! empty( $exclude ) ) {
 		$exclusions = array_merge( wp_parse_id_list( $exclude ), $exclusions );
 	}
-
 	$childless = (bool) $args['childless'];
 	if ( $childless ) {
 		foreach ( $taxonomies as $_tax ) {
@@ -699,30 +679,22 @@ function get_terms( $args = array(), $deprecated = '' ) {
 			$exclusions = array_merge( array_keys( $term_hierarchy ), $exclusions );
 		}
 	}
-
 	if ( ! empty( $exclusions ) ) {
 		$exclusions = 't.term_id NOT IN (' . implode( ',', array_map( 'intval', $exclusions ) ) . ')';
 	} else {
 		$exclusions = '';
 	}
-
 	$exclusions = apply_filters( 'list_terms_exclusions', $exclusions, $args, $taxonomies );
-
 	if ( ! empty( $exclusions ) ) {
-		// Must do string manipulation here for backward compatibility with filter.
 		$where_conditions[] = preg_replace( '/^\s*AND\s*/', '', $exclusions );
 	}
-
 	if ( ! empty( $args['name'] ) ) {
 		$names = (array) $args['name'];
 		foreach ( $names as &$_name ) {
-			// `sanitize_term_field()` returns slashed data.
 			$_name = stripslashes( sanitize_term_field( 'name', $_name, 0, reset( $taxonomies ), 'db' ) );
 		}
-
 		$where_conditions[] = "t.name IN ('" . implode( "', '", array_map( 'esc_sql', $names ) ) . "')";
 	}
-
 	if ( ! empty( $args['slug'] ) ) {
 		if ( is_array( $args['slug'] ) ) {
 			$slug = array_map( 'sanitize_title', $args['slug'] );
@@ -732,20 +704,16 @@ function get_terms( $args = array(), $deprecated = '' ) {
 			$where_conditions[] = "t.slug = '$slug'";
 		}
 	}
-
 	if ( ! empty( $args['name__like'] ) ) {
 		$where_conditions[] = $wpdb->prepare( "t.name LIKE %s", '%' . $wpdb->esc_like( $args['name__like'] ) . '%' );
 	}
-
 	if ( ! empty( $args['description__like'] ) ) {
 		$where_conditions[] = $wpdb->prepare( "tt.description LIKE %s", '%' . $wpdb->esc_like( $args['description__like'] ) . '%' );
 	}
-
 	if ( '' !== $parent ) {
 		$parent = (int) $parent;
 		$where_conditions[] = "tt.parent = '$parent'";
 	}
-
 	$hierarchical = $args['hierarchical'];
 	if ( 'count' == $args['fields'] ) {
 		$hierarchical = false;
@@ -753,11 +721,8 @@ function get_terms( $args = array(), $deprecated = '' ) {
 	if ( $args['hide_empty'] && !$hierarchical ) {
 		$where_conditions[] = 'tt.count > 0';
 	}
-
 	$number = $args['number'];
 	$offset = $args['offset'];
-
-	// Don't limit the query results when we have to descend the family tree.
 	if ( $number && ! $hierarchical && ! $child_of && '' === $parent ) {
 		if ( $offset ) {
 			$limits = 'LIMIT ' . $offset . ',' . $number;
@@ -772,22 +737,16 @@ function get_terms( $args = array(), $deprecated = '' ) {
 		$like = '%' . $wpdb->esc_like( $args['search'] ) . '%';
 		$where_conditions[] = $wpdb->prepare( '((t.name LIKE %s) OR (t.slug LIKE %s))', $like, $like );
 	}
-
-	// Meta query support.
 	$join = '';
 	$distinct = '';
-
 	$mquery = new WP_Meta_Query();
 	$mquery->parse_query_vars( $args );
 	$mq_sql = $mquery->get_sql( 'term', 't', 'term_id' );
 	$meta_clauses = $mquery->get_clauses();
-
 	if ( ! empty( $meta_clauses ) ) {
 		$join .= $mq_sql['join'];
 		$where_conditions[] = preg_replace( '/^\s*AND\s*/', '', $mq_sql['where'] );
 		$distinct .= "DISTINCT";
-
-		// 'orderby' support.
 		$allowed_keys = array();
 		$primary_meta_key   = null;
 		$primary_meta_query = reset( $meta_clauses );
@@ -798,7 +757,6 @@ function get_terms( $args = array(), $deprecated = '' ) {
 		$allowed_keys[] = 'meta_value';
 		$allowed_keys[] = 'meta_value_num';
 		$allowed_keys   = array_merge( $allowed_keys, array_keys( $meta_clauses ) );
-
 		if ( ! empty( $args['orderby'] ) && in_array( $args['orderby'], $allowed_keys ) ) {
 			switch( $args['orderby'] ) {
 				case $primary_meta_key:
@@ -816,7 +774,6 @@ function get_terms( $args = array(), $deprecated = '' ) {
 
 				default:
 					if ( array_key_exists( $args['orderby'], $meta_clauses ) ) {
-						// $orderby corresponds to a meta_query clause.
 						$meta_clause = $meta_clauses[ $args['orderby'] ];
 						$orderby = "ORDER BY CAST({$meta_clause['alias']}.meta_value AS {$meta_clause['cast']})";
 					}
@@ -824,7 +781,6 @@ function get_terms( $args = array(), $deprecated = '' ) {
 			}
 		}
 	}
-
 	$selects = array();
 	switch ( $args['fields'] ) {
 		case 'all':
@@ -849,19 +805,12 @@ function get_terms( $args = array(), $deprecated = '' ) {
 			$selects = array( 't.term_id', 't.slug', 'tt.count', 'tt.taxonomy' );
 			break;
 	}
-
 	$_fields = $args['fields'];
-
 	$fields = implode( ', ', apply_filters( 'get_terms_fields', $selects, $args, $taxonomies ) );
-
 	$join .= " INNER JOIN $wpdb->term_taxonomy AS tt ON t.term_id = tt.term_id";
-
 	$where = implode( ' AND ', $where_conditions );
-
 	$pieces = array( 'fields', 'join', 'where', 'distinct', 'orderby', 'order', 'limits' );
-
 	$clauses = apply_filters( 'terms_clauses', compact( $pieces ), $taxonomies, $args );
-
 	$fields = isset( $clauses[ 'fields' ] ) ? $clauses[ 'fields' ] : '';
 	$join = isset( $clauses[ 'join' ] ) ? $clauses[ 'join' ] : '';
 	$where = isset( $clauses[ 'where' ] ) ? $clauses[ 'where' ] : '';
@@ -869,14 +818,10 @@ function get_terms( $args = array(), $deprecated = '' ) {
 	$orderby = isset( $clauses[ 'orderby' ] ) ? $clauses[ 'orderby' ] : '';
 	$order = isset( $clauses[ 'order' ] ) ? $clauses[ 'order' ] : '';
 	$limits = isset( $clauses[ 'limits' ] ) ? $clauses[ 'limits' ] : '';
-
 	if ( $where ) {
 		$where = "WHERE $where";
 	}
-
 	$query = "SELECT $distinct $fields FROM $wpdb->terms AS t $join $where $orderby $order $limits";
-
-	// $args can be anything. Only use the args defined in defaults to compute the key.
 	$key = md5( serialize( wp_array_slice_assoc( $args, array_keys( $defaults ) ) ) . serialize( $taxonomies ) . $query );
 	$last_changed = wp_cache_get( 'last_changed', 'terms' );
 	if ( ! $last_changed ) {
@@ -892,29 +837,21 @@ function get_terms( $args = array(), $deprecated = '' ) {
 
 		return apply_filters( 'get_terms', $cache, $taxonomies, $args );
 	}
-
 	if ( 'count' == $_fields ) {
 		return $wpdb->get_var( $query );
 	}
-
 	$terms = $wpdb->get_results($query);
 	if ( 'all' == $_fields ) {
 		update_term_cache( $terms );
 	}
-
-	// Prime termmeta cache.
 	if ( $args['update_term_meta_cache'] ) {
 		$term_ids = wp_list_pluck( $terms, 'term_id' );
 		update_termmeta_cache( $term_ids );
 	}
-
 	if ( empty($terms) ) {
 		wp_cache_add( $cache_key, array(), 'terms', DAY_IN_SECONDS );
-
-		/** This filter is documented in wp-includes/taxonomy.php */
 		return apply_filters( 'get_terms', array(), $taxonomies, $args );
 	}
-
 	if ( $child_of ) {
 		foreach ( $taxonomies as $_tax ) {
 			$children = _get_term_hierarchy( $_tax );
@@ -923,13 +860,11 @@ function get_terms( $args = array(), $deprecated = '' ) {
 			}
 		}
 	}
-
 	if ( $args['pad_counts'] && 'all' == $_fields ) {
 		foreach ( $taxonomies as $_tax ) {
 			_pad_term_counts( $terms, $_tax );
 		}
 	}
-
 	if ( $hierarchical && $args['hide_empty'] && is_array( $terms ) ) {
 		foreach ( $terms as $k => $term ) {
 			if ( ! $term->count ) {
@@ -942,12 +877,10 @@ function get_terms( $args = array(), $deprecated = '' ) {
 						}
 					}
 				}
-
 				unset($terms[$k]);
 			}
 		}
 	}
-
 	$_terms = array();
 	if ( 'id=>parent' == $_fields ) {
 		foreach ( $terms as $term ) {
@@ -970,12 +903,9 @@ function get_terms( $args = array(), $deprecated = '' ) {
 			$_terms[ $term->term_id ] = $term->slug;
 		}
 	}
-
 	if ( ! empty( $_terms ) ) {
 		$terms = $_terms;
 	}
-
-	// Hierarchical queries are not limited, so 'offset' and 'number' must be handled now.
 	if ( $hierarchical && $number && is_array( $terms ) ) {
 		if ( $offset >= count( $terms ) ) {
 			$terms = array();
@@ -983,14 +913,10 @@ function get_terms( $args = array(), $deprecated = '' ) {
 			$terms = array_slice( $terms, $offset, $number, true );
 		}
 	}
-
 	wp_cache_add( $cache_key, $terms, 'terms', DAY_IN_SECONDS );
-
 	if ( 'all' === $_fields ) {
 		$terms = array_map( 'get_term', $terms );
 	}
-
-	/** This filter is documented in wp-includes/taxonomy.php */
 	return apply_filters( 'get_terms', $terms, $taxonomies, $args );
 }
 

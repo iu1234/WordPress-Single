@@ -242,7 +242,6 @@ class WP_Query {
 					}
 				}
 			}
-
 			if ( $qv['monthnum'] ) {
 				if ( ! $this->is_date ) {
 					if ( 12 < $qv['monthnum'] ) {
@@ -253,14 +252,12 @@ class WP_Query {
 					}
 				}
 			}
-
 			if ( $qv['year'] ) {
 				if ( ! $this->is_date ) {
 					$this->is_year = true;
 					$this->is_date = true;
 				}
 			}
-
 			if ( $qv['m'] ) {
 				$this->is_date = true;
 				if ( strlen($qv['m']) > 9 ) {
@@ -273,18 +270,11 @@ class WP_Query {
 					$this->is_year = true;
 				}
 			}
-
-			if ( '' != $qv['w'] ) {
-				$this->is_date = true;
-			}
-
+			if ( '' != $qv['w'] ) { $this->is_date = true; }
 			$this->query_vars_hash = false;
 			$this->parse_tax_query( $qv );
-
 			foreach ( $this->tax_query->queries as $tax_query ) {
-				if ( ! is_array( $tax_query ) ) {
-					continue;
-				}
+				if ( ! is_array( $tax_query ) ) { continue; }
 				if ( isset( $tax_query['operator'] ) && 'NOT IN' != $tax_query['operator'] ) {
 					switch ( $tax_query['taxonomy'] ) {
 						case 'category':
@@ -299,22 +289,18 @@ class WP_Query {
 				}
 			}
 			unset( $tax_query );
-
 			if ( empty($qv['author']) || ($qv['author'] == '0') ) {
 				$this->is_author = false;
 			} else {
 				$this->is_author = true;
 			}
-
 			if ( '' != $qv['author_name'] )
 				$this->is_author = true;
-
 			if ( !empty( $qv['post_type'] ) && ! is_array( $qv['post_type'] ) ) {
 				$post_type_obj = get_post_type_object( $qv['post_type'] );
 				if ( ! empty( $post_type_obj->has_archive ) )
 					$this->is_post_type_archive = true;
 			}
-
 			if ( $this->is_post_type_archive || $this->is_date || $this->is_author || $this->is_category || $this->is_tag || $this->is_tax )
 				$this->is_archive = true;
 		}
@@ -336,20 +322,17 @@ class WP_Query {
 				$this->is_page = true;
 				$this->is_home = false;
 				$qv['page_id'] = get_option('page_on_front');
-				// Correct <!--nextpage--> for page_on_front
 				if ( !empty($qv['paged']) ) {
 					$qv['page'] = $qv['paged'];
 					unset($qv['paged']);
 				}
 			}
 		}
-
 		if ( '' != $qv['pagename'] ) {
 			$this->queried_object = get_page_by_path( $qv['pagename'] );
 
 			if ( $this->queried_object && 'attachment' == $this->queried_object->post_type ) {
 				if ( preg_match( "/^[^%]*%(?:postname)%/", get_option( 'permalink_structure' ) ) ) {
-					// See if we also have a post with the same slug
 					$post = get_page_by_path( $qv['pagename'], OBJECT, 'post' );
 					if ( $post ) {
 						$this->queried_object = $post;
@@ -358,20 +341,17 @@ class WP_Query {
 					}
 				}
 			}
-
 			if ( ! empty( $this->queried_object ) ) {
 				$this->queried_object_id = (int) $this->queried_object->ID;
 			} else {
 				unset( $this->queried_object );
 			}
-
 			if  ( 'page' == get_option('show_on_front') && isset($this->queried_object_id) && $this->queried_object_id == get_option('page_for_posts') ) {
 				$this->is_page = false;
 				$this->is_home = true;
 				$this->is_posts_page = true;
 			}
 		}
-
 		if ( $qv['page_id'] ) {
 			if  ( 'page' == get_option('show_on_front') && $qv['page_id'] == get_option('page_for_posts') ) {
 				$this->is_page = false;
@@ -379,14 +359,12 @@ class WP_Query {
 				$this->is_posts_page = true;
 			}
 		}
-
 		if ( !empty($qv['post_type']) ) {
 			if ( is_array($qv['post_type']) )
 				$qv['post_type'] = array_map('sanitize_key', $qv['post_type']);
 			else
 				$qv['post_type'] = sanitize_key($qv['post_type']);
 		}
-
 		if ( ! empty( $qv['post_status'] ) ) {
 			if ( is_array( $qv['post_status'] ) )
 				$qv['post_status'] = array_map('sanitize_key', $qv['post_status']);
@@ -415,11 +393,9 @@ class WP_Query {
 				'field' => 'slug',
 			);
 		}
-
 		foreach ( get_taxonomies( array() , 'objects' ) as $taxonomy => $t ) {
 			if ( 'post_tag' == $taxonomy )
-				continue;	// Handled further down in the $q['tag'] block
-
+				continue;
 			if ( $t->query_var && !empty( $q[$t->query_var] ) ) {
 				$tax_query_defaults = array(
 					'taxonomy' => $taxonomy,
@@ -629,12 +605,10 @@ class WP_Query {
 				$q['search_terms'] = array( $q['s'] );
 			}
 		}
-
 		$n = ! empty( $q['exact'] ) ? '' : '%';
 		$searchand = '';
 		$q['search_orderby_title'] = array();
 		foreach ( $q['search_terms'] as $term ) {
-			// Terms prefixed with '-' should be excluded.
 			$include = '-' !== substr( $term, 0, 1 );
 			if ( $include ) {
 				$like_op  = 'LIKE';
@@ -667,50 +641,31 @@ class WP_Query {
 	protected function parse_search_terms( $terms ) {
 		$strtolower = function_exists( 'mb_strtolower' ) ? 'mb_strtolower' : 'strtolower';
 		$checked = array();
-
 		$stopwords = $this->get_search_stopwords();
-
 		foreach ( $terms as $term ) {
-			// keep before/after spaces when term is for exact match
 			if ( preg_match( '/^".+"$/', $term ) )
 				$term = trim( $term, "\"'" );
 			else
 				$term = trim( $term, "\"' " );
-
-			// Avoid single A-Z and single dashes.
 			if ( ! $term || ( 1 === strlen( $term ) && preg_match( '/^[a-z\-]$/i', $term ) ) )
 				continue;
-
 			if ( in_array( call_user_func( $strtolower, $term ), $stopwords, true ) )
 				continue;
-
 			$checked[] = $term;
 		}
-
 		return $checked;
 	}
 
 	protected function get_search_stopwords() {
 		if ( isset( $this->stopwords ) )
 			return $this->stopwords;
-
-		$words = explode( ',', _x( 'about,an,are,as,at,be,by,com,for,from,how,in,is,it,of,on,or,that,the,this,to,was,what,when,where,who,will,with,www',
-			'Comma-separated list of search stopwords in your language' ) );
-
+		$words = explode( ',', 'about,an,are,as,at,be,by,com,for,from,how,in,is,it,of,on,or,that,the,this,to,was,what,when,where,who,will,with,www' );
 		$stopwords = array();
 		foreach ( $words as $word ) {
 			$word = trim( $word, "\r\n\t " );
 			if ( $word )
 				$stopwords[] = $word;
 		}
-
-		/**
-		 * Filter stopwords used when parsing search terms.
-		 *
-		 * @since 3.7.0
-		 *
-		 * @param array $stopwords Stopwords.
-		 */
 		$this->stopwords = apply_filters( 'wp_search_stopwords', $stopwords );
 		return $this->stopwords;
 	}
@@ -720,57 +675,39 @@ class WP_Query {
 
 		if ( $q['search_terms_count'] > 1 ) {
 			$num_terms = count( $q['search_orderby_title'] );
-
-			// If the search terms contain negative queries, don't bother ordering by sentence matches.
 			$like = '';
 			if ( ! preg_match( '/(?:\s|^)\-/', $q['s'] ) ) {
 				$like = '%' . $wpdb->esc_like( $q['s'] ) . '%';
 			}
-
 			$search_orderby = '';
-
-			// sentence match in 'post_title'
 			if ( $like ) {
 				$search_orderby .= $wpdb->prepare( "WHEN $wpdb->posts.post_title LIKE %s THEN 1 ", $like );
 			}
-
-			// sanity limit, sort as sentence when more than 6 terms
-			// (few searches are longer than 6 terms and most titles are not)
 			if ( $num_terms < 7 ) {
-				// all words in title
 				$search_orderby .= 'WHEN ' . implode( ' AND ', $q['search_orderby_title'] ) . ' THEN 2 ';
-				// any word in title, not needed when $num_terms == 1
 				if ( $num_terms > 1 )
 					$search_orderby .= 'WHEN ' . implode( ' OR ', $q['search_orderby_title'] ) . ' THEN 3 ';
 			}
-
-			// Sentence match in 'post_content' and 'post_excerpt'.
 			if ( $like ) {
 				$search_orderby .= $wpdb->prepare( "WHEN $wpdb->posts.post_excerpt LIKE %s THEN 4 ", $like );
 				$search_orderby .= $wpdb->prepare( "WHEN $wpdb->posts.post_content LIKE %s THEN 5 ", $like );
 			}
-
 			if ( $search_orderby ) {
 				$search_orderby = '(CASE ' . $search_orderby . 'ELSE 6 END)';
 			}
 		} else {
-			// single word or sentence search
 			$search_orderby = reset( $q['search_orderby_title'] ) . ' DESC';
 		}
-
 		return $search_orderby;
 	}
 
 	protected function parse_orderby( $orderby ) {
 		global $wpdb;
-
-		// Used to filter values.
 		$allowed_keys = array(
 			'post_name', 'post_author', 'post_date', 'post_title', 'post_modified',
 			'post_parent', 'post_type', 'name', 'author', 'date', 'title', 'modified',
 			'parent', 'type', 'ID', 'menu_order', 'comment_count', 'rand',
 		);
-
 		$primary_meta_key = '';
 		$primary_meta_query = false;
 		$meta_clauses = $this->meta_query->get_clauses();
@@ -786,8 +723,6 @@ class WP_Query {
 			$allowed_keys[] = 'meta_value_num';
 			$allowed_keys   = array_merge( $allowed_keys, array_keys( $meta_clauses ) );
 		}
-
-		// If RAND() contains a seed value, sanitize and add to allowed keys.
 		$rand_with_seed = false;
 		if ( preg_match( '/RAND\(([0-9]+)\)/i', $orderby, $matches ) ) {
 			$orderby = sprintf( 'RAND(%s)', intval( $matches[1] ) );
@@ -828,13 +763,11 @@ class WP_Query {
 				break;
 			default:
 				if ( array_key_exists( $orderby, $meta_clauses ) ) {
-					// $orderby corresponds to a meta_query clause.
 					$meta_clause = $meta_clauses[ $orderby ];
 					$orderby_clause = "CAST({$meta_clause['alias']}.meta_value AS {$meta_clause['cast']})";
 				} elseif ( $rand_with_seed ) {
 					$orderby_clause = $orderby;
 				} else {
-					// Default: order by post field.
 					$orderby_clause = "$wpdb->posts.post_" . sanitize_key( $orderby );
 				}
 
@@ -845,10 +778,7 @@ class WP_Query {
 	}
 
 	protected function parse_order( $order ) {
-		if ( ! is_string( $order ) || empty( $order ) ) {
-			return 'DESC';
-		}
-
+		if ( ! is_string( $order ) || empty( $order ) ) { return 'DESC'; }
 		if ( 'ASC' === strtoupper( $order ) ) {
 			return 'ASC';
 		} else {
@@ -865,7 +795,6 @@ class WP_Query {
 		if ( isset( $this->query_vars[ $query_var ] ) ) {
 			return $this->query_vars[ $query_var ];
 		}
-
 		return $default;
 	}
 
@@ -1192,14 +1121,10 @@ class WP_Query {
 						} else {
 							$q['term_id'] = $queried_items['terms'][0];
 						}
-
-						// Take the first one we find.
 						break;
 					}
 				}
 			}
-
-			// 'cat', 'category_name', 'tag_id'
 			foreach ( $this->tax_query->queried_terms as $queried_taxonomy => $queried_items ) {
 				if ( empty( $queried_items['terms'][0] ) ) {
 					continue;
@@ -1213,7 +1138,6 @@ class WP_Query {
 					}
 					unset( $the_cat );
 				}
-
 				if ( 'post_tag' === $queried_taxonomy ) {
 					$the_tag = get_term_by( $queried_items['field'], $queried_items['terms'][0], 'post_tag' );
 					if ( $the_tag ) {
@@ -1227,9 +1151,6 @@ class WP_Query {
 		if ( !empty( $this->tax_query->queries ) || !empty( $this->meta_query->queries ) ) {
 			$groupby = "{$wpdb->posts}.ID";
 		}
-
-		// Author/user stuff
-
 		if ( ! empty( $q['author'] ) && $q['author'] != '0' ) {
 			$q['author'] = addslashes_gpc( '' . urldecode( $q['author'] ) );
 			$authors = array_unique( array_map( 'intval', preg_split( '/[,\s]+/', $q['author'] ) ) );
@@ -1239,7 +1160,6 @@ class WP_Query {
 			}
 			$q['author'] = implode( ',', $authors );
 		}
-
 		if ( ! empty( $q['author__not_in'] ) ) {
 			$author__not_in = implode( ',', array_map( 'absint', array_unique( (array) $q['author__not_in'] ) ) );
 			$where .= " AND {$wpdb->posts}.post_author NOT IN ($author__not_in) ";
@@ -1247,9 +1167,6 @@ class WP_Query {
 			$author__in = implode( ',', array_map( 'absint', array_unique( (array) $q['author__in'] ) ) );
 			$where .= " AND {$wpdb->posts}.post_author IN ($author__in) ";
 		}
-
-		// Author stuff for nice URLs
-
 		if ( '' != $q['author_name'] ) {
 			if ( strpos($q['author_name'], '/') !== false ) {
 				$q['author_name'] = explode('/', $q['author_name']);
@@ -1265,9 +1182,6 @@ class WP_Query {
 				$q['author'] = $q['author']->ID;
 			$whichauthor .= " AND ($wpdb->posts.post_author = " . absint($q['author']) . ')';
 		}
-
-		// MIME-Type stuff for attachment browsing
-
 		if ( isset( $q['post_mime_type'] ) && '' != $q['post_mime_type'] )
 			$whichmimetype = wp_post_mime_type_where( $q['post_mime_type'], $wpdb->posts );
 
@@ -1319,7 +1233,6 @@ class WP_Query {
 
 				foreach ( explode( ' ', $q['orderby'] ) as $i => $orderby ) {
 					$parsed = $this->parse_orderby( $orderby );
-					// Only allow certain values for safety.
 					if ( ! $parsed ) {
 						continue;
 					}
@@ -1468,24 +1381,20 @@ class WP_Query {
 			}
 		} elseif ( !$this->is_singular ) {
 			$where .= " AND ($wpdb->posts.post_status = 'publish'";
-
-			// Add public states.
 			$public_states = get_post_stati( array('public' => true) );
 			foreach ( (array) $public_states as $state ) {
-				if ( 'publish' == $state ) // Publish is hard-coded above.
+				if ( 'publish' == $state )
 					continue;
 				$where .= " OR $wpdb->posts.post_status = '$state'";
 			}
 
 			if ( $this->is_admin ) {
-				// Add protected states that should show in the admin all list.
 				$admin_all_states = get_post_stati( array('protected' => true, 'show_in_admin_all_list' => true) );
 				foreach ( (array) $admin_all_states as $state )
 					$where .= " OR $wpdb->posts.post_status = '$state'";
 			}
 
 			if ( is_user_logged_in() ) {
-				// Add private states that are limited to viewing by the author of a post or someone who has caps to read private states.
 				$private_states = get_post_stati( array('private' => true) );
 				foreach ( (array) $private_states as $state )
 					$where .= current_user_can( $read_private_cap ) ? " OR $wpdb->posts.post_status = '$state'" : " OR $wpdb->posts.post_author = $user_id AND $wpdb->posts.post_status = '$state'";
@@ -1500,14 +1409,10 @@ class WP_Query {
 
 			$join = apply_filters_ref_array( 'posts_join', array( $join, &$this ) );
 		}
-
-		// Paging
 		if ( empty($q['nopaging']) && !$this->is_singular ) {
 			$page = absint($q['paged']);
 			if ( !$page )
 				$page = 1;
-
-			// If 'offset' is provided, it takes precedence over 'paged'.
 			if ( isset( $q['offset'] ) && is_numeric( $q['offset'] ) ) {
 				$q['offset'] = absint( $q['offset'] );
 				$pgstrt = $q['offset'] . ', ';
@@ -1620,8 +1525,6 @@ class WP_Query {
 		$split_the_query = apply_filters( 'split_the_query', $split_the_query, $this );
 
 		if ( $split_the_query ) {
-			// First get the IDs and then fill in the objects
-
 			$this->request = "SELECT $found_rows $distinct $wpdb->posts.ID FROM $wpdb->posts $join WHERE 1=1 $where $groupby $orderby $limits";
 
 			$this->request = apply_filters( 'posts_request_ids', $this->request, $this );
@@ -1639,8 +1542,6 @@ class WP_Query {
 			$this->posts = $wpdb->get_results( $this->request );
 			$this->set_found_posts( $q, $limits );
 		}
-
-		// Convert to WP_Post objects
 		if ( $this->posts )
 			$this->posts = array_map( 'get_post', $this->posts );
 
@@ -1656,16 +1557,12 @@ class WP_Query {
 				$this->is_attachment = true;
 			}
 			$post_status_obj = get_post_status_object($status);
-
-			// If the post_status was specifically requested, let it pass through.
 			if ( !$post_status_obj->public && ! in_array( $status, $q_status ) ) {
 
 				if ( ! is_user_logged_in() ) {
-					// User must be logged in to view unpublished posts.
 					$this->posts = array();
 				} else {
 					if  ( $post_status_obj->protected ) {
-						// User must have edit permissions on the draft to preview.
 						if ( ! current_user_can($edit_cap, $this->posts[0]->ID) ) {
 							$this->posts = array();
 						} else {
@@ -1687,32 +1584,22 @@ class WP_Query {
 			}
 		}
 
-		// Put sticky posts at the top of the posts array
 		$sticky_posts = get_option('sticky_posts');
 		if ( $this->is_home && $page <= 1 && is_array($sticky_posts) && !empty($sticky_posts) && !$q['ignore_sticky_posts'] ) {
 			$num_posts = count($this->posts);
 			$sticky_offset = 0;
-			// Loop over posts and relocate stickies to the front.
 			for ( $i = 0; $i < $num_posts; $i++ ) {
 				if ( in_array($this->posts[$i]->ID, $sticky_posts) ) {
 					$sticky_post = $this->posts[$i];
-					// Remove sticky from current position
 					array_splice($this->posts, $i, 1);
-					// Move to front, after other stickies
 					array_splice($this->posts, $sticky_offset, 0, array($sticky_post));
-					// Increment the sticky offset. The next sticky will be placed at this offset.
 					$sticky_offset++;
-					// Remove post from sticky posts array
 					$offset = array_search($sticky_post->ID, $sticky_posts);
 					unset( $sticky_posts[$offset] );
 				}
 			}
-
-			// If any posts have been excluded specifically, Ignore those that are sticky.
 			if ( !empty($sticky_posts) && !empty($q['post__not_in']) )
 				$sticky_posts = array_diff($sticky_posts, $q['post__not_in']);
-
-			// Fetch sticky posts that weren't in the query results
 			if ( !empty($sticky_posts) ) {
 				$stickies = get_posts( array(
 					'post__in' => $sticky_posts,
@@ -1775,9 +1662,7 @@ class WP_Query {
 	}
 
 	public function next_post() {
-
 		$this->current_post++;
-
 		$this->post = $this->posts[$this->current_post];
 		return $this->post;
 	}
@@ -1785,8 +1670,7 @@ class WP_Query {
 	public function the_post() {
 		global $post;
 		$this->in_the_loop = true;
-
-		if ( $this->current_post == -1 ) // loop has just started
+		if ( $this->current_post == -1 )
 			do_action_ref_array( 'loop_start', array( &$this ) );
 
 		$post = $this->next_post();
@@ -1798,7 +1682,6 @@ class WP_Query {
 			return true;
 		} elseif ( $this->current_post + 1 == $this->post_count && $this->post_count > 0 ) {
 			do_action_ref_array( 'loop_end', array( &$this ) );
-			// Do some cleaning up after the loop
 			$this->rewind_posts();
 		}
 
@@ -2032,13 +1915,10 @@ class WP_Query {
 
 	public function is_tax( $taxonomy = '', $term = '' ) {
 		global $wp_taxonomies;
-
 		if ( !$this->is_tax )
 			return false;
-
 		if ( empty( $taxonomy ) )
 			return true;
-
 		$queried_object = $this->get_queried_object();
 		$tax_array = array_intersect( array_keys( $wp_taxonomies ), (array) $taxonomy );
 		$term_array = (array) $term;
@@ -2056,12 +1936,6 @@ class WP_Query {
 			) );
 	}
 
-	public function is_comments_popup() {
-		_deprecated_function( __FUNCTION__, '4.5' );
-
-		return false;
-	}
-
 	public function is_date() {
 		return (bool) $this->is_date;
 	}
@@ -2071,7 +1945,6 @@ class WP_Query {
 	}
 
 	public function is_front_page() {
-		// most likely case
 		if ( 'posts' == get_option( 'show_on_front') && $this->is_home() )
 			return true;
 		elseif ( 'page' == get_option( 'show_on_front') && get_option( 'page_on_front' ) && $this->is_page( get_option( 'page_on_front' ) ) )
@@ -2282,38 +2155,27 @@ function wp_old_slug_redirect() {
 				return;
 			$post_type = reset( $post_type );
 		}
-
 		if ( is_post_type_hierarchical( $post_type ) )
 			return;
 
 		$query = $wpdb->prepare("SELECT post_id FROM $wpdb->postmeta, $wpdb->posts WHERE ID = post_id AND post_type = %s AND meta_key = '_wp_old_slug' AND meta_value = %s", $post_type, $wp_query->query_vars['name']);
-
 		if ( '' != $wp_query->query_vars['year'] )
 			$query .= $wpdb->prepare(" AND YEAR(post_date) = %d", $wp_query->query_vars['year']);
 		if ( '' != $wp_query->query_vars['monthnum'] )
 			$query .= $wpdb->prepare(" AND MONTH(post_date) = %d", $wp_query->query_vars['monthnum']);
 		if ( '' != $wp_query->query_vars['day'] )
 			$query .= $wpdb->prepare(" AND DAYOFMONTH(post_date) = %d", $wp_query->query_vars['day']);
-
 		$id = (int) $wpdb->get_var($query);
-
 		if ( ! $id )
 			return;
-
 		$link = get_permalink( $id );
-
 		if ( isset( $GLOBALS['wp_query']->query_vars['paged'] ) && $GLOBALS['wp_query']->query_vars['paged'] > 1 ) {
 			$link = user_trailingslashit( trailingslashit( $link ) . 'page/' . $GLOBALS['wp_query']->query_vars['paged'] );
 		} elseif( is_embed() ) {
 			$link = user_trailingslashit( trailingslashit( $link ) . 'embed' );
 		}
-
 		$link = apply_filters( 'old_slug_redirect_url', $link );
-
-		if ( ! $link ) {
-			return;
-		}
-
+		if ( ! $link ) { return; }
 		wp_redirect( $link, 301 );
 		exit;
 	endif;
