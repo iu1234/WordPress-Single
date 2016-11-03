@@ -2838,24 +2838,14 @@ function wp_unslash( $value ) {
 }
 
 function get_url_in_content( $content ) {
-	if ( empty( $content ) ) {
-		return false;
-	}
-
-	if ( preg_match( '/<a\s[^>]*?href=([\'"])(.+?)\1/is', $content, $matches ) ) {
-		return esc_url_raw( $matches[2] );
-	}
-
+	if ( empty( $content ) ) { return false; }
+	if ( preg_match( '/<a\s[^>]*?href=([\'"])(.+?)\1/is', $content, $matches ) ) { return esc_url_raw( $matches[2] ); }
 	return false;
 }
 
 function wp_spaces_regexp() {
 	static $spaces = '';
-
-	if ( empty( $spaces ) ) {
-		$spaces = apply_filters( 'wp_spaces_regexp', '[\r\n\t ]|\xC2\xA0|&nbsp;' );
-	}
-
+	if ( empty( $spaces ) ) { $spaces = apply_filters( 'wp_spaces_regexp', '[\r\n\t ]|\xC2\xA0|&nbsp;' ); }
 	return $spaces;
 }
 

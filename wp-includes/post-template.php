@@ -71,27 +71,17 @@ function the_content( $more_link_text = null, $strip_teaser = false) {
 
 function get_the_content( $more_link_text = null, $strip_teaser = false ) {
 	global $page, $more, $preview, $pages, $multipage;
-
 	$post = get_post();
-
-	if ( null === $more_link_text )
-		$more_link_text = '(more&hellip;)';
-
+	if ( null === $more_link_text ) $more_link_text = '(more&hellip;)';
 	$output = '';
 	$has_teaser = false;
-
-	if ( post_password_required( $post ) )
-		return get_the_password_form( $post );
-
-	if ( $page > count( $pages ) )
-		$page = count( $pages );
-
+	if ( post_password_required( $post ) ) return get_the_password_form( $post );
+	if ( $page > count( $pages ) ) $page = count( $pages );
 	$content = $pages[$page - 1];
 	if ( preg_match( '/<!--more(.*?)?-->/', $content, $matches ) ) {
 		$content = explode( $matches[0], $content, 2 );
 		if ( ! empty( $matches[1] ) && ! empty( $more_link_text ) )
 			$more_link_text = strip_tags( wp_kses_no_null( trim( $matches[1] ) ) );
-
 		$has_teaser = true;
 	} else {
 		$content = array( $content );
@@ -101,26 +91,20 @@ function get_the_content( $more_link_text = null, $strip_teaser = false ) {
 		$strip_teaser = true;
 
 	$teaser = $content[0];
-
 	if ( $more && $strip_teaser && $has_teaser )
 		$teaser = '';
 
 	$output .= $teaser;
-
 	if ( count( $content ) > 1 ) {
 		if ( $more ) {
 			$output .= '<span id="more-' . $post->ID . '"></span>' . $content[1];
 		} else {
 			if ( ! empty( $more_link_text ) )
-
 				$output .= apply_filters( 'the_content_more_link', ' <a href="' . get_permalink() . "#more-{$post->ID}\" class=\"more-link\">$more_link_text</a>", $more_link_text );
 			$output = force_balance_tags( $output );
 		}
 	}
-
-	if ( $preview ) // Preview fix for JavaScript bug with foreign languages.
-		$output =	preg_replace_callback( '/\%u([0-9A-F]{4})/', '_convert_urlencoded_to_entities', $output );
-
+	if ( $preview ) $output = preg_replace_callback( '/\%u([0-9A-F]{4})/', '_convert_urlencoded_to_entities', $output );
 	return $output;
 }
 

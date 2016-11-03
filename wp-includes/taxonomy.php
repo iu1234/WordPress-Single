@@ -1067,12 +1067,10 @@ function sanitize_term($term, $taxonomy, $context = 'display') {
 				$term[$field] = sanitize_term_field($field, $term[$field], $term_id, $taxonomy, $context);
 		}
 	}
-
 	if ( $do_object )
 		$term->filter = $context;
 	else
 		$term['filter'] = $context;
-
 	return $term;
 }
 
