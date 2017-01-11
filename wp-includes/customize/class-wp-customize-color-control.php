@@ -50,7 +50,7 @@ class WP_Customize_Color_Control extends WP_Customize_Control {
 				<span class="description customize-control-description">{{{ data.description }}}</span>
 			<# } #>
 			<div class="customize-control-content">
-				<input class="color-picker-hex" type="text" maxlength="7" placeholder="<?php esc_attr_e( 'Hex Value' ); ?>" {{ defaultValue }} />
+				<input class="color-picker-hex" type="text" maxlength="7" placeholder="Hex Value" {{ defaultValue }} />
 			</div>
 		</label>
 		<?php

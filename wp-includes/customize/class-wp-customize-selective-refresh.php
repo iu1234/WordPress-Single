@@ -1,11 +1,4 @@
 <?php
-/**
- * Customize API: WP_Customize_Selective_Refresh class
- *
- * @package WordPress
- * @subpackage Customize
- * @since 4.5.0
- */
 
 final class WP_Customize_Selective_Refresh {
 
@@ -80,13 +73,11 @@ final class WP_Customize_Selective_Refresh {
 			'partials'       => $partials,
 			'renderQueryVar' => self::RENDER_QUERY_VAR,
 			'l10n'           => array(
-				'shiftClickToEdit' => __( 'Shift-click to edit this element.' ),
-				/* translators: %s: document.write() */
-				'badDocumentWrite' => sprintf( __( '%s is forbidden' ), 'document.write()' ),
+				'shiftClickToEdit' => 'Shift-click to edit this element.',
+				'badDocumentWrite' => sprintf( '%s is forbidden', 'document.write()' ),
 			),
 		);
 
-		// Export data to JS.
 		echo sprintf( '<script>var _customizePartialRefreshExports = %s;</script>', wp_json_encode( $exports ) );
 	}
 
@@ -94,8 +85,6 @@ final class WP_Customize_Selective_Refresh {
 		$new_partials = array();
 
 		foreach ( $partial_ids as $partial_id ) {
-
-			// Skip partials already created.
 			$partial = $this->get_partial( $partial_id );
 			if ( $partial ) {
 				continue;
@@ -179,9 +168,7 @@ final class WP_Customize_Selective_Refresh {
 
 			$contents[ $partial_id ] = array();
 
-			// @todo The array should include not only the contents, but also whether the container is included?
 			if ( empty( $container_contexts ) ) {
-				// Since there are no container contexts, render just once.
 				$contents[ $partial_id ][] = $partial->render( null );
 			} else {
 				foreach ( $container_contexts as $container_context ) {

@@ -1,19 +1,5 @@
 <?php
-/**
- * Customize API: WP_Widget_Form_Customize_Control class
- *
- * @package WordPress
- * @subpackage Customize
- * @since 4.4.0
- */
 
-/**
- * Widget Form Customize Control class.
- *
- * @since 3.9.0
- *
- * @see WP_Customize_Control
- */
 class WP_Widget_Form_Customize_Control extends WP_Customize_Control {
 	public $type = 'widget_form';
 	public $widget_id;
@@ -24,11 +10,6 @@ class WP_Widget_Form_Customize_Control extends WP_Customize_Control {
 	public $height;
 	public $is_wide = false;
 
-	/**
-	 * Gather control params for exporting to JavaScript.
-	 *
-	 * @global array $wp_registered_widgets
-	 */
 	public function to_json() {
 		global $wp_registered_widgets;
 
@@ -38,7 +19,6 @@ class WP_Widget_Form_Customize_Control extends WP_Customize_Control {
 			$this->json[ $key ] = $this->$key;
 		}
 
-		// Get the widget_control and widget_content.
 		require_once ABSPATH . '/wp-admin/includes/widgets.php';
 
 		$widget = $wp_registered_widgets[ $this->widget_id ];
@@ -58,19 +38,8 @@ class WP_Widget_Form_Customize_Control extends WP_Customize_Control {
 		$this->json['widget_content'] = $widget_control_parts['content'];
 	}
 
-	/**
-	 * Override render_content to be no-op since content is exported via to_json for deferred embedding.
-	 */
 	public function render_content() {}
 
-	/**
-	 * Whether the current widget is rendered on the page.
-	 *
-	 * @since 4.0.0
-	 * @access public
-	 *
-	 * @return bool Whether the widget is rendered.
-	 */
 	public function active_callback() {
 		return $this->manager->widgets->is_widget_rendered( $this->widget_id );
 	}

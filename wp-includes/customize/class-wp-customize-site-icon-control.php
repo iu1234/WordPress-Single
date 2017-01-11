@@ -26,14 +26,13 @@ class WP_Customize_Site_Icon_Control extends WP_Customize_Cropped_Image_Control 
 			<div class="container">
 				<div class="site-icon-preview">
 					<div class="favicon-preview">
-						<img src="<?php echo esc_url( admin_url( 'images/browser.png' ) ); ?>" class="browser-preview" width="182" alt="<?php esc_attr_e( 'Browser interface preview' ); ?>" />
-
+						<img src="<?php echo esc_url( admin_url( 'images/browser.png' ) ); ?>" class="browser-preview" width="182" alt="Browser interface preview" />
 						<div class="favicon">
-							<img id="preview-favicon" src="{{ data.attachment.sizes.full.url }}" alt="<?php esc_attr_e( 'Preview as a browser icon' ); ?>"/>
+							<img id="preview-favicon" src="{{ data.attachment.sizes.full.url }}" alt="Preview as a browser icon"/>
 						</div>
 						<span class="browser-title"><?php bloginfo( 'name' ); ?></span>
 					</div>
-					<img class="app-icon-preview" src="{{ data.attachment.sizes.full.url }}" alt="<?php esc_attr_e( 'Preview as an app icon' ); ?>"/>
+					<img class="app-icon-preview" src="{{ data.attachment.sizes.full.url }}" alt="Preview as an app icon"/>
 				</div>
 			</div>
 		</div>

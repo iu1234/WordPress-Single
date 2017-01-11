@@ -91,7 +91,6 @@ class WP_Customize_Nav_Menu_Item_Setting extends WP_Customize_Setting {
 		} else {
 			$value = false;
 
-			// Note that a ID of less than one indicates a nav_menu not yet inserted.
 			if ( $this->post_id > 0 ) {
 				$post = get_post( $this->post_id );
 				if ( $post && self::POST_TYPE === $post->post_type ) {
@@ -103,7 +102,6 @@ class WP_Customize_Nav_Menu_Item_Setting extends WP_Customize_Setting {
 				$value = $this->default;
 			}
 
-			// Cache the value for future calls to avoid having to re-call wp_setup_nav_menu_item().
 			$this->value = $value;
 			$this->populate_value();
 			$value = $this->value;

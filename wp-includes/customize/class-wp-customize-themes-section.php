@@ -1,11 +1,4 @@
 <?php
-/**
- * Customize API: WP_Customize_Themes_Section class
- *
- * @package WordPress
- * @subpackage Customize
- * @since 4.4.0
- */
 
 class WP_Customize_Themes_Section extends WP_Customize_Section {
 
