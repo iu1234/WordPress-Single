@@ -406,7 +406,6 @@ function get_post_types( $args = array(), $output = 'names', $operator = 'and' )
 
 function register_post_type( $post_type, $args = array() ) {
 	global $wp_post_types, $wp_rewrite, $wp;
-
 	if ( ! is_array( $wp_post_types ) ) {
 		$wp_post_types = array();
 	}
@@ -545,8 +544,6 @@ function register_post_type( $post_type, $args = array() ) {
 
 	$wp_post_types[ $post_type ] = $args;
 
-	add_action( 'future_' . $post_type, '_future_post_hook', 5, 2 );
-
 	foreach ( $args->taxonomies as $taxonomy ) {
 		register_taxonomy_for_object_type( $taxonomy, $post_type );
 	}
@@ -585,7 +582,6 @@ function unregister_post_type( $post_type ) {
 	foreach ( get_object_taxonomies( $post_type ) as $taxonomy ) {
 		unregister_taxonomy_for_object_type( $taxonomy, $post_type );
 	}
-	remove_action( 'future_' . $post_type, '_future_post_hook', 5 );
 	unset( $wp_post_types[ $post_type ] );
 	do_action( 'unregistered_post_type', $post_type );
 	return true;
@@ -2985,11 +2981,6 @@ function _transition_post_status( $new_status, $old_status, $post ) {
 		wp_cache_delete( _count_posts_cache_key( $post->post_type, 'readable' ), 'counts' );
 	}
 	wp_clear_scheduled_hook('publish_future_post', array( $post->ID ) );
-}
-
-function _future_post_hook( $deprecated, $post ) {
-	wp_clear_scheduled_hook( 'publish_future_post', array( $post->ID ) );
-	wp_schedule_single_event( strtotime( get_gmt_from_date( $post->post_date ) . ' GMT') , 'publish_future_post', array( $post->ID ) );
 }
 
 function _publish_post_hook( $post_id ) {

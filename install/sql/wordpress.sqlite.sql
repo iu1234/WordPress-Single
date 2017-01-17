@@ -233,7 +233,14 @@ CREATE TABLE IF NOT EXISTS `postmeta` (
 --
 -- Table structure for table `users`
 --
-
+CREATE TABLE users (
+	ID integer PRIMARY KEY,
+	user_login text NOT NULL DEFAULT '',
+	user_pass text NOT NULL DEFAULT '',
+	user_nicename text NOT NULL DEFAULT '',
+	user_email text NOT NULL DEFAULT '',
+	user_url text NOT NULL DEFAULT ''
+)
 CREATE TABLE IF NOT EXISTS `users` (
   `ID` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `user_login` varchar(60) NOT NULL DEFAULT '',

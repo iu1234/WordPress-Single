@@ -179,7 +179,6 @@ add_action( 'wp_head',             '_wp_render_title_tag',            1     );
 add_action( 'wp_head',             'wp_enqueue_scripts',              1     );
 add_action( 'wp_head',             'adjacent_posts_rel_link_wp_head', 10, 0 );
 add_action( 'wp_head',             'locale_stylesheet'                      );
-add_action( 'publish_future_post', 'check_and_publish_future_post',   10, 1 );
 add_action( 'wp_head',             'noindex',                          1    );
 add_action( 'wp_head',             'wp_print_styles',                  8    );
 add_action( 'wp_head',             'wp_print_head_scripts',            9    );
